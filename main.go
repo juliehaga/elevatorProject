@@ -24,6 +24,7 @@ func main(){
     
     go elevio.PollButtons(drv_buttons)
     go elevio.PollFloorSensor(drv_floors)
+ 
 	//go elevio.SetFloorLamp()
     //go elevio.PollObstructionSwitch(drv_obstr)
     //go elevio.PollStopButton(drv_stop)
