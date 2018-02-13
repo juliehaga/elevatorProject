@@ -56,6 +56,14 @@ func Init(addr string, numFloors int) {
 }
 
 
+func ClearAllButtonLamps(){
+	for f:= 0; f < _numFloors; f++ {
+		for b:= ButtonType(0); b < 3; b++ {
+			SetButtonLamp(b, f, false)	
+		}
+	}
+}
+
 
 func SetMotorDirection(dir MotorDirection) {
 	_mtx.Lock()
@@ -106,16 +114,25 @@ func PollButtons(receiver chan<- ButtonEvent) {
 }
 
 func PollFloorSensor(receiver chan<- int) {
+	
 	prev := -1
 	for {
 		time.Sleep(_pollRate)
 		v := getFloor()
+		fmt.Println("Floor read", v)
+		if v < _numFloors && v >= 0 {
+			fmt.Println("Set light", v)
+			SetFloorIndicator(v)
+		}
+
+
 		if v != prev && v != -1 {
 			receiver <- v
 		}
 		prev = v
 	}
 }
+
 
 func PollStopButton(receiver chan<- bool) {
 	prev := false
@@ -140,7 +157,6 @@ func PollObstructionSwitch(receiver chan<- bool) {
 		prev = v
 	}
 }
-
 
 
 

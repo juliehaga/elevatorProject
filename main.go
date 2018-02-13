@@ -10,16 +10,21 @@ func main(){
     numFloors := 4
 
     elevio.Init("localhost:15657", numFloors)
+	elevio.ClearAllButtonLamps();
     
     var d elevio.MotorDirection = elevio.MD_Up
 
-    //elevio.SetMotorDirection(d)
-    
+    elevio.SetMotorDirection(d)
+	elevio.SetFloorIndicator(3)
+    //elevio.SetFloorIndicator(2)
+	//elevio.SetFloorIndicator(3)
+	//elevio.SetFloorIndicator(1)
     drv_buttons := make(chan elevio.ButtonEvent)
     drv_floors  := make(chan int)  
     
     go elevio.PollButtons(drv_buttons)
     go elevio.PollFloorSensor(drv_floors)
+	//go elevio.SetFloorLamp()
     //go elevio.PollObstructionSwitch(drv_obstr)
     //go elevio.PollStopButton(drv_stop)
     
