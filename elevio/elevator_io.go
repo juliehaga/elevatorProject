@@ -119,9 +119,8 @@ func PollFloorSensor(receiver chan<- int) {
 	for {
 		time.Sleep(_pollRate)
 		v := getFloor()
-		fmt.Println("Floor read", v)
 		if v < _numFloors && v >= 0 {
-			fmt.Println("Set light", v)
+	
 			SetFloorIndicator(v)
 		}
 
