@@ -95,5 +95,6 @@ func main(){
             }
             elevio.SetMotorDirection(d)  
 		}
+		
 	}
 }
