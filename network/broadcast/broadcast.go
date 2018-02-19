@@ -1,4 +1,4 @@
-package bcast
+package broadcast
 
 import (
 	"../conn"
