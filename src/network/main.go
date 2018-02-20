@@ -19,15 +19,56 @@ type HelloMsg struct {
 }
 
 func main() {
-	// Our id can be anything. Here we pass it on the command line, using
+/*	// Our id can be anything. Here we pass it on the command line, using
 	//  `go run main.go -id=our_id`
 	var id string
-	flag.StringVar(&id, "id", "", "id of this peer")
-	flag.Parse()
+	//var id string
+	
+	//var myPort int
+	//flag.Int(&myPort, "myport", 15000, "portnumber for this elev")
+	flag.StringVar(&id, "id", "", "id of this peer")	
+	//flag.StringVar(&id, "id", "", "id of this peer")	
+	
+	flag.Parse()						//parse the commandline into defined flags
+
+	//fmt.Println("Portnumber",myport)
 
 	// ... or alternatively, we can use the local IP address.
 	// (But since we can run multiple programs on the same PC, we also append the
 	//  process ID)
+	
+	*/
+	var id string
+	id = ""
+	
+	
+	wordPtr := flag.String("word", "foo", "a string")
+
+
+    numbPtr := flag.Int("numb", 42, "an int")
+    boolPtr := flag.Bool("fork", false, "a bool")
+
+    var svar string
+    flag.StringVar(&svar, "svar", "bar", "a string var")
+
+
+    flag.Parse()
+    fmt.Println("word:", *wordPtr)
+    fmt.Println("numb:", *numbPtr)
+    fmt.Println("fork:", *boolPtr)
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	if id == "" {
 		localIP, err := localip.LocalIP()
 		if err != nil {
