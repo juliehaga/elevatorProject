@@ -13,7 +13,7 @@ type ElevState int
 const(
 	IDLE            = 0
 	MOVING          = 1
-	FLOOR_REACHED   = 2
+	DOOR_OPEN	    = 2
 )
 
 
@@ -32,38 +32,74 @@ func eventOrderAccepted(){
 		//state=MOVING
 }
 
+func eventNewFloor(){
+	//sjekker at vi når nye etasjer
+	//I moving må vi sjekke om vi skal stoppe 
+
+	//send melding ikke bruk funksjoner
+	elevio.SetMotorDirection(elevio.MD_Stop)
+	elevStateMap.ClearOrder(orderedFloor)
+}
+
+//burde vi ha en channel med nye ordre. Dette for trigge fsm
+
+
+func eventDoorTimeout{
+
+
+			if !timerActive{
+				timerActive = true
+				timer = time.Now()
+			}
+			else {doorTimer()}
+			//start timer	
+}
+
+	func doorTimer(){
+	if timer -timer.now() >= 2000{
+		state = IDLE
+		timerActive = false
+	}
+}
+
+
 func eventButtonPressed(orderedFloor int, button elevio.ButtonType){
 	currentMap := elevStateMap.GetLocalMap()
 	switch(state){
 		case IDLE: 
 			if currentMap[config.My_ID].CurrentFloor == orderedFloor {
-				state = FLOOR_REACHED
+				//start timeout
+				state = DOOR_OPEN
+
+				//her bare tar vi bestillingen, må varsle? 
+
 			} else {
+				//send msg to hardware about dir
 				if orderedFloor > currentMap[config.My_ID].CurrentFloor{
 					elevio.SetMotorDirection(elevio.MD_Up)	
 				}else{
 					elevio.SetMotorDirection(elevio.MD_Down)
 				}
+
 				state = MOVING
 			}
 			break
 			//må vi breake case?
 		case MOVING:
-			if currentMap[config.My_ID].CurrentFloor == orderedFloor {
-				state = FLOOR_REACHED
-			}
 			break
-		case FLOOR_REACHED:
-			//start_timer
-			//CLEAR QUEUE?
-			//turn off lights?
+		case DOOR_OPEN:
+			if(currentMap[config.My_ID].CurrentFloor == orderedFloor){
+				//restart timer()
+				//ta høyde for at det også må være riktig retning
+			}
 
-			elevio.SetMotorDirection(elevio.MD_Stop)
-			elevStateMap.ClearOrder(orderedFloor)	
-			//start timer	 
+
+ 
 	}
 }
 
+
+func 
 /*
 func eventFloorReached(){
 
