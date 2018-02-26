@@ -1,27 +1,42 @@
 package main
 
-import ("./elevio"
+import (
 	"./network/broadcast"
 	"./network/localip"
 	"./network/peers"
-	"fmt"
+	"./elevio"
+	"./config"
+	"./elevStateMap"
 	"flag"
+	"fmt"
 	"os"
-	)
 	
+)
 
+// We define some custom struct to send over the network.
+// Note that all members we want to transmit must be public. Any private members
+//  will be received as zero-values.
 
 type FloorMsg struct {
 	Message string
 	Floor	int
 }
 
+func main() {
 
-
-func main(){
 	var id string
-	flag.StringVar(&id, "id", "", "id of this peer")
-	flag.Parse()
+	var port string	
+	flag.StringVar(&id, "id", "", "id")
+    flag.StringVar(&port, "port", "15657", "portnumber")
+    
+    flag.Parse()
+    fmt.Println("id:", id)
+    fmt.Println("port:", port)
+	
+	config.InitConfig(id)
+	elevStateMap.InitElevStateMap()
+	
+
 	
 	if id == "" {
 		localIP, err := localip.LocalIP()
@@ -31,11 +46,11 @@ func main(){
 		}
 		id = fmt.Sprintf("peer-%s-%d", localIP, os.Getpid())
 	}
-	
-    numFloors := 4
+
+	numFloors := 4
     
     
-    elevio.Init("localhost:15657", numFloors)
+    elevio.Init("localhost:" + port, numFloors)
     elevio.ClearAllButtonLamps();
     
     var d elevio.MotorDirection = elevio.MD_Down
