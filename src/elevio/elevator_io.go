@@ -36,7 +36,7 @@ type ButtonEvent struct {
 }
 
 
-
+//goroutine. Kan hardware selv slukke lyset???
 
 
 
@@ -113,14 +113,12 @@ func PollButtons(receiver chan<- ButtonEvent) {
 	}
 }
 
-func PollFloorSensor(receiver chan<- int) {
-	
+func PollFloorSensor(receiver chan<- int) {	
 	prev := -1
 	for {
 		time.Sleep(_pollRate)
 		v := getFloor()
 		if v < _numFloors && v >= 0 {
-	
 			SetFloorIndicator(v)
 		}
 
@@ -171,6 +169,7 @@ func getButton(button ButtonType, floor int) bool {
 	return toBool(buf[1])
 }
 
+
 func getFloor() int {
 	_mtx.Lock()
 	defer _mtx.Unlock()
@@ -183,6 +182,7 @@ func getFloor() int {
 		return -1
 	}
 }
+
 
 func getStop() bool {
 	_mtx.Lock()

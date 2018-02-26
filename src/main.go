@@ -7,9 +7,11 @@ import (
 	"./elevio"
 	"./config"
 	"./elevStateMap"
+	"./fsm"
 	"flag"
-	"fmt"
 	"os"
+	"fmt"
+	
 	
 )
 
@@ -35,7 +37,7 @@ func main() {
 	
 	config.InitConfig(id)
 	elevStateMap.InitElevStateMap()
-	
+	fsm.Fsm()
 
 	
 	if id == "" {

@@ -1,8 +1,9 @@
 package fsm
 
-include(
+import(
 	"../elevStateMap"
 	"../elevio"
+	"../config"
 )
 
 var state ElevState
@@ -18,8 +19,9 @@ const(
 
 
 
-func fsm{
-	switch case
+func Fsm(){
+	a:= 2
+	a += 2
 
 }
 
@@ -30,31 +32,35 @@ func eventOrderAccepted(){
 		//state=MOVING
 }
 
-func eventButtonPressed(orderedFloor int, button ButtonType){
-	currentMap := GetLocalMap()
+func eventButtonPressed(orderedFloor int, button elevio.ButtonType){
+	currentMap := elevStateMap.GetLocalMap()
 	switch(state){
 		case IDLE: 
-			if currentMap.CurrentFloor == orderedFloor {
-				state = FLOOR_REACHED}
-			else {
-				if orderedFloor > currentMap.CurrentFloor{
-					elevio.SetMotorDirection(MD_Up)	
+			if currentMap[config.My_ID].CurrentFloor == orderedFloor {
+				state = FLOOR_REACHED
+			} else {
+				if orderedFloor > currentMap[config.My_ID].CurrentFloor{
+					elevio.SetMotorDirection(elevio.MD_Up)	
 				}else{
-					elevio.SetMotorDirection(MD_Down)
+					elevio.SetMotorDirection(elevio.MD_Down)
 				}
 				state = MOVING
-				
 			}
 			break
 			//må vi breake case?
 		case MOVING:
-			//sjekk at vi når riktig etasje
-			
-			
-			//gets a new order when
-			 
-			
-		
+			if currentMap[config.My_ID].CurrentFloor == orderedFloor {
+				state = FLOOR_REACHED
+			}
+			break
+		case FLOOR_REACHED:
+			//start_timer
+			//CLEAR QUEUE?
+			//turn off lights?
+
+			elevio.SetMotorDirection(elevio.MD_Stop)
+			elevStateMap.ClearOrder(orderedFloor)	
+			//start timer	 
 	}
 }
 
