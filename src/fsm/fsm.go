@@ -63,7 +63,7 @@ func eventDoorTimeout{
 }
 
 
-func eventButtonPressed(orderedFloor int, button elevio.ButtonType){
+func eventNewOrder(orderedFloor int, button elevio.ButtonType){
 	currentMap := elevStateMap.GetLocalMap()
 	switch(state){
 		case IDLE: 
