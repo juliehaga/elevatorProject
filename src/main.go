@@ -37,7 +37,7 @@ func main() {
 	
 	config.InitConfig(id)
 	elevStateMap.InitElevStateMap()
-	fsm.Fsm()
+	
 
 	
 	if id == "" {
@@ -59,17 +59,26 @@ func main() {
     
     elevio.SetMotorDirection(d)
 	elevio.SetFloorIndicator(3)
+
+
+
     
 
 
    
+	motorChan := make(chan elevio.MotorDirection)
+	doorLampChan := make(chan bool)
+
 
  
-    drv_buttons := make(chan elevio.ButtonEvent)
-    drv_floors  := make(chan int)  
+    buttonChan := make(chan elevio.ButtonEvent)
+    floorChan  := make(chan int)  
     
-    go elevio.PollButtons(drv_buttons)
-    go elevio.PollFloorSensor(drv_floors)
+    fsm.Fsm(motorChan, doorLampChan, floorChan)
+
+
+    go elevio.PollButtons(buttonChan)
+    go elevio.PollFloorSensor(floorChan)
     
     peerUpdateCh := make(chan peers.PeerUpdate)
 	// We can disable/enable the transmitter after it has been started.
@@ -99,10 +108,10 @@ func main() {
 		case a := <-floorRx:
 			fmt.Printf("Received: %#v\n", a)
 			
-		case a := <- drv_buttons:
+		case a := <- buttonChan:
             elevio.SetButtonLamp(a.Button, a.Floor, true)
             
-        case a := <- drv_floors:
+        case a := <- floorChan:
     		fmt.Printf("Passed floor%+v\n", a)
     		floorMsg := FloorMsg{"Hello from " + id, a}
     		floorTx <- floorMsg

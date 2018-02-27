@@ -76,7 +76,3 @@ func ClearOrder(floor int){
 }
 
 
-func Foo(elevMap ElevStateMap) bool{
-	return true
-}
-	
