@@ -38,12 +38,16 @@ func eventNewFloor(){
 
 	//send melding ikke bruk funksjoner
 	elevio.SetMotorDirection(elevio.MD_Stop)
-	elevStateMap.ClearOrder(orderedFloor)
+	//elevStateMap.ClearOrder(orderedFloor)
+	switch(state){
+		case MOVING:
+			
+	}
 }
 
 //burde vi ha en channel med nye ordre. Dette for trigge fsm
 
-
+/*
 func eventDoorTimeout{
 
 
@@ -61,7 +65,7 @@ func eventDoorTimeout{
 		timerActive = false
 	}
 }
-
+*/
 
 func eventNewOrder(orderedFloor int, button elevio.ButtonType){
 	currentMap := elevStateMap.GetLocalMap()
@@ -88,18 +92,48 @@ func eventNewOrder(orderedFloor int, button elevio.ButtonType){
 		case MOVING:
 			break
 		case DOOR_OPEN:
-			if(currentMap[config.My_ID].CurrentFloor == orderedFloor){
-				//restart timer()
-				//ta høyde for at det også må være riktig retning
-			}
-
-
- 
+			
 	}
 }
 
 
-func 
+func orderedFloorReached(elevMap elevStateMap.ElevStateMap) bool{
+	switch elevMap[config.My_ID].CurrentDir{
+
+		case elevStateMap.ED_Up:
+			if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][elevio.BT_HallUp]==elevStateMap.OT_OrderAccepted || elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][elevio.BT_Cab]==elevStateMap.OT_OrderAccepted {
+				return true
+			} else if !ordersAbove(elevMap) && elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][elevio.BT_HallDown]==elevStateMap.OT_OrderAccepted{
+				return true }
+			break
+		case elevStateMap.ED_Down:
+		 	if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][elevio.BT_HallDown]==elevStateMap.OT_OrderAccepted || elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][elevio.BT_Cab]==elevStateMap.OT_OrderAccepted {
+		 		return true
+			} else if !ordersBelow(elevMap) && elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][elevio.BT_HallUp]==elevStateMap.OT_OrderAccepted {
+			 	return true }
+			break
+		default:
+	}
+	return false
+}
+
+func ordersAbove(elevMap elevStateMap.ElevStateMap) bool{
+	for i := elevMap[config.My_ID].CurrentFloor + 1; i<config.NUM_FLOORS; i++{
+		for j := elevio.BT_HallUp; j<= elevio.BT_Cab; j++{ 
+			return elevMap[config.My_ID].Orders[i][j] == elevStateMap.OT_OrderAccepted
+		}
+	}
+	return false
+}
+
+func ordersBelow(elevMap elevStateMap.ElevStateMap) bool{
+	for i := elevMap[config.My_ID].CurrentFloor - 1; i>=0; i--{
+		for j := elevio.BT_HallUp; j<= elevio.BT_Cab; j++{ 
+			return elevMap[config.My_ID].Orders[i][j] == elevStateMap.OT_OrderAccepted
+		}
+	}
+	return false
+}
 /*
 func eventFloorReached(){
 

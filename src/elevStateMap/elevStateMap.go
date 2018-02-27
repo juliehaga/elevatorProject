@@ -53,6 +53,9 @@ func InitElevStateMap(){
 			
 			}
 		}
+
+		LocalMap[e].Orders[0][elevio.BT_HallDown] = -1
+		LocalMap[e].Orders[3][elevio.BT_HallUp] = -1
 	}
 }
 
@@ -73,5 +76,7 @@ func ClearOrder(floor int){
 }
 
 
-
+func Foo(elevMap ElevStateMap) bool{
+	return true
+}
 	
