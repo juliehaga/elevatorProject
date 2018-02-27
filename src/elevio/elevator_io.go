@@ -35,6 +35,13 @@ type ButtonEvent struct {
 	Button ButtonType
 }
 
+type ButtonLamp struct {
+	Floor  int
+	Button ButtonType
+	Set bool
+}
+
+
 
 //goroutine. Kan hardware selv slukke lyset???
 
@@ -59,7 +66,7 @@ func Init(addr string, numFloors int) {
 func ClearAllButtonLamps(){
 	for f:= 0; f < _numFloors; f++ {
 		for b:= ButtonType(0); b < 3; b++ {
-			SetButtonLamp(b, f, false)	
+			SetButtonLamp(ButtonLamp{f, b, false})	
 		}
 	}
 }
@@ -71,10 +78,10 @@ func SetMotorDirection(dir MotorDirection) {
 	_conn.Write([]byte{1, byte(dir), 0, 0})
 }
 
-func SetButtonLamp(button ButtonType, floor int, value bool) {
+func SetButtonLamp(lamp ButtonLamp) {
 	_mtx.Lock()
 	defer _mtx.Unlock()
-	_conn.Write([]byte{2, byte(button), byte(floor), toByte(value)})
+	_conn.Write([]byte{2, byte(lamp.Button), byte(lamp.Floor), toByte(lamp.Set)})
 }
 
 func SetFloorIndicator(floor int) {

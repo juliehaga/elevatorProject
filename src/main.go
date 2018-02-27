@@ -68,13 +68,12 @@ func main() {
    
 	motorChan := make(chan elevio.MotorDirection)
 	doorLampChan := make(chan bool)
-
-
- 
     buttonChan := make(chan elevio.ButtonEvent)
     floorChan  := make(chan int)  
-    
-    fsm.Fsm(motorChan, doorLampChan, floorChan)
+    buttonLampChan  := make(chan elevio.ButtonLamp)
+
+
+    fsm.Fsm(motorChan, doorLampChan, floorChan, buttonLampChan)
 
 
     go elevio.PollButtons(buttonChan)
@@ -108,9 +107,6 @@ func main() {
 		case a := <-floorRx:
 			fmt.Printf("Received: %#v\n", a)
 			
-		case a := <- buttonChan:
-            elevio.SetButtonLamp(a.Button, a.Floor, true)
-            
         case a := <- floorChan:
     		fmt.Printf("Passed floor%+v\n", a)
     		floorMsg := FloorMsg{"Hello from " + id, a}
