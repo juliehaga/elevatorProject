@@ -98,9 +98,7 @@ func eventNewAckOrder(buttonLampChan chan elevio.ButtonLamp, motorChan chan elev
 				}
 			}
 
-			
 		case MOVING:
-
 			break
 		case DOOR_OPEN:
 			//if i etasje -> restart doorOpen
@@ -134,7 +132,6 @@ func OrderOnFloor(elevMap elevStateMap.ElevStateMap) bool{
 
 
 
-
 func ordersAbove(elevMap elevStateMap.ElevStateMap) bool{
 	for i := elevMap[config.My_ID].CurrentFloor + 1; i<config.NUM_FLOORS; i++{
 		for j := elevio.BT_HallUp; j<= elevio.BT_Cab; j++{ 
@@ -143,7 +140,6 @@ func ordersAbove(elevMap elevStateMap.ElevStateMap) bool{
 	}
 	return false
 }
-
 
 
 
@@ -157,11 +153,9 @@ func ordersBelow(elevMap elevStateMap.ElevStateMap) bool{
 }
 
 func chooseDirection(elevMap elevStateMap.ElevStateMap) elevio.MotorDirection{
-
 	switch elevMap[config.My_ID].CurrentDir{
-
 		case elevStateMap.ED_Up:
-		
+
 			for f := elevMap[config.My_ID].CurrentFloor+1; f < config.NUM_FLOORS; f++{
 				if elevMap[config.My_ID].Orders[f][elevio.BT_Cab] == elevStateMap.OT_OrderAccepted || nearestElevator(elevMap, f) {
 					return elevio.MD_Up
@@ -187,8 +181,6 @@ func chooseDirection(elevMap elevStateMap.ElevStateMap) elevio.MotorDirection{
 					return elevio.MD_Up
 				}
 			}
-
-			
 			break
 			
 	}

@@ -42,8 +42,30 @@ type ButtonLamp struct {
 }
 
 
+func Elevio(motorChan chan MotorDirection, doorLampChan chan bool, buttonChan chan ButtonEvent, floorChan chan int, buttonLampChan chan ButtonLamp) {
+	go PollButtons(buttonChan)
+    go PollFloorSensor(floorChan)
+    //update map?
 
-//goroutine. Kan hardware selv slukke lyset???
+	for {
+		select {
+		case dir := <- motorChan:
+			//fsm has sent a message to change dir
+			SetMotorDirection(dir)
+		case light := <-doorLampChan:
+			//fsm has sent a message to open door 
+			SetDoorOpenLamp(light)
+		case floor := <- floorChan:
+			//hardware says reached new floor
+			SetFloorIndicator(floor)
+			//må vi beskytte oss mot at vi leser -1
+		case lamp := <- buttonLampChan:
+			//fsm gir beskjed om at lys skal slukkes
+			//vi har ikke noe som sier at lyset skal gå på
+			SetButtonLamp(lamp)
+		}	
+	}
+}
 
 
 
@@ -60,6 +82,8 @@ func Init(addr string, numFloors int) {
 		panic(err.Error())
 	}
 	_initialized = true
+
+	ClearAllButtonLamps();
 }
 
 
@@ -161,9 +185,6 @@ func PollObstructionSwitch(receiver chan<- bool) {
 		prev = v
 	}
 }
-
-
-
 
 
 
