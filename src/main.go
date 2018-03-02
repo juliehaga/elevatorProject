@@ -8,7 +8,7 @@ import (
 	"./elevStateMap"
 	"./fsm"
 	"flag"
-
+	"./network"
 	"fmt"
 )
 
@@ -56,8 +56,8 @@ func main() {
 
     
     // We make channels for sending and receiving our custom data types
-	helloTx := make(chan HelloMsg)
-	helloRx := make(chan HelloMsg)
+	elevMapTx := make(chan network.ElevMapMsg)
+	elevMapRx := make(chan network.ElevMapMsg)
 	// ... and start the transmitter/receiver pair on some port
 	// These functions can take any number of channels! It is also possible to
 	//  start multiple transmitters/receivers on the same port.
@@ -66,10 +66,12 @@ func main() {
 
     go fsm.Fsm(motorChan, doorLampChan, floorChan, buttonLampChan)
     go elevio.Elevio(motorChan, doorLampChan, buttonChan, floorChan, buttonLampChan)
-	go bcast.Transmitter(16569, helloTx)
-	go bcast.Receiver(16569, helloRx)
+	go broadcast.Transmitter(16569, elevMapTx)
+	go broadcast.Receiver(16569, elevMapRx)
     go peers.Transmitter(15647, id, peerTxEnable)
 	go peers.Receiver(15647, peerUpdateCh)
+
+	go network.testSendfunc(elevMapTx)
     
    
 
@@ -84,7 +86,7 @@ func main() {
 			fmt.Printf("  New:      %q\n", p.New)
 			fmt.Printf("  Lost:     %q\n", p.Lost)
 
-		case a := <-floorRx:
+		case a := <- elevMapRx:
 			fmt.Printf("Received: %#v\n", a)
 		
 		}

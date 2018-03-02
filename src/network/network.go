@@ -1,16 +1,24 @@
 package network 
 
 import (
-	"./broadcast"
-	"./localip"
-	"./peers"
+	"../elevStateMap"
+	"../config"
+	"time"
 )
 
 
 type ElevMapMsg struct {
 	ID int
-	elevMap   elevStateMap
+	elevMap   elevStateMap.ElevStateMap
 }
 
 
-func init()
+
+func testSendfunc(elevMapTx chan ElevMapMsg) {
+		currentMap := elevStateMap.GetLocalMap()
+		elevMapMsg := ElevMapMsg{config.My_ID, currentMap}
+		for {
+			elevMapTx <- elevMapMsg
+			time.Sleep(1 * time.Second)
+		}
+}
