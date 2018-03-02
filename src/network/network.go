@@ -7,6 +7,10 @@ import (
 )
 
 
+type ElevMapMsg struct {
+	ID int
+	elevMap   elevStateMap
+}
 
 
 func init()
