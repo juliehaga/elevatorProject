@@ -2,73 +2,76 @@ package main
 
 import (
 	"./network/broadcast"
-	"./network/localip"
 	"./network/peers"
 	"./elevio"
 	"./config"
 	"./elevStateMap"
 	"./fsm"
 	"flag"
-	"os"
+
 	"fmt"
 )
 
 
 
 func main() {
-
-	var id string
+//command line arguments for port and id
 	var port string	
+	var id string
 	flag.StringVar(&id, "id", "", "id")
     flag.StringVar(&port, "port", "15657", "portnumber")
     
-    flag.Parse()
-    fmt.Println("id:", id)
+    flag.Parse()	
+    if id == "" {
+    	//dafault ID
+		id = "0"
+	}
+	fmt.Println("id:", id)
     fmt.Println("port:", port)
+
+
 	
+
+//init fuctions 
 	config.InitConfig(id)
 	elevStateMap.InitElevStateMap()
 	elevio.Init("localhost:" + port, config.NUM_FLOORS)
 	
+//channels for communication between modules
 
-	
-	if id == "" {
-		localIP, err := localip.LocalIP()
-		if err != nil {
-			fmt.Println(err)
-			localIP = "DISCONNECTED"
-		}
-		id = fmt.Sprintf("peer-%s-%d", localIP, os.Getpid())
-	}
-
+	//hardware channels
 	motorChan := make(chan elevio.MotorDirection)
 	doorLampChan := make(chan bool)
     buttonChan := make(chan elevio.ButtonEvent)
     floorChan  := make(chan int)  
     buttonLampChan  := make(chan elevio.ButtonLamp)
+
+
+    // We make a channel for receiving updates on the id's of the peers that are
+	//  alive on the network
     peerUpdateCh := make(chan peers.PeerUpdate)
+    // This could be used to signal that we are somehow "unavailable".
     peerTxEnable := make(chan bool)
+
+
+    
+    // We make channels for sending and receiving our custom data types
+	helloTx := make(chan HelloMsg)
+	helloRx := make(chan HelloMsg)
+	// ... and start the transmitter/receiver pair on some port
+	// These functions can take any number of channels! It is also possible to
+	//  start multiple transmitters/receivers on the same port.
+	
 
 
     go fsm.Fsm(motorChan, doorLampChan, floorChan, buttonLampChan)
     go elevio.Elevio(motorChan, doorLampChan, buttonChan, floorChan, buttonLampChan)
-
-    // We can disable/enable the transmitter after it has been started.
-	// This could be used to signal that we are somehow "unavailable".
-
+	go bcast.Transmitter(16569, helloTx)
+	go bcast.Receiver(16569, helloRx)
     go peers.Transmitter(15647, id, peerTxEnable)
 	go peers.Receiver(15647, peerUpdateCh)
     
-    
-
-	// We make channels for sending and receiving our custom data types
-	floorTx := make(chan FloorMsg)
-	floorRx := make(chan FloorMsg)
-	// ... and start the transmitter/receiver pair on some port
-	// These functions can take any number of channels! It is also possible to
-	//  start multiple transmitters/receivers on the same port.
-	go broadcast.Transmitter(16569, floorTx)
-	go broadcast.Receiver(16569, floorRx)
+   
 
 	
 	
