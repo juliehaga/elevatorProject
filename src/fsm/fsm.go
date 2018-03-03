@@ -34,7 +34,7 @@ func Fsm(motorChan chan elevio.MotorDirection, doorLampChan chan bool, floorChan
 			//denne må trigges av ???
 			//eventNewAckOrder()
 		case <- doorTimer.C:
-			eventDoorTimeout(doorLampChan)
+			eventDoorTimeout(doorLampChan, mapChangesChan)
 
 //		case <- buttonChan: 
 //			eventLocalOrder
@@ -54,7 +54,7 @@ func eventNewFloor(motorChan chan elevio.MotorDirection, doorLampChan chan bool,
 				doorLampChan <- true
 				doorTimer.Reset(time.Second * DOOR_TIME)
 
-				currentMap[config.My_ID].Door = true;
+				currentMap[config.My_ID].Door = true
 				orderCompleted(&currentMap, buttonLampChan)
 				mapChangesChan <- currentMap
 				state = DOOR_OPEN
@@ -64,44 +64,39 @@ func eventNewFloor(motorChan chan elevio.MotorDirection, doorLampChan chan bool,
 	}
 }
 
-func eventDoorTimeout(doorLampChan chan bool){
-
+func eventDoorTimeout(doorLampChan chan bool, mapChangesChan chan elevStateMap.ElevStateMap){
+	currentMap := elevStateMap.GetLocalMap()
 	switch(state){
 		case DOOR_OPEN:
 			doorLampChan <- false
-			//slå av buttonlamp
-			//orderFinished   -> dette burde slukkle alle lys i hele floor
+			currentMap[config.My_ID].Door = false
+			mapChangesChan <- currentMap
 			state = IDLE
 	}
 }
 
 
-func eventNewAckOrder(buttonLampChan chan elevio.ButtonLamp, motorChan chan elevio.MotorDirection, doorLampChan chan bool, doorTimer *time.Timer){
+func eventNewAckOrder(buttonLampChan chan elevio.ButtonLamp, motorChan chan elevio.MotorDirection, doorLampChan chan bool, doorTimer *time.Timer, mapChangesChan chan elevStateMap.ElevStateMap){
 	currentMap := elevStateMap.GetLocalMap()
-	//antar at lyset allerede er tent, dette må gjøres et annet sted
-
 	switch(state){
 		case IDLE:
 			if orderInThisFloor(currentMap) {
-				
-				//Gi beskjed om at ordre utført
 				doorLampChan <- true
+				
+				currentMap[config.My_ID].Door = true
+				orderCompleted(&currentMap, buttonLampChan)
+				mapChangesChan <- currentMap
+				
 				doorTimer.Reset(time.Second * DOOR_TIME)
 				state = DOOR_OPEN
 			}else{
-				motorDir := chooseDirection(currentMap)
+				motorDir := chooseDirection(&currentMap)
+				mapChangesChan <- currentMap
 				if motorDir != elevio.MD_Stop {
 					motorChan <- motorDir
 					state = MOVING
 				}
-			}
-
-		case MOVING:
-			break
-		case DOOR_OPEN:
-			//if i etasje -> restart doorOpen
-			
-			
+			}			
 	}
 }
 
@@ -131,9 +126,9 @@ func OrderOnFloor(elevMap elevStateMap.ElevStateMap) bool{
 
 
 func ordersAbove(elevMap elevStateMap.ElevStateMap) bool{
-	for i := elevMap[config.My_ID].CurrentFloor + 1; i<config.NUM_FLOORS; i++{
-		for j := elevio.BT_HallUp; j<= elevio.BT_Cab; j++{ 
-			return elevMap[config.My_ID].Orders[i][j] == elevStateMap.OT_OrderAccepted
+	for f := elevMap[config.My_ID].CurrentFloor + 1; f<config.NUM_FLOORS; f++{
+		for b := elevio.BT_HallUp; b<= elevio.BT_Cab; b++{ 
+			return elevMap[config.My_ID].Orders[f][b] == elevStateMap.OT_OrderAccepted
 		}
 	}
 	return false
@@ -142,27 +137,28 @@ func ordersAbove(elevMap elevStateMap.ElevStateMap) bool{
 
 
 func ordersBelow(elevMap elevStateMap.ElevStateMap) bool{
-	for i := elevMap[config.My_ID].CurrentFloor - 1; i>=0; i--{
-		for j := elevio.BT_HallUp; j<= elevio.BT_Cab; j++{ 
-			return elevMap[config.My_ID].Orders[i][j] == elevStateMap.OT_OrderAccepted
+	for f := elevMap[config.My_ID].CurrentFloor - 1; f>=0; f--{
+		for b := elevio.BT_HallUp; b<= elevio.BT_Cab; b++{ 
+			return elevMap[config.My_ID].Orders[f][b] == elevStateMap.OT_OrderAccepted
 		}
 	}
 	return false
 }
 
-func chooseDirection(elevMap elevStateMap.ElevStateMap) elevio.MotorDirection{
-	//kanskje vi kan gjenbruke ordersbelow og ordersAbove
+func chooseDirection(elevMap *elevStateMap.ElevStateMap) elevio.MotorDirection{
 	switch elevMap[config.My_ID].CurrentDir{
 		case elevStateMap.ED_Up:
 
 			for f := elevMap[config.My_ID].CurrentFloor+1; f < config.NUM_FLOORS; f++{
-				if elevMap[config.My_ID].Orders[f][elevio.BT_Cab] == elevStateMap.OT_OrderAccepted || nearestElevator(elevMap, f) {
+				if elevMap[config.My_ID].Orders[f][elevio.BT_Cab] == elevStateMap.OT_OrderAccepted || nearestElevator(*elevMap, f) {
+					elevMap[config.My_ID].CurrentDir = elevStateMap.ED_Up
 					return elevio.MD_Up
 				}
 			}
 
 			for f := elevMap[config.My_ID].CurrentFloor-1; f>= 0; f-- {
-				if elevMap[config.My_ID].Orders[f][elevio.BT_Cab] == elevStateMap.OT_OrderAccepted || nearestElevator(elevMap, f) {
+				if elevMap[config.My_ID].Orders[f][elevio.BT_Cab] == elevStateMap.OT_OrderAccepted || nearestElevator(*elevMap, f) {
+					elevMap[config.My_ID].CurrentDir = elevStateMap.ED_Down
 					return elevio.MD_Down
 				}
 			}	
@@ -170,13 +166,15 @@ func chooseDirection(elevMap elevStateMap.ElevStateMap) elevio.MotorDirection{
 		case elevStateMap.ED_Down:
 
 			for f := elevMap[config.My_ID].CurrentFloor-1; f>= 0; f-- {
-				if elevMap[config.My_ID].Orders[f][elevio.BT_Cab] == elevStateMap.OT_OrderAccepted || nearestElevator(elevMap, f) {
+				if elevMap[config.My_ID].Orders[f][elevio.BT_Cab] == elevStateMap.OT_OrderAccepted || nearestElevator(*elevMap, f) {
+					elevMap[config.My_ID].CurrentDir = elevStateMap.ED_Down
 					return elevio.MD_Down
 				}
 			}	
 
 			for f := elevMap[config.My_ID].CurrentFloor+1; f < config.NUM_FLOORS; f++{
-				if elevMap[config.My_ID].Orders[f][elevio.BT_Cab] == elevStateMap.OT_OrderAccepted || nearestElevator(elevMap, f) {
+				if elevMap[config.My_ID].Orders[f][elevio.BT_Cab] == elevStateMap.OT_OrderAccepted || nearestElevator(*elevMap, f) {
+					elevMap[config.My_ID].CurrentDir = elevStateMap.ED_Up
 					return elevio.MD_Up
 				}
 			}
