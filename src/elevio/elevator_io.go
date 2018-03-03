@@ -52,6 +52,7 @@ func Elevio(motorChan chan MotorDirection, doorLampChan chan bool, buttonChan ch
 		case dir := <- motorChan:
 			//fsm has sent a message to change dir
 			SetMotorDirection(dir)
+			
 		case light := <-doorLampChan:
 			//fsm has sent a message to open door 
 			SetDoorOpenLamp(light)

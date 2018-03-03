@@ -75,4 +75,3 @@ func ClearOrder(floor int){
 	}
 }
 
-

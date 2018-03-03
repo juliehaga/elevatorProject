@@ -5,6 +5,7 @@ import(
 	"../elevio"
 	"../config"
 	"time"
+	"math"
 )
 
 var state ElevState
@@ -19,7 +20,7 @@ const(
 const DOOR_TIME 	= 2
 
 
-func Fsm(motorChan chan elevio.MotorDirection, doorLampChan chan bool, floorChan chan int, buttonLampChan chan elevio.ButtonLamp){
+func Fsm(motorChan chan elevio.MotorDirection, doorLampChan chan bool, floorChan chan int, buttonLampChan chan elevio.ButtonLamp, mapChangesChan chan elevStateMap.ElevStateMap){
 	doorTimer := time.NewTimer(time.Second * DOOR_TIME)
 	doorTimer.Stop()
 	//go harware(motorChan, doorLampChan)
@@ -28,7 +29,7 @@ func Fsm(motorChan chan elevio.MotorDirection, doorLampChan chan bool, floorChan
 	for{
 		select{
 		case  <- floorChan:
-			eventNewFloor(motorChan, doorLampChan, doorTimer)
+			eventNewFloor(motorChan, doorLampChan, doorTimer, mapChangesChan, buttonLampChan)
 		//case <- ackOrderChan:
 			//denne må trigges av ???
 			//eventNewAckOrder()
@@ -44,21 +45,18 @@ func Fsm(motorChan chan elevio.MotorDirection, doorLampChan chan bool, floorChan
 }
 
 
-func eventNewFloor(motorChan chan elevio.MotorDirection, doorLampChan chan bool, doorTimer *time.Timer){
+func eventNewFloor(motorChan chan elevio.MotorDirection, doorLampChan chan bool, doorTimer *time.Timer, mapChangesChan chan elevStateMap.ElevStateMap, buttonLampChan chan elevio.ButtonLamp){
 	currentMap := elevStateMap.GetLocalMap()
-	//sjekker at vi når nye etasjer
-	//I moving må vi sjekke om vi skal stoppe 
-
-	//send melding ikke bruk funksjoner
-	//elevStateMap.ClearOrder(orderedFloor)
 	switch(state){
 		case MOVING:
 			if(OrderOnFloor(currentMap)){
 				motorChan <- elevio.MD_Stop
 				doorLampChan <- true
 				doorTimer.Reset(time.Second * DOOR_TIME)
-				
-				//gi beskjed om at ordre er utført -> dette handler buttonlamp for alle heiser
+
+				currentMap[config.My_ID].Door = true;
+				orderCompleted(&currentMap, buttonLampChan)
+				mapChangesChan <- currentMap
 				state = DOOR_OPEN
 			}
 		case DOOR_OPEN:
@@ -153,6 +151,7 @@ func ordersBelow(elevMap elevStateMap.ElevStateMap) bool{
 }
 
 func chooseDirection(elevMap elevStateMap.ElevStateMap) elevio.MotorDirection{
+	//kanskje vi kan gjenbruke ordersbelow og ordersAbove
 	switch elevMap[config.My_ID].CurrentDir{
 		case elevStateMap.ED_Up:
 
@@ -189,6 +188,24 @@ func chooseDirection(elevMap elevStateMap.ElevStateMap) elevio.MotorDirection{
 
 
 func nearestElevator(elevMap elevStateMap.ElevStateMap, floor int) bool{
+ 	dist := int(math.Abs(float64(elevMap[config.My_ID].CurrentFloor - floor)));
+ 	for e := 0; e<config.NUM_ELEVS; e++ {
+ 		if elevMap[e].CurrentFloor < floor && elevMap[e].CurrentDir == elevStateMap.ED_Up {
+ 			if elevMap[e].CurrentFloor - floor < dist {
+ 				return false
+ 			}
+
+ 		}else if elevMap[e].CurrentFloor > floor && elevMap[e].CurrentDir == elevStateMap.ED_Down {
+ 			if elevMap[e].CurrentFloor < floor && elevMap[e].CurrentDir == elevStateMap.ED_Up {
+ 				return false
+ 			}
+ 		}
+ 	}
+ 	for e := 0; e<config.NUM_ELEVS; e++ {
+	 	if elevMap[e].CurrentFloor - floor == dist {
+	 			return config.My_ID <= e 
+	 		}
+	}
  	return true
 }
 
@@ -199,4 +216,17 @@ func orderInThisFloor( elevMap elevStateMap.ElevStateMap) bool{
 		}
 	}
 	return false
+}
+
+func orderCompleted(elevMap *elevStateMap.ElevStateMap, buttonLampChan chan elevio.ButtonLamp){
+	elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][elevio.BT_Cab] = elevStateMap.OT_OrderCompleted
+	buttonLampChan <- elevio.ButtonLamp{elevMap[config.My_ID].CurrentFloor, elevio.BT_Cab, false}
+	switch(elevMap[config.My_ID].CurrentDir){
+		case elevStateMap.ED_Up: 
+			elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][elevio.BT_HallUp] = elevStateMap.OT_OrderCompleted
+			buttonLampChan <-  elevio.ButtonLamp{elevMap[config.My_ID].CurrentFloor, elevio.BT_HallUp, false}
+		case elevStateMap.ED_Down:
+			elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][elevio.BT_HallDown] = elevStateMap.OT_OrderCompleted
+			buttonLampChan <-  elevio.ButtonLamp{elevMap[config.My_ID].CurrentFloor, elevio.BT_HallDown, false}
+	}
 }

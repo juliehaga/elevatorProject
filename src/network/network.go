@@ -14,7 +14,7 @@ type ElevMapMsg struct {
 
 
 
-func testSendfunc(elevMapTx chan ElevMapMsg) {
+func TestSendfunc(elevMapTx chan ElevMapMsg) {
 		currentMap := elevStateMap.GetLocalMap()
 		elevMapMsg := ElevMapMsg{config.My_ID, currentMap}
 		for {

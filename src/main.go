@@ -15,6 +15,7 @@ import (
 
 
 func main() {
+
 //command line arguments for port and id
 	var port string	
 	var id string
@@ -45,6 +46,7 @@ func main() {
     buttonChan := make(chan elevio.ButtonEvent)
     floorChan  := make(chan int)  
     buttonLampChan  := make(chan elevio.ButtonLamp)
+    mapChangesChan := make(chan elevStateMap.ElevStateMap)
 
 
     // We make a channel for receiving updates on the id's of the peers that are
@@ -64,14 +66,14 @@ func main() {
 	
 
 
-    go fsm.Fsm(motorChan, doorLampChan, floorChan, buttonLampChan)
+    go fsm.Fsm(motorChan, doorLampChan, floorChan, buttonLampChan, mapChangesChan)
     go elevio.Elevio(motorChan, doorLampChan, buttonChan, floorChan, buttonLampChan)
 	go broadcast.Transmitter(16569, elevMapTx)
 	go broadcast.Receiver(16569, elevMapRx)
     go peers.Transmitter(15647, id, peerTxEnable)
 	go peers.Receiver(15647, peerUpdateCh)
 
-	go network.testSendfunc(elevMapTx)
+	go network.TestSendfunc(elevMapTx)
     
    
 
