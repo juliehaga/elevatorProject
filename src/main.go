@@ -1,8 +1,6 @@
 package main
 
 import (
-	"./network/broadcast"
-	"./network/peers"
 	"./elevio"
 	"./config"
 	"./elevStateMap"
@@ -51,7 +49,7 @@ func main() {
 
     // We make a channel for receiving updates on the id's of the peers that are
 	//  alive on the network
-    peerUpdateCh := make(chan peers.PeerUpdate)
+    peerUpdateCh := make(chan network.PeerUpdate)
     // This could be used to signal that we are somehow "unavailable".
     peerTxEnable := make(chan bool)
 
@@ -68,10 +66,10 @@ func main() {
 
     go fsm.Fsm(motorChan, doorLampChan, floorChan, buttonLampChan, mapChangesChan, buttonChan)
     go elevio.Elevio(motorChan, doorLampChan, buttonChan, floorChan, buttonLampChan)
-	go broadcast.Transmitter(16569, elevMapTx)
-	go broadcast.Receiver(16569, elevMapRx)
-    go peers.Transmitter(15647, id, peerTxEnable)
-	go peers.Receiver(15647, peerUpdateCh)
+	go network.Transmitter(16569, elevMapTx)
+	go network.Receiver(16569, elevMapRx)
+    go network.PeerTransmitter(15647, id, peerTxEnable)
+	go network.PeerReceiver(15647, peerUpdateCh)
 
     
    
@@ -92,11 +90,11 @@ func main() {
 
 
 		case elevMap:= <-mapChangesChan:
-			fmt.Printf("Map change\n")
+	
 			elevStateMap.UpdateLocalMap(elevMap)
 			
-			//elevStateMap.PrintMap()
-			//network.SendElevMap(elevMapTx, elevMap)
+			elevStateMap.PrintMap()
+			network.SendElevMap(elevMapTx, elevMap)
 			//seeeend
 
 
