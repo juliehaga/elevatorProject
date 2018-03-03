@@ -46,13 +46,13 @@ func Elevio(motorChan chan MotorDirection, doorLampChan chan bool, buttonChan ch
 	go PollButtons(buttonChan)
     go PollFloorSensor(floorChan)
     //update map?
-
+/*
 	for {
 		select {
 		case dir := <- motorChan:
 			//fsm has sent a message to change dir
 			SetMotorDirection(dir)
-			
+
 		case light := <-doorLampChan:
 			//fsm has sent a message to open door 
 			SetDoorOpenLamp(light)
@@ -64,8 +64,9 @@ func Elevio(motorChan chan MotorDirection, doorLampChan chan bool, buttonChan ch
 			//fsm gir beskjed om at lys skal slukkes
 			//vi har ikke noe som sier at lyset skal gå på
 			SetButtonLamp(lamp)
-		}	
-	}
+		}
+
+	}*/
 }
 
 
@@ -84,7 +85,7 @@ func Init(addr string, numFloors int) {
 	}
 	_initialized = true
 
-	ClearAllButtonLamps();
+	//ClearAllButtonLamps();
 }
 
 
@@ -137,6 +138,7 @@ func PollButtons(receiver chan<- ButtonEvent) {
 			for b := ButtonType(0); b < 3; b++ {
 				v := getButton(b, f)
 				if v != prev[f][b] && v != false {
+					fmt.Printf("Hardware sier at knapp er trykket\n")
 					receiver <- ButtonEvent{f, ButtonType(b)}
 				}
 				prev[f][b] = v

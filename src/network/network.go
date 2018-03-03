@@ -3,7 +3,6 @@ package network
 import (
 	"../elevStateMap"
 	"../config"
-	"time"
 )
 
 
@@ -14,11 +13,7 @@ type ElevMapMsg struct {
 
 
 
-func TestSendfunc(elevMapTx chan ElevMapMsg) {
-		currentMap := elevStateMap.GetLocalMap()
-		elevMapMsg := ElevMapMsg{config.My_ID, currentMap}
-		for {
-			elevMapTx <- elevMapMsg
-			time.Sleep(1 * time.Second)
-		}
+func SendElevMap(elevMapTx chan ElevMapMsg, elevMap elevStateMap.ElevStateMap) {
+		elevMapMsg := ElevMapMsg{config.My_ID, elevMap}
+		elevMapTx <- elevMapMsg
 }

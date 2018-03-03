@@ -73,7 +73,6 @@ func main() {
     go peers.Transmitter(15647, id, peerTxEnable)
 	go peers.Receiver(15647, peerUpdateCh)
 
-	go network.TestSendfunc(elevMapTx)
     
    
 
@@ -90,7 +89,29 @@ func main() {
 
 		case a := <- elevMapRx:
 			fmt.Printf("Received: %#v\n", a)
-		
+
+		case buttonEvent := <- buttonChan:
+			currentMap := elevStateMap.GetLocalMap()
+
+			fmt.Printf("knapp er trykket\n")
+			currentMap[config.My_ID].Orders[buttonEvent.Floor][buttonEvent.Button] = elevStateMap.OT_OrderExists
+			fmt.Printf("videre")
+
+			//mapChangesChan <- currentMap
+
+
+		case elevmap:= <-mapChangesChan:
+
+			fmt.Printf("endring i map")
+			network.SendElevMap(elevMapTx, elevmap)
+			//seeeend
+
+
+			//en bestilling har skjedd
+			//registrer at det har skjedd 
+
+			//send beskjed til nettverket
 		}
+
 	}
 }

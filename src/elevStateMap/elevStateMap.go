@@ -65,13 +65,16 @@ func GetLocalMap() ElevStateMap{
 	return LocalMap
 }
 
-func ClearOrder(floor int){
-	LocalMap[config.My_ID].Orders[floor][elevio.BT_Cab] = OT_OrderCompleted
 
-	if LocalMap[config.My_ID].CurrentDir == ED_Up{
-		LocalMap[config.My_ID].Orders[floor][elevio.BT_HallUp] = OT_OrderCompleted
-	} else {
-		LocalMap[config.My_ID].Orders[floor][elevio.BT_HallDown] = OT_OrderCompleted
+func UpdateLocalMap(changedMap ElevStateMap) ElevStateMap{
+	LocalMap[config.My_ID].CurrentFloor = changedMap[config.My_ID].CurrentFloor
+	LocalMap[config.My_ID].CurrentDir = changedMap[config.My_ID].CurrentDir
+	LocalMap[config.My_ID].Connected = changedMap[config.My_ID].Connected
+	LocalMap[config.My_ID].Door = changedMap[config.My_ID].Door
+	for f:= 0; f < config.NUM_FLOORS; f++{
+		for b:= 0; b < config.NUM_BUTTONS; b++{
+			LocalMap[config.My_ID].Orders[f][b] = changedMap[config.My_ID].Orders[f][b]
+		}
 	}
+	return LocalMap
 }
-
