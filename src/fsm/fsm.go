@@ -20,12 +20,11 @@ const(
 const DOOR_TIME 	= 2
 
 
-func Fsm(motorChan chan elevio.MotorDirection, doorLampChan chan bool, floorChan chan int, buttonLampChan chan elevio.ButtonLamp, mapChangesChan chan elevStateMap.ElevStateMap){
+func Fsm(motorChan chan elevio.MotorDirection, doorLampChan chan bool, floorChan chan int, buttonLampChan chan elevio.ButtonLamp, mapChangesChan chan elevStateMap.ElevStateMap, buttonChan chan elevio.ButtonEvent){
 	doorTimer := time.NewTimer(time.Second * DOOR_TIME)
 	doorTimer.Stop()
 	//go harware(motorChan, doorLampChan)
-	a:= 2
-	a += 2
+	
 	for{
 		select{
 		case  <- floorChan:
@@ -33,6 +32,9 @@ func Fsm(motorChan chan elevio.MotorDirection, doorLampChan chan bool, floorChan
 		//case <- ackOrderChan:
 			//denne må trigges av ???
 			//eventNewAckOrder()
+
+		case buttonEvent := <- buttonChan:
+			eventNewOrder(mapChangesChan, buttonEvent)
 		case <- doorTimer.C:
 			eventDoorTimeout(doorLampChan, mapChangesChan)
 
@@ -99,6 +101,19 @@ func eventNewAckOrder(buttonLampChan chan elevio.ButtonLamp, motorChan chan elev
 			}			
 	}
 }
+
+
+func eventNewOrder(mapChangesChan chan elevStateMap.ElevStateMap, buttonEvent elevio.ButtonEvent){
+	currentMap := elevStateMap.GetLocalMap()
+	currentMap[config.My_ID].Orders[buttonEvent.Floor][buttonEvent.Button] = elevStateMap.OT_OrderExists
+
+
+	mapChangesChan <- currentMap
+
+
+}
+
+
 
 
 func OrderOnFloor(elevMap elevStateMap.ElevStateMap) bool{

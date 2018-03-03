@@ -46,7 +46,7 @@ func Elevio(motorChan chan MotorDirection, doorLampChan chan bool, buttonChan ch
 	go PollButtons(buttonChan)
     go PollFloorSensor(floorChan)
     //update map?
-/*
+
 	for {
 		select {
 		case dir := <- motorChan:
@@ -66,7 +66,7 @@ func Elevio(motorChan chan MotorDirection, doorLampChan chan bool, buttonChan ch
 			SetButtonLamp(lamp)
 		}
 
-	}*/
+	}
 }
 
 
