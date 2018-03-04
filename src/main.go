@@ -25,6 +25,7 @@ func main() {
     	//dafault ID
 		id = "0"
 	}
+
 	fmt.Println("id:", id)
     fmt.Println("port:", port)
 
@@ -86,14 +87,15 @@ func main() {
 			fmt.Printf("  Lost:     %q\n", p.Lost)
 
 		case a := <- elevMapRx:
-			fmt.Printf("Received: %#v\n", a)
+			//fmt.Printf("Received: %#v\n", a)
+			elevStateMap.PrintMap(a.ElevMap)
 
 
 		case elevMap:= <-mapChangesChan:
 	
 			elevStateMap.UpdateLocalMap(elevMap)
-			
-			elevStateMap.PrintMap()
+			//currentMap := elevStateMap.GetLocalMap()
+			//elevStateMap.PrintMap(currentMap)
 			network.SendElevMap(elevMapTx, elevMap)
 			//seeeend
 

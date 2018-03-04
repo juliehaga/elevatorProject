@@ -17,7 +17,7 @@ import (
 
 type ElevMapMsg struct {
 	ID int
-	elevMap   elevStateMap.ElevStateMap
+	ElevMap   elevStateMap.ElevStateMap
 }
 
 
@@ -114,11 +114,11 @@ func PeerReceiver(port int, peerUpdateCh chan<- PeerUpdate) {
 func Transmitter(port int, elevMapTx chan ElevMapMsg){
 	for {
 		select {
-		case <- elevMapTx:
+		case elevMapMsg := <- elevMapTx:
 
 			addr, _ := net.ResolveUDPAddr("udp", fmt.Sprintf("255.255.255.255:%d", port))
 			conn, _ := net.DialUDP("udp", nil, addr)
-			buf, _ := json.Marshal(2)
+			buf, _ := json.Marshal(elevMapMsg)
 			conn.Write(buf)
 
 		}
@@ -128,31 +128,30 @@ func Transmitter(port int, elevMapTx chan ElevMapMsg){
 // Matches type-tagged JSON received on `port` to element types of `chans`, then
 // sends the decoded value on the corresponding channel
 func Receiver(port int, elevMapRx chan ElevMapMsg) {
+	//var receivedMap elevStateMap.ElevStateMap
+	var receivedMapMsg ElevMapMsg
+	addr, _ := net.ResolveUDPAddr("udp", fmt.Sprintf("255.255.255.255:%d", port))
+	conn, _ := net.ListenUDP("udp", addr)
+
+	var b[1048576] byte	
+
 	for {
-		select {
-		case  <- elevMapRx:
-			//var receivedMap elevStateMap.ElevStateMap
-			var receivedMap int
+		integer, _, err := conn.ReadFromUDP(b[:])
+		if err != nil {
+			fmt.Printf("Feil %s", err. Error())
 
-			addr, _ := net.ResolveUDPAddr("udp", fmt.Sprintf("255.255.255.255:%d", port))
-			conn, _ := net.ListenUDP("udp", addr)
-			conn.SetReadDeadline(time.Now().Add(timeout))
-			var b[128] byte	
+		}
+	
+		if integer > 0 {
 
-			integer, _, err := conn.ReadFromUDP(b[:])
-
-			if err != nil {
-				fmt.Println("unable to read")
-			}
-			if integer > 0 {
-				json.Unmarshal(b[:integer], &receivedMap)
-				
-			} else {
-				fmt.Println("Ingen melding, ny prim")
-				conn.Close()
-			}
+			json.Unmarshal(b[:integer], &receivedMapMsg)
+			elevMapRx <- receivedMapMsg
+			
+		} else {
+			conn.Close()
 		}
 	}
+	
 }
 
 
