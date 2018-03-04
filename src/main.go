@@ -46,6 +46,7 @@ func main() {
     floorChan  := make(chan int)  
     buttonLampChan  := make(chan elevio.ButtonLamp)
     mapChangesChan := make(chan elevStateMap.ElevStateMap)
+    ackOrderChan := make(chan bool)
 
 
     // We make a channel for receiving updates on the id's of the peers that are
@@ -65,7 +66,7 @@ func main() {
 	
 
 
-    go fsm.Fsm(motorChan, doorLampChan, floorChan, buttonLampChan, mapChangesChan, buttonChan)
+    go fsm.Fsm(motorChan, doorLampChan, floorChan, buttonLampChan, mapChangesChan, buttonChan, ackOrderChan)
     go elevio.Elevio(motorChan, doorLampChan, buttonChan, floorChan, buttonLampChan)
 	go network.Transmitter(16569, elevMapTx)
 	go network.Receiver(16569, elevMapRx)
@@ -91,10 +92,12 @@ func main() {
 			currentMap := elevStateMap.GetLocalMap()
 			elevStateMap.PrintMap(currentMap)
 			
+			
 
 		case elevMap:= <-mapChangesChan:
 			elevStateMap.UpdateLocalMap(elevMap)
 			network.SendElevMap(elevMapTx, elevMap)
+
 		}
 	}
 }

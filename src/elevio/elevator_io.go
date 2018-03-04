@@ -67,6 +67,7 @@ func Elevio(motorChan chan MotorDirection, doorLampChan chan bool, buttonChan ch
 		}
 
 	}
+	
 }
 
 
@@ -85,7 +86,8 @@ func Init(addr string, numFloors int) {
 	}
 	_initialized = true
 
-	//ClearAllButtonLamps();
+	ClearAllButtonLamps()
+	SetDoorOpenLamp(false)
 }
 
 

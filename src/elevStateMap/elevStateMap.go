@@ -45,7 +45,7 @@ type ElevStateMap [config.NUM_ELEVS]ElevInfo
 
 func InitElevStateMap(){
 	for e:= 0; e < config.NUM_ELEVS; e++{
-		LocalMap[e].CurrentFloor = 2
+		LocalMap[e].CurrentFloor = 0
 		LocalMap[e].CurrentDir = ED_Down
 		LocalMap[e].Connected = false
 		LocalMap[e].Door = false
