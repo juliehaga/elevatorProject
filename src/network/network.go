@@ -44,7 +44,7 @@ func SendElevMap(elevMapTx chan ElevMapMsg, elevMap elevStateMap.ElevStateMap) {
 func PeerTransmitter(port int, id string, transmitEnable <-chan bool) {
 
 	conn := DialBroadcastUDP(port)
-	addr, _ := net.ResolveUDPAddr("udp4", fmt.Sprintf("255.255.255.255:%d", port))
+	addr, _ := net.ResolveUDPAddr("udp", fmt.Sprintf("255.255.255.255:%d", port))
 
 	enable := true
 	for {

@@ -67,10 +67,10 @@ func main() {
 
     go fsm.Fsm(motorChan, doorLampChan, floorChan, buttonLampChan, mapChangesChan, buttonChan)
     go elevio.Elevio(motorChan, doorLampChan, buttonChan, floorChan, buttonLampChan)
-	go network.Transmitter(config.My_PORT +100, elevMapTx)
-	go network.Receiver(config.My_PORT+100, elevMapRx)
-    go network.PeerTransmitter(config.My_PORT + 200, id, peerTxEnable)
-	go network.PeerReceiver(config.My_PORT + 200, peerUpdateCh)
+	go network.Transmitter(16569, elevMapTx)
+	go network.Receiver(16569, elevMapRx)
+    go network.PeerTransmitter(15647, id, peerTxEnable)
+	go network.PeerReceiver(15647, peerUpdateCh)
 
     
    
