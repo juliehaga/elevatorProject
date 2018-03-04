@@ -9,8 +9,12 @@ const(
 	
 )
 
-var My_ID int 
+var My_ID int
+var My_PORT int 
 
-func InitConfig(id string){
+func Init(id string, port string){
 	My_ID, _ = strconv.Atoi(id)
+	My_PORT, _ = strconv.Atoi(port)
 }
+
+

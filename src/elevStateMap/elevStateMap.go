@@ -71,7 +71,7 @@ func GetLocalMap() ElevStateMap{
 }
 
 
-func UpdateLocalMap(changedMap ElevStateMap) ElevStateMap{
+func UpdateLocalMap(changedMap ElevStateMap){
 	LocalMap[config.My_ID].CurrentFloor = changedMap[config.My_ID].CurrentFloor
 	LocalMap[config.My_ID].CurrentDir = changedMap[config.My_ID].CurrentDir
 	LocalMap[config.My_ID].Connected = changedMap[config.My_ID].Connected
@@ -81,8 +81,34 @@ func UpdateLocalMap(changedMap ElevStateMap) ElevStateMap{
 			LocalMap[config.My_ID].Orders[f][b] = changedMap[config.My_ID].Orders[f][b]
 		}
 	}
-	return LocalMap
 }
+
+func UpdateMapFromNetwork(recievedMap ElevStateMap){
+	for e:= 0; e < config.NUM_ELEVS; e++{
+		//sjekk om heis e er i live
+		if (isAlive(e)){
+			LocalMap[e].CurrentFloor = recievedMap[e].CurrentFloor
+			LocalMap[e].CurrentDir = recievedMap[e].CurrentDir
+			LocalMap[e].Door = recievedMap[e].Door
+			LocalMap[e].Connected = true
+			for f:= 0; f < config.NUM_FLOORS; f++{
+				for b:= 0; b < config.NUM_BUTTONS; b++{
+					LocalMap[e].Orders[f][b] = recievedMap[e].Orders[f][b]
+				}
+			}
+
+		}else{
+			LocalMap[e].Connected = false
+		}
+	}
+}
+
+func isAlive(e int) bool{
+	return true
+}
+
+
+
 
 func PrintMap(elevMap ElevStateMap){
 	

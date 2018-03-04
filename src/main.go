@@ -33,7 +33,7 @@ func main() {
 	
 
 //init fuctions 
-	config.InitConfig(id)
+	config.Init(id, port)
 	elevStateMap.InitElevStateMap()
 	elevio.Init("localhost:" + port, config.NUM_FLOORS)
 	
@@ -67,10 +67,10 @@ func main() {
 
     go fsm.Fsm(motorChan, doorLampChan, floorChan, buttonLampChan, mapChangesChan, buttonChan)
     go elevio.Elevio(motorChan, doorLampChan, buttonChan, floorChan, buttonLampChan)
-	go network.Transmitter(16569, elevMapTx)
-	go network.Receiver(16569, elevMapRx)
-    go network.PeerTransmitter(15647, id, peerTxEnable)
-	go network.PeerReceiver(15647, peerUpdateCh)
+	go network.Transmitter(config.My_PORT +100, elevMapTx)
+	go network.Receiver(config.My_PORT+100, elevMapRx)
+    go network.PeerTransmitter(config.My_PORT + 200, id, peerTxEnable)
+	go network.PeerReceiver(config.My_PORT + 200, peerUpdateCh)
 
     
    
@@ -86,25 +86,15 @@ func main() {
 			fmt.Printf("  New:      %q\n", p.New)
 			fmt.Printf("  Lost:     %q\n", p.Lost)
 
-		case a := <- elevMapRx:
-			//fmt.Printf("Received: %#v\n", a)
-			elevStateMap.PrintMap(a.ElevMap)
-
+		case networkMapMsg := <- elevMapRx:
+			elevStateMap.UpdateMapFromNetwork(networkMapMsg.ElevMap)
+			currentMap := elevStateMap.GetLocalMap()
+			elevStateMap.PrintMap(currentMap)
+			
 
 		case elevMap:= <-mapChangesChan:
-	
 			elevStateMap.UpdateLocalMap(elevMap)
-			//currentMap := elevStateMap.GetLocalMap()
-			//elevStateMap.PrintMap(currentMap)
 			network.SendElevMap(elevMapTx, elevMap)
-			//seeeend
-
-
-			//en bestilling har skjedd
-			//registrer at det har skjedd 
-
-			//send beskjed til nettverket
 		}
-
 	}
 }
