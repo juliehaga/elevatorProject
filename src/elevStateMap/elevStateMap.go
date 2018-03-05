@@ -15,9 +15,7 @@ var mutex = &sync.Mutex{}
 type OrderType int
 const (
 	OT_NoOrder                = 0
-	OT_OrderExists            = 1
-	OT_OrderAccepted          = 2
-	OT_OrderCompleted		  = 3
+	OT_OrderPlaced            = 1
 )
 
 type ElevDir int
@@ -45,7 +43,8 @@ type ElevStateMap [config.NUM_ELEVS]ElevInfo
 
 func InitElevStateMap(){
 	for e:= 0; e < config.NUM_ELEVS; e++{
-		LocalMap[e].CurrentFloor = 0
+		LocalMap[e].CurrentFloor = elevio.GetFloor()
+
 		LocalMap[e].CurrentDir = ED_Down
 		LocalMap[e].Connected = false
 		LocalMap[e].Door = false
@@ -60,6 +59,8 @@ func InitElevStateMap(){
 		LocalMap[e].Orders[0][elevio.BT_HallDown] = -1
 		LocalMap[e].Orders[3][elevio.BT_HallUp] = -1
 	}
+
+	LocalMap[config.My_ID].Connected = true
 }
 
 
@@ -83,16 +84,21 @@ func UpdateLocalMap(changedMap ElevStateMap){
 	}
 }
 
-func UpdateMapFromNetwork(recievedMap ElevStateMap){
+func UpdateMapFromNetwork(recievedMap ElevStateMap, newOrderChan chan elevio.ButtonEvent){
 	for e:= 0; e < config.NUM_ELEVS; e++{
 		//sjekk om heis e er i live
 		if (isAlive(e)){
-			LocalMap[e].CurrentFloor = recievedMap[e].CurrentFloor
-			LocalMap[e].CurrentDir = recievedMap[e].CurrentDir
-			LocalMap[e].Door = recievedMap[e].Door
+			if e != config.My_ID {
+				LocalMap[e].CurrentFloor = recievedMap[e].CurrentFloor
+				LocalMap[e].CurrentDir = recievedMap[e].CurrentDir
+				LocalMap[e].Door = recievedMap[e].Door
+			}
 			LocalMap[e].Connected = true
 			for f:= 0; f < config.NUM_FLOORS; f++{
-				for b:= 0; b < config.NUM_BUTTONS; b++{
+				for b:= elevio.BT_HallUp; b <= elevio.BT_Cab; b++{
+					if recievedMap[e].Orders[f][b] == OT_OrderPlaced && LocalMap[e].Orders[f][b] == OT_NoOrder{
+						newOrderChan <- elevio.ButtonEvent{f, b}
+					}
 					LocalMap[e].Orders[f][b] = recievedMap[e].Orders[f][b]
 				}
 			}
@@ -103,6 +109,10 @@ func UpdateMapFromNetwork(recievedMap ElevStateMap){
 	}
 }
 
+
+
+
+//Må vi egentlig ha denne? holder med connected?
 func isAlive(e int) bool{
 	return true
 }

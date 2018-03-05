@@ -84,7 +84,7 @@ func PeerReceiver(port int, peerUpdateCh chan<- PeerUpdate) {
 
 			lastSeen[id] = time.Now()
 		}
-
+		//Kan her sette connected lik false?
 		// Removing dead connection
 		p.Lost = make([]string, 0)
 		for k, v := range lastSeen {

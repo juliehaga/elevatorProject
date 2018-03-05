@@ -34,19 +34,21 @@ func main() {
 
 //init fuctions 
 	config.Init(id, port)
-	elevStateMap.InitElevStateMap()
 	elevio.Init("localhost:" + port, config.NUM_FLOORS)
+	elevStateMap.InitElevStateMap()
+	
 	
 //channels for communication between modules
 
 	//hardware channels
 	motorChan := make(chan elevio.MotorDirection)
 	doorLampChan := make(chan bool)
-    buttonChan := make(chan elevio.ButtonEvent)
+
     floorChan  := make(chan int)  
     buttonLampChan  := make(chan elevio.ButtonLamp)
     mapChangesChan := make(chan elevStateMap.ElevStateMap)
-    ackOrderChan := make(chan bool)
+  
+    newOrderChan := make(chan elevio.ButtonEvent)
 
 
     // We make a channel for receiving updates on the id's of the peers that are
@@ -66,12 +68,12 @@ func main() {
 	
 
 
-    go fsm.Fsm(motorChan, doorLampChan, floorChan, buttonLampChan, mapChangesChan, buttonChan, ackOrderChan)
-    go elevio.Elevio(motorChan, doorLampChan, buttonChan, floorChan, buttonLampChan)
-	go network.Transmitter(16569, elevMapTx)
-	go network.Receiver(16569, elevMapRx)
-    go network.PeerTransmitter(15647, id, peerTxEnable)
-	go network.PeerReceiver(15647, peerUpdateCh)
+    go fsm.Fsm(motorChan, doorLampChan, floorChan, buttonLampChan, mapChangesChan, newOrderChan)
+    go elevio.Elevio(motorChan, doorLampChan, newOrderChan, floorChan, buttonLampChan)
+	go network.Transmitter(16500, elevMapTx)
+	go network.Receiver(16500, elevMapRx)
+    go network.PeerTransmitter(15600, id, peerTxEnable)
+	go network.PeerReceiver(15600, peerUpdateCh)
 
     
    
@@ -88,14 +90,14 @@ func main() {
 			fmt.Printf("  Lost:     %q\n", p.Lost)
 
 		case networkMapMsg := <- elevMapRx:
-			elevStateMap.UpdateMapFromNetwork(networkMapMsg.ElevMap)
-			currentMap := elevStateMap.GetLocalMap()
-			elevStateMap.PrintMap(currentMap)
+			elevStateMap.UpdateMapFromNetwork(networkMapMsg.ElevMap, newOrderChan)
+			//Dersom ny knapp er trykket så trigg buttonEvent
 			
-			
-
 		case elevMap:= <-mapChangesChan:
 			elevStateMap.UpdateLocalMap(elevMap)
+			//currentMap := elevStateMap.GetLocalMap()
+			//fmt.Printf("Det er lag til en map-change. Nå ser det slik ut \n")
+			//elevStateMap.PrintMap(currentMap)
 			network.SendElevMap(elevMapTx, elevMap)
 
 		}

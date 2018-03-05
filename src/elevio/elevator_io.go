@@ -1,9 +1,12 @@
 package elevio
 
-import "time"
-import "sync"
-import "net"
-import "fmt"
+
+import( 
+	"time"
+	"sync"
+	"net"
+	"fmt"
+)
 
 
 
@@ -42,8 +45,8 @@ type ButtonLamp struct {
 }
 
 
-func Elevio(motorChan chan MotorDirection, doorLampChan chan bool, buttonChan chan ButtonEvent, floorChan chan int, buttonLampChan chan ButtonLamp) {
-	go PollButtons(buttonChan)
+func Elevio(motorChan chan MotorDirection, doorLampChan chan bool, newOrderChan chan ButtonEvent, floorChan chan int, buttonLampChan chan ButtonLamp) {
+	go PollButtons(newOrderChan)
     go PollFloorSensor(floorChan)
     //update map?
 
@@ -56,9 +59,6 @@ func Elevio(motorChan chan MotorDirection, doorLampChan chan bool, buttonChan ch
 		case light := <-doorLampChan:
 			//fsm has sent a message to open door 
 			SetDoorOpenLamp(light)
-		case floor := <- floorChan:
-			//hardware says reached new floor
-			SetFloorIndicator(floor)
 			//må vi beskytte oss mot at vi leser -1
 		case lamp := <- buttonLampChan:
 			//fsm gir beskjed om at lys skal slukkes
@@ -85,6 +85,10 @@ func Init(addr string, numFloors int) {
 		panic(err.Error())
 	}
 	_initialized = true
+	SetMotorDirection(MD_Up)
+	for GetFloor() == -1{}
+	SetMotorDirection(MD_Stop)
+
 
 	ClearAllButtonLamps()
 	SetDoorOpenLamp(false)
@@ -140,7 +144,6 @@ func PollButtons(receiver chan<- ButtonEvent) {
 			for b := ButtonType(0); b < 3; b++ {
 				v := getButton(b, f)
 				if v != prev[f][b] && v != false {
-					fmt.Printf("Hardware sier at knapp er trykket\n")
 					receiver <- ButtonEvent{f, ButtonType(b)}
 				}
 				prev[f][b] = v
@@ -153,9 +156,10 @@ func PollFloorSensor(receiver chan<- int) {
 	prev := -1
 	for {
 		time.Sleep(_pollRate)
-		v := getFloor()
+		v := GetFloor()
 		if v < _numFloors && v >= 0 {
 			SetFloorIndicator(v)
+
 		}
 
 
@@ -203,7 +207,7 @@ func getButton(button ButtonType, floor int) bool {
 }
 
 
-func getFloor() int {
+func GetFloor() int {
 	_mtx.Lock()
 	defer _mtx.Unlock()
 	_conn.Write([]byte{7, 0, 0, 0})
