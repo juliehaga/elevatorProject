@@ -80,7 +80,7 @@ func eventIdleTimeout(motorChan chan elevio.MotorDirection, mapChangesChan chan 
 						state = DOOR_OPEN
 					} else {
 						motorDir := chooseDirection(&currentMap)
-						
+						fmt.Printf("eventIDLETIMEOUT motor dir %v\n", motorDir)
 						mapChangesChan <- currentMap
 						if motorDir != elevio.MD_Stop {
 							motorChan <- motorDir
@@ -296,8 +296,11 @@ func chooseDirection(elevMap *elevStateMap.ElevStateMap) elevio.MotorDirection{
 		case elevStateMap.ED_Up: 
 			fmt.Print("Min retning er opp fra før \n")
 			if ordersAbove(*elevMap){
+				fmt.Printf("Finner ordre over\n")
+
 				for f:= elevMap[config.My_ID].CurrentFloor + 1; f < config.NUM_FLOORS; f++{
 					if nearestElevator(*elevMap, f){
+						fmt.Printf("nærmeste heis \n")
 						elevMap[config.My_ID].CurrentDir = elevStateMap.ED_Up
 						return elevio.MD_Up
 					}
@@ -342,62 +345,32 @@ func chooseDirection(elevMap *elevStateMap.ElevStateMap) elevio.MotorDirection{
 func nearestElevator(elevMap elevStateMap.ElevStateMap, floor int) bool{
 
  	dist := int(math.Abs(float64(elevMap[config.My_ID].CurrentFloor - floor)));
+ 	fmt.Printf("Distanse regnes ut til %v\n", dist)
+
+ 	
  	for e := 0; e<config.NUM_ELEVS; e++ {
+ 		dist_e := int(math.Abs(float64(elevMap[config.My_ID].CurrentFloor - floor)));
+
  		if elevMap[e].CurrentFloor < floor && elevMap[e].CurrentDir == elevStateMap.ED_Up {
- 			if elevMap[e].CurrentFloor - floor < dist {
+ 			
+ 			if dist_e < dist {
+ 				fmt.Printf("Jeg er %v etasjer unna, retning UP\n", dist)
  				return false
  			}
 
  		}else if elevMap[e].CurrentFloor > floor && elevMap[e].CurrentDir == elevStateMap.ED_Down {
- 			if elevMap[e].CurrentFloor < floor && elevMap[e].CurrentDir == elevStateMap.ED_Up {
+ 			if dist_e < dist {
+ 				fmt.Printf("Jeg er %v etasjer unna, retning NED", dist)
  				return false
  			}
  		}
  	}
  	for e := 0; e<config.NUM_ELEVS; e++ {
 	 	if elevMap[e].CurrentFloor - floor == dist {
+	 			fmt.Printf("vinner på lavest ID\n")
 	 			return config.My_ID <= e 
+
 	 		}
 	}
  	return true
 }
-
-
-
-/*
-func checkIfAcceptOrder(mapChangesChan chan elevStateMap.ElevStateMap, buttonLampChan chan elevio.ButtonLamp, ackOrderChan chan bool) {
-	acceptOrder := false
-		for{
-			currentMap := elevStateMap.GetLocalMap()
-			for f := 0; f < config.NUM_FLOORS; f++{
-				for b := elevio.BT_HallUp; b < elevio.BT_Cab; b++ {
-					for e := 0; e < config.NUM_ELEVS; e++ {
-					
-						if currentMap[e].Orders[f][b] == elevStateMap.OT_OrderExists {// && currentMap[e].Connected == true {
-							acceptOrder = true
-							fmt.Printf("Alle connectede heiser har 1\n")
-							currentMap := elevStateMap.GetLocalMap()
-							elevStateMap.PrintMap(currentMap)
-						} else{
-							acceptOrder = false
-						}
-
-				}
-					if acceptOrder == true {
-
-						currentMap[config.My_ID].Orders[f][b] = elevStateMap.OT_OrderAccepted
-						buttonLampChan <-  elevio.ButtonLamp{f, b, true}
-						mapChangesChan <- currentMap
-
-						ackOrderChan <- true
-						fmt.Printf("trigger ack order\n")
-						acceptOrder = false
-
-						
-					}
-				}
-
-			}
-		
-		}
-	}*/
