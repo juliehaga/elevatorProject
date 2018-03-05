@@ -49,7 +49,7 @@ func Fsm(motorChan chan elevio.MotorDirection, doorLampChan chan bool, floorChan
 			
 		case <- idleTimer.C:
 			fmt.Printf("\n \n \n \n IDLE TIMEOUT\n")
-			eventIdleTimeout(motorChan, mapChangesChan)
+			eventIdleTimeout(motorChan, mapChangesChan, newOrderChan, doorLampChan, doorTimer, buttonLampChan)
 			idleTimer.Reset(time.Second * IDLE_TIME)
 			
 
@@ -60,22 +60,42 @@ func Fsm(motorChan chan elevio.MotorDirection, doorLampChan chan bool, floorChan
 }
 
 
-func eventIdleTimeout(motorChan chan elevio.MotorDirection, mapChangesChan chan elevStateMap.ElevStateMap) {
+func eventIdleTimeout(motorChan chan elevio.MotorDirection, mapChangesChan chan elevStateMap.ElevStateMap, newOrderChan chan elevio.ButtonEvent,  doorLampChan chan bool, doorTimer *time.Timer, buttonLampChan chan elevio.ButtonLamp) {
 	currentMap := elevStateMap.GetLocalMap()
 	for f:= 0; f < config.NUM_FLOORS; f++{
 		for b:= elevio.BT_HallUp; b <= elevio.BT_Cab; b++{
 				if currentMap[config.My_ID].Orders[f][b] == elevStateMap.OT_OrderPlaced {
 					fmt.Printf("Det finnes flere bestillinger\n\n")
-					motorDir := chooseDirection(currentMap)
-				
-					mapChangesChan <- currentMap
-					if motorDir != elevio.MD_Stop {
-						motorChan <- motorDir
-						fmt.Printf("STATE = MOVING \n")
-						state = MOVING
-				}
+					
+
+					if shouldStop(currentMap){
+						motorChan <- elevio.MD_Stop
+						doorLampChan <- true
+						doorTimer.Reset(time.Second * DOOR_TIME)
+
+						currentMap[config.My_ID].Door = true
+						orderCompleted(&currentMap, buttonLampChan, mapChangesChan)
+						mapChangesChan <- currentMap
+						fmt.Printf("STATE FRA MOVING = DOOR OPEN\n")
+						state = DOOR_OPEN
+					} else {
+						motorDir := chooseDirection(&currentMap)
+						
+						mapChangesChan <- currentMap
+						if motorDir != elevio.MD_Stop {
+							motorChan <- motorDir
+							fmt.Printf("STATE = MOVING \n")
+							state = MOVING
+
 					}
-			}
+
+					
+					}
+				}
+			
+	}
+
+
 		}
 	}
 
@@ -134,7 +154,10 @@ func eventNewAckOrder(buttonLampChan chan elevio.ButtonLamp, motorChan chan elev
 
 	switch(state){
 		case IDLE:
-			if orderInThisFloor(currentMap[config.My_ID].CurrentFloor, currentMap) {
+
+
+
+			if shouldStop(currentMap) {
 				fmt.Printf("Bestilt etasje der vi står\n")
 				doorLampChan <- true
 				
@@ -146,7 +169,7 @@ func eventNewAckOrder(buttonLampChan chan elevio.ButtonLamp, motorChan chan elev
 				state = DOOR_OPEN
 				fmt.Printf("STATE = DOOR OPEN\n")
 			}else{
-				motorDir := chooseDirection(currentMap)
+				motorDir := chooseDirection(&currentMap)
 				fmt.Printf("Skal sette motorDir %v \n", motorDir)
 				mapChangesChan <- currentMap
 				if motorDir != elevio.MD_Stop {
@@ -267,21 +290,23 @@ func orderInThisFloor( floor int, elevMap elevStateMap.ElevStateMap) bool{
 }
 
 
-func chooseDirection(elevMap elevStateMap.ElevStateMap) elevio.MotorDirection{
-	elevStateMap.PrintMap(elevMap)
+func chooseDirection(elevMap *elevStateMap.ElevStateMap) elevio.MotorDirection{
+	elevStateMap.PrintMap(*elevMap)
 	switch elevMap[config.My_ID].CurrentDir{
 		case elevStateMap.ED_Up: 
 			fmt.Print("Min retning er opp fra før \n")
-			if ordersAbove(elevMap){
+			if ordersAbove(*elevMap){
 				for f:= elevMap[config.My_ID].CurrentFloor + 1; f < config.NUM_FLOORS; f++{
-					if nearestElevator(elevMap, f){
+					if nearestElevator(*elevMap, f){
+						elevMap[config.My_ID].CurrentDir = elevStateMap.ED_Up
 						return elevio.MD_Up
 					}
 				}
 				
-			} else if ordersBelow(elevMap){
+			} else if ordersBelow(*elevMap){
 				for f:= elevMap[config.My_ID].CurrentFloor - 1; f >= 0; f--{
-					if nearestElevator(elevMap, f){
+					if nearestElevator(*elevMap, f){
+						elevMap[config.My_ID].CurrentDir = elevStateMap.ED_Down
 						return elevio.MD_Down
 					}
 				}
@@ -290,16 +315,18 @@ func chooseDirection(elevMap elevStateMap.ElevStateMap) elevio.MotorDirection{
 			}
 		case elevStateMap.ED_Down:
 			fmt.Printf("Min retning er ned fra før")
-			if ordersBelow(elevMap){
+			if ordersBelow(*elevMap){
 				for f:= elevMap[config.My_ID].CurrentFloor - 1; f >= 0; f--{
-					if nearestElevator(elevMap, f){
+					if nearestElevator(*elevMap, f){
+						elevMap[config.My_ID].CurrentDir = elevStateMap.ED_Down
 						return elevio.MD_Down
 					}
 				}
 
-			} else if ordersAbove(elevMap){
+			} else if ordersAbove(*elevMap){
 				for f:= elevMap[config.My_ID].CurrentFloor + 1; f < config.NUM_FLOORS; f++{
-					if nearestElevator(elevMap, f){
+					if nearestElevator(*elevMap, f){
+						elevMap[config.My_ID].CurrentDir = elevStateMap.ED_Up
 						return elevio.MD_Up
 					}
 				}

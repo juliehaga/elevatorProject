@@ -90,8 +90,9 @@ func main() {
 			fmt.Printf("  Lost:     %q\n", p.Lost)
 
 		case networkMapMsg := <- elevMapRx:
-			elevStateMap.UpdateMapFromNetwork(networkMapMsg.ElevMap, newOrderChan)
-			//Dersom ny knapp er trykket så trigg buttonEvent
+			if networkMapMsg.ID != config.My_ID {
+				elevStateMap.UpdateMapFromNetwork(networkMapMsg.ElevMap, newOrderChan)
+			}
 			
 		case elevMap:= <-mapChangesChan:
 			//fmt.Printf("\n \n \n KJØRT OPPDATERING\n \n \n")
