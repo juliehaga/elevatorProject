@@ -94,6 +94,7 @@ func main() {
 			//Dersom ny knapp er trykket så trigg buttonEvent
 			
 		case elevMap:= <-mapChangesChan:
+			//fmt.Printf("\n \n \n KJØRT OPPDATERING\n \n \n")
 			elevStateMap.UpdateLocalMap(elevMap)
 			//currentMap := elevStateMap.GetLocalMap()
 			//fmt.Printf("Det er lag til en map-change. Nå ser det slik ut \n")

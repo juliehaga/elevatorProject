@@ -78,7 +78,7 @@ func UpdateLocalMap(changedMap ElevStateMap){
 	LocalMap[config.My_ID].Connected = changedMap[config.My_ID].Connected
 	LocalMap[config.My_ID].Door = changedMap[config.My_ID].Door
 	for f:= 0; f < config.NUM_FLOORS; f++{
-		for b:= 0; b < config.NUM_BUTTONS; b++{
+		for b:= elevio.BT_HallUp; b <= elevio.BT_Cab; b++{{
 			LocalMap[config.My_ID].Orders[f][b] = changedMap[config.My_ID].Orders[f][b]
 		}
 	}
@@ -98,6 +98,7 @@ func UpdateMapFromNetwork(recievedMap ElevStateMap, newOrderChan chan elevio.But
 				for b:= elevio.BT_HallUp; b <= elevio.BT_Cab; b++{
 					if recievedMap[e].Orders[f][b] == OT_OrderPlaced && LocalMap[e].Orders[f][b] == OT_NoOrder{
 						newOrderChan <- elevio.ButtonEvent{f, b}
+						//fmt.Printf("BUTTONEVENT FROM NETWORK\n\n")
 					}
 					LocalMap[e].Orders[f][b] = recievedMap[e].Orders[f][b]
 				}
@@ -121,7 +122,6 @@ func isAlive(e int) bool{
 
 
 func PrintMap(elevMap ElevStateMap){
-	
 	for e := 0; e < config.NUM_ELEVS; e++ {
 		fmt.Printf("\n \n \nSTATE MAP FOR ELEV %v\n", e)
 		fmt.Printf("Current floor: %v \n", elevMap[e].CurrentFloor)
