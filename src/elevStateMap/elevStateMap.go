@@ -63,6 +63,7 @@ func InitElevStateMap(){
 	LocalMap[config.My_ID].CurrentFloor = elevio.GetFloor()
 
 	LocalMap[config.My_ID].Connected = true
+	fmt.Printf("init elev state MAp\n")
 }
 
 

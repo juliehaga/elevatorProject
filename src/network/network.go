@@ -114,7 +114,13 @@ func PeerReceiver(port int, peerUpdateCh chan<- PeerUpdate, mapChangesChan chan 
 
 			}
 			newID, _ := strconv.Atoi(p.New)
+			fmt.Printf("Setter til connected %v", newID)
 			currentMap[newID].Connected = true
+
+
+
+			fmt.Printf("----------------------------NETWORK-------------------------\n")
+			elevStateMap.PrintMap(currentMap)
 
 
 			mapChangesChan <- currentMap

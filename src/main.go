@@ -89,9 +89,9 @@ func main() {
 			fmt.Printf("  Peers:    %q\n", p.Peers)
 			fmt.Printf("  New:      %q\n", p.New)
 			fmt.Printf("  Lost:     %q\n", p.Lost)
-			currentMap := elevStateMap.GetLocalMap()
+			//currentMap := elevStateMap.GetLocalMap()
 			fmt.Printf("Det er lag til en map-change. Nå ser det slik ut \n")
-			elevStateMap.PrintMap(currentMap)
+			//elevStateMap.PrintMap(currentMap)
 
 
 
@@ -104,14 +104,14 @@ func main() {
 			}
 			
 		case elevMap:= <-mapChangesChan:
-			//fmt.Printf("\n \n \n KJØRT OPPDATERING\n \n \n")
+	
 			elevStateMap.UpdateLocalMap(elevMap)
 			fmt.Printf("MAP OPPDATERES\n \n\n")
 
-			//currentMap := elevStateMap.GetLocalMap()
-			//fmt.Printf("Det er lag til en map-change. Nå ser det slik ut \n")
-			//elevStateMap.PrintMap(currentMap)
-			//network.SendElevMap(elevMapTx, elevMap)
+			currentMap := elevStateMap.GetLocalMap()
+			fmt.Printf("----------------MAIN-----------------\n")
+			elevStateMap.PrintMap(currentMap)
+			network.SendElevMap(elevMapTx, elevMap)
 
 		}
 	}
