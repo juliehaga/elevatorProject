@@ -76,14 +76,23 @@ func GetLocalMap() ElevStateMap{
 
 
 func UpdateLocalMap(changedMap ElevStateMap){
+
+
+
 	LocalMap[config.My_ID].CurrentFloor = changedMap[config.My_ID].CurrentFloor
 	LocalMap[config.My_ID].CurrentDir = changedMap[config.My_ID].CurrentDir
 	LocalMap[config.My_ID].Connected = changedMap[config.My_ID].Connected
 	LocalMap[config.My_ID].Door = changedMap[config.My_ID].Door
+
+
 	for f:= 0; f < config.NUM_FLOORS; f++{
 		for b:= elevio.BT_HallUp; b <= elevio.BT_Cab; b++{{
 			LocalMap[config.My_ID].Orders[f][b] = changedMap[config.My_ID].Orders[f][b]
 		}
+	}
+
+	for e:= 0; e < config.NUM_ELEVS; e++{
+		LocalMap[e].Connected = changedMap[e].Connected
 	}
 }
 }

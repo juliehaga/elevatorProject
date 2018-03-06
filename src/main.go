@@ -90,7 +90,6 @@ func main() {
 			fmt.Printf("  New:      %q\n", p.New)
 			fmt.Printf("  Lost:     %q\n", p.Lost)
 			//currentMap := elevStateMap.GetLocalMap()
-			fmt.Printf("Det er lag til en map-change. Nå ser det slik ut \n")
 			//elevStateMap.PrintMap(currentMap)
 
 
