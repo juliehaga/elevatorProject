@@ -108,8 +108,14 @@ func PeerReceiver(port int, peerUpdateCh chan<- PeerUpdate, mapChangesChan chan 
 			sort.Strings(p.Peers)
 			sort.Strings(p.Lost)
 
-			currentMap[strconv.Atoi(p.Lost)].connected = false
-			currentMap[strconv.Atoi(p.New)].connected = true
+			for i:= 0; i < len(p.Lost); i ++{
+				lostID, _ := strconv.Atoi(p.Lost[i])
+				currentMap[lostID].Connected = false
+
+			}
+			newID, _ := strconv.Atoi(p.New)
+			currentMap[newID].Connected = true
+
 
 			mapChangesChan <- currentMap
 
