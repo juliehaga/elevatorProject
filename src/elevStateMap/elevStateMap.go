@@ -93,9 +93,9 @@ func UpdateLocalMap(changedMap ElevStateMap){
 			LocalMap[config.My_ID].Orders[f][elevio.BT_Cab] = changedMap[config.My_ID].Orders[f][elevio.BT_Cab]
 			for b:= elevio.BT_HallUp; b < elevio.BT_Cab; b++{
 
-				if changedMap[e].Orders[f][b] == OT_OrderPlaced && LocalMap[e].Orders[f][b] == OT_NoOrder{
+				if changedMap[e].Orders[f][b] == OT_OrderPlaced && LocalMap[config.My_ID].Orders[f][b] == OT_NoOrder{
 						LocalMap[e].Orders[f][b] = changedMap[config.My_ID].Orders[f][b]
-					} else if changedMap[e].Orders[f][b] == OT_NoOrder && LocalMap[e].Orders[f][b] == OT_OrderPlaced && floorWithOpenDoor == f{
+					} else if changedMap[e].Orders[f][b] == OT_NoOrder && LocalMap[config.My_ID].Orders[f][b] == OT_OrderPlaced && floorWithOpenDoor == f{
 						LocalMap[e].Orders[f][b] = changedMap[config.My_ID].Orders[f][b]
 					}
 			}
@@ -130,8 +130,12 @@ func UpdateMapFromNetwork(recievedMap ElevStateMap, newOrderChan chan elevio.But
 						LocalMap[e].Orders[f][b] = OT_OrderPlaced
 					} else if recievedMap[e].Orders[f][b] == OT_NoOrder && LocalMap[e].Orders[f][b] == OT_OrderPlaced && floorWithOpenDoor == f{
 						fmt.Printf("Ordered completed from netowrk \n")
+						//clear orders from all elevators
+
 						buttonLampChan <- elevio.ButtonLamp{f, b, false}
-						LocalMap[e].Orders[f][b] = OT_NoOrder
+						for elev := 0; elev < config.NUM_ELEVS; elev++{
+							LocalMap[e].Orders[f][b] = OT_NoOrder
+						}
 					}
 				}
 			}
