@@ -106,7 +106,7 @@ func eventNewFloor(motorChan chan elevio.MotorDirection, doorLampChan chan bool,
 
 	switch(state){
 		case MOVING:
-			if(shouldStop(currentMap)){
+			if shouldStop(currentMap) {
 				motorChan <- elevio.MD_Stop
 				doorLampChan <- true
 				doorTimer.Reset(time.Second * DOOR_TIME)
@@ -179,6 +179,7 @@ func eventNewAckOrder(buttonLampChan chan elevio.ButtonLamp, motorChan chan elev
 }
 
 func shouldStop(elevMap elevStateMap.ElevStateMap) bool{
+	fmt.Printf("should st6op?\n")
 	elevStateMap.PrintMap(elevMap)
 	if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][elevio.BT_Cab]==elevStateMap.OT_OrderPlaced{
 		return true
