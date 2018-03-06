@@ -44,7 +44,7 @@ func Fsm(motorChan chan elevio.MotorDirection, doorLampChan chan bool, floorChan
 			
 		case <- doorTimer.C:
 			fmt.Printf("door timeout\n")
-			eventDoorTimeout(doorLampChan, mapChangesChan, idleTimer)
+			eventDoorTimeout(doorLampChan, mapChangesChan, idleTimer, motorChan)
 			
 		//case <- idleTimer.C:
 		//	eventIdleTimeout(motorChan, mapChangesChan, newOrderChan, doorLampChan, doorTimer, buttonLampChan)
@@ -120,7 +120,7 @@ func eventNewFloor(motorChan chan elevio.MotorDirection, doorLampChan chan bool,
 	}
 }
 
-func eventDoorTimeout(doorLampChan chan bool, mapChangesChan chan elevStateMap.ElevStateMap, idleTimer *time.Timer){
+func eventDoorTimeout(doorLampChan chan bool, mapChangesChan chan elevStateMap.ElevStateMap, idleTimer *time.Timer, motorChan chan elevio.MotorDirection){
 	currentMap := elevStateMap.GetLocalMap()
 	switch(state){
 		case DOOR_OPEN:
@@ -128,9 +128,20 @@ func eventDoorTimeout(doorLampChan chan bool, mapChangesChan chan elevStateMap.E
 			currentMap[config.My_ID].Door = false
 			mapChangesChan <- currentMap
 			currentMap[config.My_ID].IDLE = true
-			state = IDLE	
+			state = IDLE
+			idleTimer.Reset(time.Second * IDLE_TIME)
+			fmt.Printf("Door timeout")
+			motorDir := chooseDirection(&currentMap)
+			fmt.Printf("new direction %v\n", motorDir)
+			if motorDir != elevio.MD_Stop {
+				motorChan <- motorDir
+				currentMap[config.My_ID].IDLE = false
+				state = MOVING
+			}
+		
 	}
-	idleTimer.Reset(time.Second * IDLE_TIME)
+	mapChangesChan <- currentMap	
+	
 }
 
 
