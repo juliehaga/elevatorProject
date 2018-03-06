@@ -70,10 +70,10 @@ func main() {
 
     go fsm.Fsm(motorChan, doorLampChan, floorChan, buttonLampChan, mapChangesChan, newOrderChan)
     go elevio.Elevio(motorChan, doorLampChan, newOrderChan, floorChan, buttonLampChan)
-	go network.Transmitter(16501, elevMapTx)
-	go network.Receiver(16501, elevMapRx)
+	go network.Transmitter(16502, elevMapTx)
+	go network.Receiver(16502, elevMapRx)
     go network.PeerTransmitter(15600, id, peerTxEnable)
-	go network.PeerReceiver(15600, peerUpdateCh)
+	go network.PeerReceiver(15600, peerUpdateCh, mapChangesChan)
 
     
    
@@ -84,10 +84,15 @@ func main() {
 	for {
 		select {
 		case p := <-peerUpdateCh:
+
 			fmt.Printf("Peer update:\n")
 			fmt.Printf("  Peers:    %q\n", p.Peers)
 			fmt.Printf("  New:      %q\n", p.New)
 			fmt.Printf("  Lost:     %q\n", p.Lost)
+			currentMap := elevStateMap.GetLocalMap()
+			fmt.Printf("Det er lag til en map-change. Nå ser det slik ut \n")
+			elevStateMap.PrintMap(currentMap)
+
 
 
 

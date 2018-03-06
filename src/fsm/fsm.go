@@ -311,9 +311,6 @@ func chooseDirection(elevMap *elevStateMap.ElevStateMap) elevio.MotorDirection{
 func nearestElevator(elevMap elevStateMap.ElevStateMap, floor int) bool{
 
  	myDist := int(math.Abs(float64(elevMap[config.My_ID].CurrentFloor - floor)))
- 	fmt.Printf("jeg er %v etasjer unna %v \n", myDist, floor)
-
- 	elevStateMap.PrintMap(elevMap)
 
 
 

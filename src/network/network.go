@@ -58,13 +58,14 @@ func PeerTransmitter(port int, id string, transmitEnable <-chan bool) {
 	}
 }
 
-func PeerReceiver(port int, peerUpdateCh chan<- PeerUpdate) {
+func PeerReceiver(port int, peerUpdateCh chan<- PeerUpdate, mapChangesChan chan elevStateMap.ElevStateMap) {
 
 	var buf [1024]byte
 	var p PeerUpdate
 	lastSeen := make(map[string]time.Time)
 
 	conn := DialBroadcastUDP(port)
+	currentMap := elevStateMap.GetLocalMap()
 
 	for {
 		updated := false
@@ -105,6 +106,12 @@ func PeerReceiver(port int, peerUpdateCh chan<- PeerUpdate) {
 
 			sort.Strings(p.Peers)
 			sort.Strings(p.Lost)
+
+			currentMap[strconv.Atoi(p.Lost)].connected = false
+			currentMap[strconv.Atoi(p.New)].connected = true
+
+			mapChangesChan <- currentMap
+
 			peerUpdateCh <- p
 		}
 	}
