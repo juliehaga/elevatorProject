@@ -307,19 +307,23 @@ func nearestElevator(elevMap elevStateMap.ElevStateMap, floor int) bool{
  		if elevMap[e].CurrentFloor < floor && elevMap[e].CurrentDir == elevStateMap.ED_Up {
  			
  			if dist_e < dist {
+ 				fmt.Printf("Jeg er ikke nærmest, retning opp\n")
  				return false
  			}
  		}else if elevMap[e].CurrentFloor > floor && elevMap[e].CurrentDir == elevStateMap.ED_Down {
  			if dist_e < dist {
+ 				fmt.Printf("Jeg er ikke nærmest, retning ned\n")
  				return false
  			}
  		}
  	}
  	for e := 0; e<config.NUM_ELEVS; e++ {
 	 	if elevMap[e].CurrentFloor - floor == dist {
+	 			fmt.Printf("Samme distanse, skal prioritere på ID\n")
 	 			return config.My_ID <= e 
 
 	 		}
 	}
+	fmt.Printf("Skal ikke komme hit\n")
  	return true
 }
