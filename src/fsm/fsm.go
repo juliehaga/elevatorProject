@@ -232,13 +232,13 @@ func orderCompleted(elevMap *elevStateMap.ElevStateMap, buttonLampChan chan elev
 	switch(elevMap[config.My_ID].CurrentDir){
 		case elevStateMap.ED_Up: 
 			if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][elevio.BT_HallUp] == elevStateMap.OT_OrderPlaced{
-				for e:=0; e <= config.NUM_ELEVS; e++{
+				for e:=0; e < config.NUM_ELEVS; e++{
 					elevMap[e].Orders[elevMap[e].CurrentFloor][elevio.BT_HallUp] = elevStateMap.OT_NoOrder
 				}
 				buttonLampChan <-  elevio.ButtonLamp{elevMap[config.My_ID].CurrentFloor, elevio.BT_HallUp, false}
 			} else if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][elevio.BT_HallDown] == elevStateMap.OT_OrderPlaced{
-				for e:=0; e <= config.NUM_ELEVS; e++{
-					elevMap[e].Orders[elevMap[e].CurrentFloor][elevio.BT_HallUp] = elevStateMap.OT_NoOrder
+				for e:=0; e < config.NUM_ELEVS; e++{
+					elevMap[e].Orders[elevMap[e].CurrentFloor][elevio.BT_HallDown] = elevStateMap.OT_NoOrder
 				}
 				
 				buttonLampChan <-  elevio.ButtonLamp{elevMap[config.My_ID].CurrentFloor, elevio.BT_HallDown, false}
@@ -246,13 +246,13 @@ func orderCompleted(elevMap *elevStateMap.ElevStateMap, buttonLampChan chan elev
 			
 		case elevStateMap.ED_Down:
 			if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][elevio.BT_HallDown] == elevStateMap.OT_OrderPlaced{
-				for e:=0; e <= config.NUM_ELEVS; e++{
-					elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][elevio.BT_HallDown] = elevStateMap.OT_NoOrder
+				for e:=0; e < config.NUM_ELEVS; e++{
+					elevMap[e].Orders[elevMap[e].CurrentFloor][elevio.BT_HallDown] = elevStateMap.OT_NoOrder
 				}
 				buttonLampChan <-  elevio.ButtonLamp{elevMap[config.My_ID].CurrentFloor, elevio.BT_HallDown, false}
 			} else if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][elevio.BT_HallUp] == elevStateMap.OT_OrderPlaced{
-				for e:=0; e <= config.NUM_ELEVS; e++{
-					elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][elevio.BT_HallUp] = elevStateMap.OT_NoOrder
+				for e:=0; e < config.NUM_ELEVS; e++{
+					elevMap[e].Orders[elevMap[e].CurrentFloor][elevio.BT_HallUp] = elevStateMap.OT_NoOrder
 				}
 				buttonLampChan <-  elevio.ButtonLamp{elevMap[config.My_ID].CurrentFloor, elevio.BT_HallUp, false}
 			}
