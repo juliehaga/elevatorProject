@@ -95,6 +95,7 @@ func main() {
 		case networkMapMsg := <- elevMapRx:
 			if networkMapMsg.ID != config.My_ID {
 				elevStateMap.UpdateMapFromNetwork(networkMapMsg.ElevMap, newOrderChan)
+				elevStateMap.PrintMap(networkMapMsg.ElevMap)
 			}
 			
 		case elevMap:= <-mapChangesChan:

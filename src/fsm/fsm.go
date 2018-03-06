@@ -302,8 +302,11 @@ func chooseDirection(elevMap *elevStateMap.ElevStateMap) elevio.MotorDirection{
 
 
 func nearestElevator(elevMap elevStateMap.ElevStateMap, floor int) bool{
+	
  	dist := int(math.Abs(float64(elevMap[config.My_ID].CurrentFloor - floor)));
+
  	for e := 0; e<config.NUM_ELEVS; e++ {
+
  		dist_e := int(math.Abs(float64(elevMap[config.My_ID].CurrentFloor - floor)));
  		if elevMap[e].CurrentFloor < floor && elevMap[e].CurrentDir == elevStateMap.ED_Up {
  			

@@ -53,17 +53,10 @@ func Elevio(motorChan chan MotorDirection, doorLampChan chan bool, newOrderChan 
 	for {
 		select {
 		case dir := <- motorChan:
-			//fsm has sent a message to change dir
 			SetMotorDirection(dir)
-
 		case light := <-doorLampChan:
-			//fsm has sent a message to open door 
 			SetDoorOpenLamp(light)
-			//må vi beskytte oss mot at vi leser -1
 		case lamp := <- buttonLampChan:
-			fmt.Printf("FSM gir beskjed om å slukke lampe\n\n\n")
-			//fsm gir beskjed om at lys skal slukkes
-			//vi har ikke noe som sier at lyset skal gå på
 			SetButtonLamp(lamp)
 		}
 
