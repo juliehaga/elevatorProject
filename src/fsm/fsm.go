@@ -259,7 +259,7 @@ func chooseDirection(elevMap *elevStateMap.ElevStateMap) elevio.MotorDirection{
 		case elevStateMap.ED_Up: 
 			if ordersAbove(*elevMap){
 				for f:= elevMap[config.My_ID].CurrentFloor + 1; f < config.NUM_FLOORS; f++{
-					if nearestElevator(*elevMap, f){
+					if  orderInThisFloor(f, *elevMap) && nearestElevator(*elevMap, f){
 						elevMap[config.My_ID].CurrentDir = elevStateMap.ED_Up
 						return elevio.MD_Up
 					}
@@ -267,7 +267,7 @@ func chooseDirection(elevMap *elevStateMap.ElevStateMap) elevio.MotorDirection{
 				
 			} else if ordersBelow(*elevMap){
 				for f:= elevMap[config.My_ID].CurrentFloor - 1; f >= 0; f--{
-					if nearestElevator(*elevMap, f){
+					if orderInThisFloor(f, *elevMap) && nearestElevator(*elevMap, f){
 						elevMap[config.My_ID].CurrentDir = elevStateMap.ED_Down
 						return elevio.MD_Down
 					}
@@ -278,7 +278,7 @@ func chooseDirection(elevMap *elevStateMap.ElevStateMap) elevio.MotorDirection{
 		case elevStateMap.ED_Down:
 			if ordersBelow(*elevMap){
 				for f:= elevMap[config.My_ID].CurrentFloor - 1; f >= 0; f--{
-					if nearestElevator(*elevMap, f){
+					if orderInThisFloor(f, *elevMap) && nearestElevator(*elevMap, f){
 						elevMap[config.My_ID].CurrentDir = elevStateMap.ED_Down
 						return elevio.MD_Down
 					}
@@ -286,7 +286,7 @@ func chooseDirection(elevMap *elevStateMap.ElevStateMap) elevio.MotorDirection{
 
 			} else if ordersAbove(*elevMap){
 				for f:= elevMap[config.My_ID].CurrentFloor + 1; f < config.NUM_FLOORS; f++{
-					if nearestElevator(*elevMap, f){
+					if orderInThisFloor(f, *elevMap) && nearestElevator(*elevMap, f){
 						elevMap[config.My_ID].CurrentDir = elevStateMap.ED_Up
 						return elevio.MD_Up
 					}
@@ -302,32 +302,56 @@ func chooseDirection(elevMap *elevStateMap.ElevStateMap) elevio.MotorDirection{
 
 func nearestElevator(elevMap elevStateMap.ElevStateMap, floor int) bool{
 
- 	dist := int(math.Abs(float64(elevMap[config.My_ID].CurrentFloor - floor)));
- 	fmt.Printf("jeg er %v etasjer unna\n", dist)
+ 	myDist := int(math.Abs(float64(elevMap[config.My_ID].CurrentFloor - floor)))
+ 	fmt.Printf("jeg er %v etasjer unna %v \n", myDist, floor)
 
- 	for e := 0; e<config.NUM_ELEVS; e++ {
+ 	elevStateMap.PrintMap(elevMap)
 
- 		dist_e := int(math.Abs(float64(elevMap[config.My_ID].CurrentFloor - floor)));
- 		if elevMap[e].CurrentFloor < floor && elevMap[e].CurrentDir == elevStateMap.ED_Up {
- 			
- 			if dist_e < dist {
- 				fmt.Printf("Jeg er ikke nærmest, retning opp\n")
- 				return false
- 			}
- 		}else if elevMap[e].CurrentFloor > floor && elevMap[e].CurrentDir == elevStateMap.ED_Down {
- 			if dist_e < dist {
- 				fmt.Printf("Jeg er ikke nærmest, retning ned\n")
- 				return false
- 			}
+
+
+ 	if elevMap[config.My_ID].CurrentFloor < floor { 
+ 		fmt.Printf("jeg står under \n")
+	 	for e := 0; e<config.NUM_ELEVS; e++ {
+		 	if e != config.My_ID{	
+		 		distElev := int(math.Abs(float64(elevMap[e].CurrentFloor - floor)))
+		 		fmt.Printf("Den andre er %v etasjer unna\n", distElev)
+		 		if distElev < myDist{
+		 			fmt.Printf("den har kortere\n")
+		 			if elevMap[e].CurrentFloor < floor && elevMap[e].CurrentDir == elevStateMap.ED_Up {
+		 				return false
+		 			} else if elevMap[e].CurrentFloor > floor && elevMap[e].CurrentDir == elevStateMap.ED_Down {
+		 				return false
+		 			}
+		 		}
+		 	}
+		 }
+ 	} else if elevMap[config.My_ID].CurrentFloor > floor {
+	 	if elevMap[config.My_ID].CurrentFloor < floor {
+	 		fmt.Printf("jeg står over \n")
+		 	for e := 0; e<config.NUM_ELEVS; e++ {
+			 	if e != config.My_ID{	
+			 		distElev := int(math.Abs(float64(elevMap[e].CurrentFloor - floor)))
+			 		if distElev < myDist{
+			 			fmt.Printf("den har kortere\n")
+			 			if elevMap[e].CurrentFloor > floor && elevMap[e].CurrentDir == elevStateMap.ED_Down{
+			 				return false
+			 			} else if elevMap[e].CurrentFloor < floor && elevMap[e].CurrentDir == elevStateMap.ED_Up {
+		 					return false
+		 				}
+			 		}
+			 	}
+			 }
  		}
- 	}
+	}
+
+
  	for e := 0; e<config.NUM_ELEVS; e++ {
-	 	if elevMap[e].CurrentFloor - floor == dist {
+	 	if int(math.Abs(float64(elevMap[e].CurrentFloor - floor))) == myDist {
 	 			fmt.Printf("Samme distanse, skal prioritere på ID\n")
 	 			return config.My_ID <= e 
-
 	 		}
 	}
-	fmt.Printf("Skal ikke komme hit\n")
+
+	fmt.Printf("jeg var nærmest\n")
  	return true
 }
