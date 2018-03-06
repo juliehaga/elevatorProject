@@ -94,10 +94,8 @@ func UpdateLocalMap(changedMap ElevStateMap){
 			for b:= elevio.BT_HallUp; b < elevio.BT_Cab; b++{
 
 				if changedMap[e].Orders[f][b] == OT_OrderPlaced && LocalMap[e].Orders[f][b] == OT_NoOrder{
-						fmt.Printf("Order from network\n\n")
 						LocalMap[e].Orders[f][b] = changedMap[e].Orders[f][b]
 					} else if changedMap[e].Orders[f][b] == OT_NoOrder && LocalMap[e].Orders[f][b] == OT_OrderPlaced && floorWithOpenDoor == f{
-						fmt.Printf("Ordered completed from netowrk \n")
 						LocalMap[e].Orders[f][b] = changedMap[e].Orders[f][b]
 					}
 			}
@@ -115,7 +113,7 @@ func UpdateMapFromNetwork(recievedMap ElevStateMap, newOrderChan chan elevio.But
 		}
 
 		//sjekk om heis e er i live
-		if (recievedMap[e].Connected == true){
+		if recievedMap[e].Connected == true{
 
 			if e != config.My_ID {
 				LocalMap[e].CurrentFloor = recievedMap[e].CurrentFloor
@@ -127,11 +125,11 @@ func UpdateMapFromNetwork(recievedMap ElevStateMap, newOrderChan chan elevio.But
 					if recievedMap[e].Orders[f][b] == OT_OrderPlaced && LocalMap[e].Orders[f][b] == OT_NoOrder{
 						newOrderChan <- elevio.ButtonEvent{f, b}
 						fmt.Printf("Order from network\n\n")
-						LocalMap[e].Orders[f][b] = recievedMap[e].Orders[f][b]
+						LocalMap[e].Orders[f][b] = OT_OrderPlaced
 					} else if recievedMap[e].Orders[f][b] == OT_NoOrder && LocalMap[e].Orders[f][b] == OT_OrderPlaced && floorWithOpenDoor == f{
 						fmt.Printf("Ordered completed from netowrk \n")
 						buttonLampChan <- elevio.ButtonLamp{f, b, false}
-						LocalMap[e].Orders[f][b] = recievedMap[e].Orders[f][b]
+						LocalMap[e].Orders[f][b] = OT_NoOrder
 					}
 				}
 			}
