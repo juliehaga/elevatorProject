@@ -95,15 +95,15 @@ func main() {
 		case networkMapMsg := <- elevMapRx:
 			if networkMapMsg.ID != config.My_ID {
 				elevStateMap.UpdateMapFromNetwork(networkMapMsg.ElevMap, newOrderChan)
-				elevStateMap.PrintMap(networkMapMsg.ElevMap)
+				//elevStateMap.PrintMap(networkMapMsg.ElevMap)
 			}
 			
 		case elevMap:= <-mapChangesChan:
 			//fmt.Printf("\n \n \n KJØRT OPPDATERING\n \n \n")
 			elevStateMap.UpdateLocalMap(elevMap)
-			//currentMap := elevStateMap.GetLocalMap()
+			currentMap := elevStateMap.GetLocalMap()
 			//fmt.Printf("Det er lag til en map-change. Nå ser det slik ut \n")
-			//elevStateMap.PrintMap(currentMap)
+			elevStateMap.PrintMap(currentMap)
 			network.SendElevMap(elevMapTx, elevMap)
 
 		}

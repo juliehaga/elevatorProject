@@ -89,13 +89,13 @@ func UpdateLocalMap(changedMap ElevStateMap){
 func UpdateMapFromNetwork(recievedMap ElevStateMap, newOrderChan chan elevio.ButtonEvent){
 	for e:= 0; e < config.NUM_ELEVS; e++{
 		//sjekk om heis e er i live
-		if (isAlive(e)){
+		if (recievedMap[e].Connected == true){
+
 			if e != config.My_ID {
 				LocalMap[e].CurrentFloor = recievedMap[e].CurrentFloor
 				LocalMap[e].CurrentDir = recievedMap[e].CurrentDir
 				LocalMap[e].Door = recievedMap[e].Door
 			}
-			LocalMap[e].Connected = true
 			for f:= 0; f < config.NUM_FLOORS; f++{
 				for b:= elevio.BT_HallUp; b <= elevio.BT_Cab; b++{
 					if recievedMap[e].Orders[f][b] == OT_OrderPlaced && LocalMap[e].Orders[f][b] == OT_NoOrder{
@@ -112,13 +112,6 @@ func UpdateMapFromNetwork(recievedMap ElevStateMap, newOrderChan chan elevio.But
 	}
 }
 
-
-
-
-//Må vi egentlig ha denne? holder med connected?
-func isAlive(e int) bool{
-	return true
-}
 
 
 
