@@ -97,8 +97,13 @@ func main() {
 
 
 		case networkMapMsg := <- elevMapRx:
+
+
 			if networkMapMsg.ID != config.My_ID {
+				fmt.Printf("-----------------updated from netowrk-----------------\n")
 				elevStateMap.UpdateMapFromNetwork(networkMapMsg.ElevMap, newOrderChan)
+				currentMap := elevStateMap.GetLocalMap()
+				elevStateMap.PrintMap(currentMap)
 				//elevStateMap.PrintMap(networkMapMsg.ElevMap)
 			}
 			

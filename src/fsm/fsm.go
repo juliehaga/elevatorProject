@@ -135,6 +135,8 @@ func eventDoorTimeout(doorLampChan chan bool, mapChangesChan chan elevStateMap.E
 
 
 func eventNewAckOrder(buttonLampChan chan elevio.ButtonLamp, motorChan chan elevio.MotorDirection, doorLampChan chan bool, doorTimer *time.Timer, mapChangesChan chan elevStateMap.ElevStateMap, buttonPushed elevio.ButtonEvent, idleTimer *time.Timer){
+	fmt.Printf("evenNewAckOrder\n")
+
 	currentMap := elevStateMap.GetLocalMap()
 	buttonLampChan <- elevio.ButtonLamp{buttonPushed.Floor, buttonPushed.Button, true}
 	currentMap[config.My_ID].Orders[buttonPushed.Floor][buttonPushed.Button] = elevStateMap.OT_OrderPlaced
@@ -146,7 +148,6 @@ func eventNewAckOrder(buttonLampChan chan elevio.ButtonLamp, motorChan chan elev
 				doorLampChan <- true	
 				currentMap[config.My_ID].Door = true
 				orderCompleted(&currentMap, buttonLampChan, mapChangesChan)
-				mapChangesChan <- currentMap
 				doorTimer.Reset(time.Second * DOOR_TIME)
 				currentMap[config.My_ID].IDLE = false
 				state = DOOR_OPEN
@@ -154,7 +155,6 @@ func eventNewAckOrder(buttonLampChan chan elevio.ButtonLamp, motorChan chan elev
 				
 			}else{
 				motorDir := chooseDirection(&currentMap)
-				mapChangesChan <- currentMap
 				if motorDir != elevio.MD_Stop {
 					motorChan <- motorDir
 					currentMap[config.My_ID].IDLE = false
@@ -162,17 +162,19 @@ func eventNewAckOrder(buttonLampChan chan elevio.ButtonLamp, motorChan chan elev
 				}
 			}			
 	}
+	mapChangesChan <- currentMap
 	idleTimer.Reset(time.Second * IDLE_TIME)
 }
 
 func shouldStop(elevMap elevStateMap.ElevStateMap) bool{
-	if !orderInThisFloor(elevMap[config.My_ID].CurrentFloor, elevMap){
-		return false
-	}
+	
 	if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][elevio.BT_Cab]==elevStateMap.OT_OrderPlaced{
 		return true
 	}
 
+	if !orderInThisFloor(elevMap[config.My_ID].CurrentFloor, elevMap){
+		return false
+	}
 
 	switch elevMap[config.My_ID].CurrentDir{
 		case elevStateMap.ED_Up:
@@ -267,7 +269,7 @@ func chooseDirection(elevMap *elevStateMap.ElevStateMap) elevio.MotorDirection{
 		case elevStateMap.ED_Up: 
 			if ordersAbove(*elevMap){
 				for f:= elevMap[config.My_ID].CurrentFloor + 1; f < config.NUM_FLOORS; f++{
-					if  orderInThisFloor(f, *elevMap) && nearestElevator(*elevMap, f){
+					if  orderInThisFloor(f, *elevMap) && (nearestElevator(*elevMap, f) || elevMap[config.My_ID].Orders[f][elevio.BT_Cab] == elevStateMap.OT_OrderPlaced){
 						elevMap[config.My_ID].CurrentDir = elevStateMap.ED_Up
 						return elevio.MD_Up
 					}
@@ -275,7 +277,7 @@ func chooseDirection(elevMap *elevStateMap.ElevStateMap) elevio.MotorDirection{
 				
 			} else if ordersBelow(*elevMap){
 				for f:= elevMap[config.My_ID].CurrentFloor - 1; f >= 0; f--{
-					if orderInThisFloor(f, *elevMap) && nearestElevator(*elevMap, f){
+					if orderInThisFloor(f, *elevMap) && (nearestElevator(*elevMap, f) || elevMap[config.My_ID].Orders[f][elevio.BT_Cab] == elevStateMap.OT_OrderPlaced){
 						elevMap[config.My_ID].CurrentDir = elevStateMap.ED_Down
 						return elevio.MD_Down
 					}
@@ -286,7 +288,7 @@ func chooseDirection(elevMap *elevStateMap.ElevStateMap) elevio.MotorDirection{
 		case elevStateMap.ED_Down:
 			if ordersBelow(*elevMap){
 				for f:= elevMap[config.My_ID].CurrentFloor - 1; f >= 0; f--{
-					if orderInThisFloor(f, *elevMap) && nearestElevator(*elevMap, f){
+					if orderInThisFloor(f, *elevMap) && (nearestElevator(*elevMap, f) || elevMap[config.My_ID].Orders[f][elevio.BT_Cab] == elevStateMap.OT_OrderPlaced){
 						elevMap[config.My_ID].CurrentDir = elevStateMap.ED_Down
 						return elevio.MD_Down
 					}
@@ -294,7 +296,7 @@ func chooseDirection(elevMap *elevStateMap.ElevStateMap) elevio.MotorDirection{
 
 			} else if ordersAbove(*elevMap){
 				for f:= elevMap[config.My_ID].CurrentFloor + 1; f < config.NUM_FLOORS; f++{
-					if orderInThisFloor(f, *elevMap) && nearestElevator(*elevMap, f){
+					if orderInThisFloor(f, *elevMap) && (nearestElevator(*elevMap, f) || elevMap[config.My_ID].Orders[f][elevio.BT_Cab] == elevStateMap.OT_OrderPlaced){
 						elevMap[config.My_ID].CurrentDir = elevStateMap.ED_Up
 						return elevio.MD_Up
 					}
