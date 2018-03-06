@@ -98,7 +98,12 @@ func UpdateLocalMap(changedMap ElevStateMap){
 
 
 func UpdateMapFromNetwork(recievedMap ElevStateMap, newOrderChan chan elevio.ButtonEvent, buttonLampChan chan elevio.ButtonLamp){
+	floorWithOpenDoor := -1
 	for e:= 0; e < config.NUM_ELEVS; e++{
+		if recievedMap[e].Door == true{
+			floorWithOpenDoor = recievedMap[e].CurrentFloor
+		}
+
 		//sjekk om heis e er i live
 		if (recievedMap[e].Connected == true){
 
@@ -112,17 +117,14 @@ func UpdateMapFromNetwork(recievedMap ElevStateMap, newOrderChan chan elevio.But
 					if recievedMap[e].Orders[f][b] == OT_OrderPlaced && LocalMap[e].Orders[f][b] == OT_NoOrder{
 						newOrderChan <- elevio.ButtonEvent{f, b}
 						fmt.Printf("BUTTONEVENT FROM NETWORK\n\n")
-					} else if recievedMap[e].Orders[f][b] == OT_NoOrder && LocalMap[e].Orders[f][b] == OT_OrderPlaced{
+						LocalMap[e].Orders[f][b] = recievedMap[e].Orders[f][b]
+					} else if recievedMap[e].Orders[f][b] == OT_NoOrder && LocalMap[e].Orders[f][b] == OT_OrderPlaced && floorWithOpenDoor == f{
 						fmt.Printf("Fikk beskjed om å slukke lys \n")
 						buttonLampChan <- elevio.ButtonLamp{f, b, false}
+						LocalMap[e].Orders[f][b] = recievedMap[e].Orders[f][b]
 					}
-					LocalMap[e].Orders[f][b] = recievedMap[e].Orders[f][b]
-
 				}
 			}
-
-		}else{
-			LocalMap[e].Connected = false
 		}
 	}
 }
