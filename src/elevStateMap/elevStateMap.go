@@ -134,7 +134,8 @@ func UpdateMapFromNetwork(recievedMap ElevStateMap, newOrderChan chan elevio.But
 
 						buttonLampChan <- elevio.ButtonLamp{f, b, false}
 						for elev := 0; elev < config.NUM_ELEVS; elev++{
-							LocalMap[e].Orders[f][b] = OT_NoOrder
+
+							LocalMap[elev].Orders[f][b] = OT_NoOrder
 						}
 					}
 				}
