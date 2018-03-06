@@ -43,9 +43,9 @@ func Fsm(motorChan chan elevio.MotorDirection, doorLampChan chan bool, floorChan
 		case <- doorTimer.C:
 			eventDoorTimeout(doorLampChan, mapChangesChan, idleTimer)
 			
-		case <- idleTimer.C:
-			eventIdleTimeout(motorChan, mapChangesChan, newOrderChan, doorLampChan, doorTimer, buttonLampChan)
-			idleTimer.Reset(time.Second * IDLE_TIME)
+		//case <- idleTimer.C:
+		//	eventIdleTimeout(motorChan, mapChangesChan, newOrderChan, doorLampChan, doorTimer, buttonLampChan)
+		//	idleTimer.Reset(time.Second * IDLE_TIME)
 			
 
 		}
