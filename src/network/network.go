@@ -118,11 +118,6 @@ func PeerReceiver(port int, peerUpdateCh chan<- PeerUpdate, mapChangesChan chan 
 			currentMap[newID].Connected = true
 
 
-
-			fmt.Printf("----------------------------NETWORK-------------------------\n")
-			elevStateMap.PrintMap(currentMap)
-
-
 			mapChangesChan <- currentMap
 
 			peerUpdateCh <- p

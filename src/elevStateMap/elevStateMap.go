@@ -116,10 +116,10 @@ func UpdateMapFromNetwork(recievedMap ElevStateMap, newOrderChan chan elevio.But
 				for b:= elevio.BT_HallUp; b < elevio.BT_Cab; b++{
 					if recievedMap[e].Orders[f][b] == OT_OrderPlaced && LocalMap[e].Orders[f][b] == OT_NoOrder{
 						newOrderChan <- elevio.ButtonEvent{f, b}
-						fmt.Printf("BUTTONEVENT FROM NETWORK\n\n")
+						fmt.Printf("Order from network\n\n")
 						LocalMap[e].Orders[f][b] = recievedMap[e].Orders[f][b]
 					} else if recievedMap[e].Orders[f][b] == OT_NoOrder && LocalMap[e].Orders[f][b] == OT_OrderPlaced && floorWithOpenDoor == f{
-						fmt.Printf("Fikk beskjed om å slukke lys \n")
+						fmt.Printf("Ordered completed from netowrk \n")
 						buttonLampChan <- elevio.ButtonLamp{f, b, false}
 						LocalMap[e].Orders[f][b] = recievedMap[e].Orders[f][b]
 					}
