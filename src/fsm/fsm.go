@@ -70,16 +70,20 @@ func eventIdleTimeout(motorChan chan elevio.MotorDirection, mapChangesChan chan 
 
 						currentMap[config.My_ID].Door = true
 						orderCompleted(&currentMap, buttonLampChan, mapChangesChan)
-						mapChangesChan <- currentMap
+						
+						currentMap[config.My_ID].IDLE = false
 						state = DOOR_OPEN
+						mapChangesChan <- currentMap
 					} else {
 						motorDir := chooseDirection(&currentMap)
-						mapChangesChan <- currentMap
+						
 						if motorDir != elevio.MD_Stop {
 							motorChan <- motorDir
 							state = MOVING
+							currentMap[config.My_ID].IDLE = false
 
-					}
+						}
+						mapChangesChan <- currentMap
 
 					
 					}
@@ -109,6 +113,7 @@ func eventNewFloor(motorChan chan elevio.MotorDirection, doorLampChan chan bool,
 
 				currentMap[config.My_ID].Door = true
 				orderCompleted(&currentMap, buttonLampChan, mapChangesChan)
+				currentMap[config.My_ID].IDLE = false
 				mapChangesChan <- currentMap
 				state = DOOR_OPEN
 			}
@@ -122,6 +127,7 @@ func eventDoorTimeout(doorLampChan chan bool, mapChangesChan chan elevStateMap.E
 			doorLampChan <- false
 			currentMap[config.My_ID].Door = false
 			mapChangesChan <- currentMap
+			currentMap[config.My_ID].IDLE = true
 			state = IDLE	
 	}
 	idleTimer.Reset(time.Second * IDLE_TIME)
@@ -142,6 +148,7 @@ func eventNewAckOrder(buttonLampChan chan elevio.ButtonLamp, motorChan chan elev
 				orderCompleted(&currentMap, buttonLampChan, mapChangesChan)
 				mapChangesChan <- currentMap
 				doorTimer.Reset(time.Second * DOOR_TIME)
+				currentMap[config.My_ID].IDLE = false
 				state = DOOR_OPEN
 
 				
@@ -150,6 +157,7 @@ func eventNewAckOrder(buttonLampChan chan elevio.ButtonLamp, motorChan chan elev
 				mapChangesChan <- currentMap
 				if motorDir != elevio.MD_Stop {
 					motorChan <- motorDir
+					currentMap[config.My_ID].IDLE = false
 					state = MOVING
 				}
 			}			
@@ -317,39 +325,41 @@ func nearestElevator(elevMap elevStateMap.ElevStateMap, floor int) bool{
 		 		fmt.Printf("Den andre er %v etasjer unna\n", distElev)
 		 		if distElev < myDist{
 		 			fmt.Printf("den har kortere\n")
-		 			if elevMap[e].CurrentFloor < floor && elevMap[e].CurrentDir == elevStateMap.ED_Up {
+		 			if elevMap[e].CurrentFloor < floor && (elevMap[e].CurrentDir == elevStateMap.ED_Up || elevMap[e].IDLE ){
+		 				fmt.Printf("den andre tar den\n")
 		 				return false
-		 			} else if elevMap[e].CurrentFloor > floor && elevMap[e].CurrentDir == elevStateMap.ED_Down {
+		 			} else if elevMap[e].CurrentFloor > floor && (elevMap[e].CurrentDir == elevStateMap.ED_Down || elevMap[e].IDLE ) {
+		 				fmt.Printf("den andre tar den\n")
+		 				return false
+		 			}
+		 		} else if myDist == distElev && (elevMap[e].CurrentDir == elevStateMap.ED_Up || elevMap[e].IDLE){
+		 			if e > config.My_ID{
 		 				return false
 		 			}
 		 		}
 		 	}
 		 }
  	} else if elevMap[config.My_ID].CurrentFloor > floor {
-	 	if elevMap[config.My_ID].CurrentFloor < floor {
 	 		fmt.Printf("jeg står over \n")
 		 	for e := 0; e<config.NUM_ELEVS; e++ {
 			 	if e != config.My_ID{	
 			 		distElev := int(math.Abs(float64(elevMap[e].CurrentFloor - floor)))
 			 		if distElev < myDist{
 			 			fmt.Printf("den har kortere\n")
-			 			if elevMap[e].CurrentFloor > floor && elevMap[e].CurrentDir == elevStateMap.ED_Down{
+			 			if elevMap[e].CurrentFloor > floor && (elevMap[e].CurrentDir == elevStateMap.ED_Down || elevMap[e].IDLE ){
+			 				fmt.Printf("den andre tar den\n")
 			 				return false
-			 			} else if elevMap[e].CurrentFloor < floor && elevMap[e].CurrentDir == elevStateMap.ED_Up {
+			 			} else if elevMap[e].CurrentFloor < floor && (elevMap[e].CurrentDir == elevStateMap.ED_Up || elevMap[e].IDLE ) {
+		 					fmt.Printf("den andre tar den\n")
 		 					return false
 		 				}
-			 		}
+			 		}  else if myDist == distElev && (elevMap[e].CurrentDir == elevStateMap.ED_Down || elevMap[e].IDLE){
+		 			if e > config.My_ID{
+		 				return false
+		 			}
+		 		}
 			 	}
-			 }
- 		}
-	}
-
-
- 	for e := 0; e<config.NUM_ELEVS; e++ {
-	 	if int(math.Abs(float64(elevMap[e].CurrentFloor - floor))) == myDist {
-	 			fmt.Printf("Samme distanse, skal prioritere på ID\n")
-	 			return config.My_ID <= e 
-	 		}
+			}
 	}
 
 	fmt.Printf("jeg var nærmest\n")

@@ -32,6 +32,7 @@ type ElevInfo struct{
 	CurrentDir ElevDir
 	Connected bool
 	Door bool
+	IDLE bool
 	Orders [config.NUM_FLOORS][config.NUM_BUTTONS] OrderType
 }
 
@@ -43,8 +44,8 @@ type ElevStateMap [config.NUM_ELEVS]ElevInfo
 
 func InitElevStateMap(){
 	for e:= 0; e < config.NUM_ELEVS; e++{
-		LocalMap[e].CurrentFloor = elevio.GetFloor()
-
+		LocalMap[e].CurrentFloor = 3
+		LocalMap[e].IDLE = true
 		LocalMap[e].CurrentDir = ED_Down
 		LocalMap[e].Connected = false
 		LocalMap[e].Door = false
@@ -59,6 +60,7 @@ func InitElevStateMap(){
 		LocalMap[e].Orders[0][elevio.BT_HallDown] = -1
 		LocalMap[e].Orders[3][elevio.BT_HallUp] = -1
 	}
+	LocalMap[config.My_ID].CurrentFloor = elevio.GetFloor()
 
 	LocalMap[config.My_ID].Connected = true
 }
