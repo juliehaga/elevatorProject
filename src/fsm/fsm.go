@@ -156,6 +156,7 @@ func eventNewAckOrder(buttonLampChan chan elevio.ButtonLamp, motorChan chan elev
 		case IDLE:
 
 			if shouldStop(currentMap) {
+				fmt.Printf("I am in ordered floor\n")
 				doorLampChan <- true	
 				currentMap[config.My_ID].Door = true
 				orderCompleted(&currentMap, buttonLampChan, mapChangesChan)
@@ -233,6 +234,8 @@ func ordersBelow(elevMap elevStateMap.ElevStateMap) bool{
 
 
 func orderCompleted(elevMap *elevStateMap.ElevStateMap, buttonLampChan chan elevio.ButtonLamp, mapChangesChan chan elevStateMap.ElevStateMap){
+	fmt.Printf("I completed an order\n")
+
 
 	if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][elevio.BT_Cab] == elevStateMap.OT_OrderPlaced{
 		elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][elevio.BT_Cab] = elevStateMap.OT_NoOrder
@@ -279,6 +282,7 @@ func orderInThisFloor( floor int, elevMap elevStateMap.ElevStateMap) bool{
 
 
 func chooseDirection(elevMap *elevStateMap.ElevStateMap) elevio.MotorDirection{
+	fmt.Printf("Choose dir\n")
 	switch elevMap[config.My_ID].CurrentDir{
 		case elevStateMap.ED_Up: 
 			if ordersAbove(*elevMap){
