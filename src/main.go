@@ -114,9 +114,9 @@ func main() {
 			elevStateMap.UpdateLocalMap(elevMap)
 			fmt.Printf("MAP OPPDATERES\n \n\n")
 
-			currentMap := elevStateMap.GetLocalMap()
+			//currentMap := elevStateMap.GetLocalMap()
 			fmt.Printf("----------------MAIN-----------------\n")
-			elevStateMap.PrintMap(currentMap)
+			//elevStateMap.PrintMap(currentMap)
 			network.SendElevMap(elevMapTx, elevMap)
 
 		}
