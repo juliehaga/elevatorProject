@@ -101,10 +101,12 @@ func main() {
 		case elevMap:= <-mapChangesChan:
 			//fmt.Printf("\n \n \n KJØRT OPPDATERING\n \n \n")
 			elevStateMap.UpdateLocalMap(elevMap)
-			currentMap := elevStateMap.GetLocalMap()
+			fmt.Printf("MAP OPPDATERES\n \n\n")
+
+			//currentMap := elevStateMap.GetLocalMap()
 			//fmt.Printf("Det er lag til en map-change. Nå ser det slik ut \n")
-			elevStateMap.PrintMap(currentMap)
-			network.SendElevMap(elevMapTx, elevMap)
+			//elevStateMap.PrintMap(currentMap)
+			//network.SendElevMap(elevMapTx, elevMap)
 
 		}
 	}
