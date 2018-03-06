@@ -108,7 +108,7 @@ func UpdateLocalMap(changedMap ElevStateMap){
 func UpdateMapFromNetwork(recievedMap ElevStateMap, newOrderChan chan elevio.ButtonEvent, buttonLampChan chan elevio.ButtonLamp){
 	floorWithOpenDoor := -1
 	fmt.Print("MAP I ORDRE FROM NETWORK\n\n")
-	PrintMap(recievedMap)
+	//PrintMap(recievedMap)
 	for e:= 0; e < config.NUM_ELEVS; e++{
 		if recievedMap[e].Door == true{
 			floorWithOpenDoor = recievedMap[e].CurrentFloor
@@ -129,7 +129,7 @@ func UpdateMapFromNetwork(recievedMap ElevStateMap, newOrderChan chan elevio.But
 						fmt.Printf("Order from network\n\n")
 						LocalMap[e].Orders[f][b] = OT_OrderPlaced
 					} else if recievedMap[e].Orders[f][b] == OT_NoOrder && LocalMap[e].Orders[f][b] == OT_OrderPlaced && floorWithOpenDoor == f{
-						fmt.Printf("Ordered completed from netowrk \n")
+						fmt.Printf("Ordered completed from netowrk floor %v, button %v\n", floor, button)
 						//clear orders from all elevators
 
 						buttonLampChan <- elevio.ButtonLamp{f, b, false}
