@@ -84,17 +84,16 @@ func UpdateLocalMap(changedMap ElevStateMap){
 	LocalMap[config.My_ID].Connected = changedMap[config.My_ID].Connected
 	LocalMap[config.My_ID].Door = changedMap[config.My_ID].Door
 
-
-	for f:= 0; f < config.NUM_FLOORS; f++{
-		for b:= elevio.BT_HallUp; b <= elevio.BT_Cab; b++{{
-			LocalMap[config.My_ID].Orders[f][b] = changedMap[config.My_ID].Orders[f][b]
+	for e:= 0; e < config.NUM_ELEVS; e++{
+		LocalMap[e].Connected = changedMap[e].Connected
+		for f:= 0; f < config.NUM_FLOORS; f++{
+			LocalMap[config.My_ID].Orders[f][elevio.BT_Cab] = changedMap[config.My_ID].Orders[f][elevio.BT_Cab]
+			for b:= elevio.BT_HallUp; b < elevio.BT_Cab; b++{{
+				LocalMap[e].Orders[f][b] = changedMap[config.My_ID].Orders[f][b]
+			}
 		}
 	}
 
-	for e:= 0; e < config.NUM_ELEVS; e++{
-		LocalMap[e].Connected = changedMap[e].Connected
-	}
-}
 }
 
 
