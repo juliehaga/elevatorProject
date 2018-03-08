@@ -383,6 +383,7 @@ func nearestElevator(elevMap elevStateMap.ElevStateMap, floor int) bool{
 		 				}
 			 		}  else if myDist == distElev && (elevMap[e].CurrentDir == elevStateMap.ED_Down || elevMap[e].IDLE){
 		 			if e > config.My_ID{
+		 				fmt.Printf("Prioritert på ID")
 		 				return false
 		 			}
 		 		}
