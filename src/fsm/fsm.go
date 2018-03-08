@@ -224,9 +224,14 @@ func shouldStop(elevMap elevStateMap.ElevStateMap) bool{
 }
 
 func ordersAbove(elevMap elevStateMap.ElevStateMap) bool{
+	fmt.Printf("Sjekker om ordre over\n")
+	elevStateMap.PrintMap(elevMap)
 	for f := elevMap[config.My_ID].CurrentFloor + 1; f<config.NUM_FLOORS; f++{
+		fmt.Printf("Running foorloop\n")
 		for b := elevio.BT_HallUp; b<= elevio.BT_Cab; b++{ 
 			if elevMap[config.My_ID].Orders[f][b] == elevStateMap.OT_OrderPlaced{
+
+
 				return true
 			}
 		}
@@ -415,24 +420,33 @@ func nearestElevator(elevMap elevStateMap.ElevStateMap, floor int) bool{
 
 
 func forceChooseDirection(elevMap *elevStateMap.ElevStateMap) elevio.MotorDirection{
+	fmt.Printf("4/2 = %v\n", config.NUM_FLOORS/2)
 	if orderInThisFloor(elevMap[config.My_ID].CurrentFloor, *elevMap){
+		fmt.Printf("order in this floor, Stopp\n")
 		return elevio.MD_Stop
+	
 	} else if elevMap[config.My_ID].CurrentFloor >= config.NUM_FLOORS/2 {
+		fmt.Printf("Er i etasje større eller lik 2\n")
 		if ordersAbove(*elevMap){
 			elevMap[config.My_ID].CurrentDir = elevStateMap.ED_Up
+			fmt.Printf("orders above 2, OPP\n")
 			return elevio.MD_Up
 		} else if ordersBelow(*elevMap){
 			elevMap[config.My_ID].CurrentDir = elevStateMap.ED_Down
+			fmt.Printf("orders below 2, OPP\n")
 			return elevio.MD_Down
 		}
 	} else if elevMap[config.My_ID].CurrentFloor < config.NUM_FLOORS/2{
 		if ordersBelow(*elevMap) {
 			elevMap[config.My_ID].CurrentDir = elevStateMap.ED_Down
+			fmt.Printf("orders below 1, OPP\n")
 			return elevio.MD_Down
 		} else if ordersAbove(*elevMap){
 			elevMap[config.My_ID].CurrentDir = elevStateMap.ED_Up
+			fmt.Printf("orders above 1, OPP\n")
 			return elevio.MD_Up
 		}
 	}
+	fmt.Printf("Burde ikke komme hit\n")
 	return elevio.MD_Stop
 } 

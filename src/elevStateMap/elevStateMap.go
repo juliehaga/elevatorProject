@@ -195,6 +195,11 @@ func UpdateElevStatusFromNetwork(newStatus StatusMsg){
 
 }
 
+func SetConnectedElevator(ID int, value bool){
+	currentMap := GetLocalMap()
+	currentMap[ID].Connected = value
+	SetLocalMap(currentMap)
+}
 
 
 
