@@ -19,7 +19,7 @@ const(
 )
 
 const DOOR_TIME 	= 2
-const IDLE_TIME 	= 2
+const IDLE_TIME 	= 3
 
 
 func Fsm(motorChan chan elevio.MotorDirection, doorLampChan chan bool, floorChan chan int, buttonLampChan chan elevio.ButtonLamp, orderChangesChan chan elevStateMap.ElevStateMap, newOrderChan chan elevio.ButtonEvent, statusChangesChan chan elevStateMap.ElevStateMap){
@@ -50,7 +50,8 @@ func Fsm(motorChan chan elevio.MotorDirection, doorLampChan chan bool, floorChan
 			idleTimer.Reset(time.Second * IDLE_TIME)
 			
 		case <- idleTimer.C:
-			eventIdleTimeout(motorChan, statusChangesChan)
+
+			eventIdleTimeout(motorChan, statusChangesChan, orderChangesChan, doorLampChan, doorTimer, buttonLampChan)
 			idleTimer.Reset(time.Second * IDLE_TIME)
 			
 
@@ -61,15 +62,28 @@ func Fsm(motorChan chan elevio.MotorDirection, doorLampChan chan bool, floorChan
 }
 
 
-func eventIdleTimeout(motorChan chan elevio.MotorDirection, statusChangesChan chan elevStateMap.ElevStateMap) {
+func eventIdleTimeout(motorChan chan elevio.MotorDirection, statusChangesChan chan elevStateMap.ElevStateMap, orderChangesChan chan elevStateMap.ElevStateMap, doorLampChan chan bool, doorTimer *time.Timer, buttonLampChan chan elevio.ButtonLamp) {
+	fmt.Printf("In idle timeout")
 	currentMap := elevStateMap.GetLocalMap()
-	motorDir := chooseDirection(&currentMap)
-		if motorDir != elevio.MD_Stop {
-			motorChan <- motorDir
-			currentMap[config.My_ID].IDLE = false
-			state = MOVING
-		}
-	statusChangesChan <- currentMap
+
+	if shouldStop(currentMap) {
+		motorChan <- elevio.MD_Stop
+		doorLampChan <- true
+		doorTimer.Reset(time.Second * DOOR_TIME)
+		currentMap[config.My_ID].Door = true
+		orderCompleted(&currentMap, buttonLampChan)
+		currentMap[config.My_ID].IDLE = false
+		orderChangesChan <- currentMap
+		state = DOOR_OPEN
+	} else{
+		motorDir := chooseDirection(&currentMap)
+			if motorDir != elevio.MD_Stop {
+				motorChan <- motorDir
+				currentMap[config.My_ID].IDLE = false
+				statusChangesChan <- currentMap
+				state = MOVING
+			}
+	}		
 }
 
 
