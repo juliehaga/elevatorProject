@@ -156,7 +156,9 @@ func eventNewAckOrder(buttonLampChan chan elevio.ButtonLamp, motorChan chan elev
 		}
 	}else {
 		currentMap[config.My_ID].Orders[buttonPushed.Floor][buttonPushed.Button] = elevStateMap.OT_OrderPlaced
+			//elevStateMap.PrintMap(currentMap)
 	}	
+
 	switch(state){
 		case IDLE:
 
@@ -179,14 +181,16 @@ func eventNewAckOrder(buttonLampChan chan elevio.ButtonLamp, motorChan chan elev
 				}
 			}			
 	}
+	fmt.Printf("ut av switch\n")
 	mapChangesChan <- currentMap
-	idleTimer.Reset(time.Second * IDLE_TIME)
-	elevStateMap.PrintMap(currentMap)
+	//idleTimer.Reset(time.Second * IDLE_TIME)
+	//elevStateMap.PrintMap(currentMap)
 }
 
 func shouldStop(elevMap elevStateMap.ElevStateMap) bool{
 	fmt.Printf("should stop?\n")
-	//elevStateMap.PrintMap(elevMap)
+	elevStateMap.PrintMap(elevMap)
+
 	if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][elevio.BT_Cab]==elevStateMap.OT_OrderPlaced{
 		return true
 	}
@@ -334,6 +338,7 @@ func chooseDirection(elevMap *elevStateMap.ElevStateMap) elevio.MotorDirection{
 				return elevio.MD_Stop
 			}
 	}
+	fmt.Printf("jeg blir stånde\n")
 	return elevio.MD_Stop
 }
 

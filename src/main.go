@@ -110,6 +110,7 @@ func main() {
 			}
 			
 		case elevMap:= <-mapChangesChan:
+			fmt.Printf("gjør forandring\n")	
 	
 			elevStateMap.UpdateLocalMap(elevMap)
 			//fmt.Printf("MAP OPPDATERES lokalt\n \n\n")
