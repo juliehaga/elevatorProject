@@ -413,3 +413,54 @@ func nearestElevator(elevMap elevStateMap.ElevStateMap, floor int) bool{
 	}
  	return true
 }
+
+
+
+forceChooseDirection(){
+
+	/*
+		switch elevMap[config.My_ID].CurrentDir{
+		case elevStateMap.ED_Up: 
+			if ordersAbove(*elevMap){
+				for f:= elevMap[config.My_ID].CurrentFloor + 1; f < config.NUM_FLOORS; f++{
+					if  orderInThisFloor(f, *elevMap) && (nearestElevator(*elevMap, f) || elevMap[config.My_ID].Orders[f][elevio.BT_Cab] == elevStateMap.OT_OrderPlaced){
+						elevMap[config.My_ID].CurrentDir = elevStateMap.ED_Up
+						return elevio.MD_Up
+					}
+				}
+				
+			} else if ordersBelow(*elevMap){
+				for f:= elevMap[config.My_ID].CurrentFloor - 1; f >= 0; f--{
+					if orderInThisFloor(f, *elevMap) && (nearestElevator(*elevMap, f) || elevMap[config.My_ID].Orders[f][elevio.BT_Cab] == elevStateMap.OT_OrderPlaced){
+						elevMap[config.My_ID].CurrentDir = elevStateMap.ED_Down
+						return elevio.MD_Down
+					}
+				}
+			} else {
+				return elevio.MD_Stop
+			}
+		case elevStateMap.ED_Down:
+			if ordersBelow(*elevMap){
+				for f:= elevMap[config.My_ID].CurrentFloor - 1; f >= 0; f--{
+					if orderInThisFloor(f, *elevMap) && (nearestElevator(*elevMap, f) || elevMap[config.My_ID].Orders[f][elevio.BT_Cab] == elevStateMap.OT_OrderPlaced){
+						elevMap[config.My_ID].CurrentDir = elevStateMap.ED_Down
+						return elevio.MD_Down
+					}
+				}
+
+			} else if ordersAbove(*elevMap){
+				for f:= elevMap[config.My_ID].CurrentFloor + 1; f < config.NUM_FLOORS; f++{
+					if orderInThisFloor(f, *elevMap) && (nearestElevator(*elevMap, f) || elevMap[config.My_ID].Orders[f][elevio.BT_Cab] == elevStateMap.OT_OrderPlaced){
+						elevMap[config.My_ID].CurrentDir = elevStateMap.ED_Up
+						return elevio.MD_Up
+					}
+				}
+			} else {
+				return elevio.MD_Stop
+			}
+	}
+	return elevio.MD_Stop
+}*/
+
+
+}
