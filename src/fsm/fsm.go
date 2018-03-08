@@ -181,6 +181,8 @@ func eventNewAckOrder(buttonLampChan chan elevio.ButtonLamp, motorChan chan elev
 					motorChan <- motorDir
 					currentMap[config.My_ID].IDLE = false
 					statusChangesChan <- currentMap
+					fmt.Printf("\n\n JEG HAR NÅ ENDRET TIL DETTE\n")
+					elevStateMap.PrintMap(currentMap)
 					state = MOVING
 				}
 			}			
