@@ -105,25 +105,19 @@ func UpdateLocalMap(changedMap ElevStateMap){
 	currentMap := GetLocalMap()
 	floorWithOpenDoor := -1
 
-	//fmt.Printf("*******************CHANGED MAP******************")
-
-	//PrintMap(changedMap)
-	
-
-
 	currentMap[config.My_ID].CurrentFloor = changedMap[config.My_ID].CurrentFloor
 	currentMap[config.My_ID].CurrentDir = changedMap[config.My_ID].CurrentDir
 	currentMap[config.My_ID].Connected = changedMap[config.My_ID].Connected
 	currentMap[config.My_ID].Door = changedMap[config.My_ID].Door
 
 	for e:= 0; e < config.NUM_ELEVS; e++{
-		if changedMap[e].Door == true{
+		if changedMap[e].Door == true && changedMap[e].Connected == true{
 			floorWithOpenDoor = changedMap[e].CurrentFloor
 			fmt.Printf("floor with open door %v \n", floorWithOpenDoor)
 		}
 	}
 	for e:= 0; e < config.NUM_ELEVS; e++{
-		currentMap[e].Connected = changedMap[e].Connected
+		if currentMap[e].Connected == true { 
 		for f:= 0; f < config.NUM_FLOORS; f++{
 			currentMap[config.My_ID].Orders[f][elevio.BT_Cab] = changedMap[config.My_ID].Orders[f][elevio.BT_Cab]
 			for b:= elevio.BT_HallUp; b < elevio.BT_Cab; b++{
@@ -169,14 +163,6 @@ func UpdateMapFromNetwork(recievedMap ElevStateMap, newOrderChan chan elevio.But
 			
 		}
 	}
-	fmt.Printf("*******************MITT MAP******************")
-
-	PrintMap(currentMap)
-
-	fmt.Printf("*******************RECIEVED MAP******************")
-
-	PrintMap(recievedMap)
-
 
 
 	for f:= 0; f < config.NUM_FLOORS; f++{
