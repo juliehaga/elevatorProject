@@ -130,9 +130,7 @@ func eventDoorTimeout(doorLampChan chan bool, statusChangesChan chan elevStateMa
 			currentMap[config.My_ID].IDLE = true
 			state = IDLE
 			idleTimer.Reset(time.Second * IDLE_TIME)
-			fmt.Printf("Door timeout")
 			motorDir := chooseDirection(&currentMap)
-			fmt.Printf("new direction %v\n", motorDir)
 			if motorDir != elevio.MD_Stop {
 				motorChan <- motorDir
 				currentMap[config.My_ID].IDLE = false
@@ -147,7 +145,6 @@ func eventDoorTimeout(doorLampChan chan bool, statusChangesChan chan elevStateMa
 
 
 func eventNewAckOrder(buttonLampChan chan elevio.ButtonLamp, motorChan chan elevio.MotorDirection, doorLampChan chan bool, doorTimer *time.Timer, orderChangesChan chan elevStateMap.ElevStateMap, buttonPushed elevio.ButtonEvent, idleTimer *time.Timer){
-	fmt.Printf("evenNewAckOrder\n")
 
 	currentMap := elevStateMap.GetLocalMap()
 	buttonLampChan <- elevio.ButtonLamp{buttonPushed.Floor, buttonPushed.Button, true}
@@ -165,7 +162,6 @@ func eventNewAckOrder(buttonLampChan chan elevio.ButtonLamp, motorChan chan elev
 		case IDLE:
 
 			if shouldStop(currentMap) {
-				fmt.Printf("I am in ordered floor\n")
 				doorLampChan <- true	
 				currentMap[config.My_ID].Door = true
 				orderCompleted(&currentMap, buttonLampChan)
@@ -188,18 +184,12 @@ func eventNewAckOrder(buttonLampChan chan elevio.ButtonLamp, motorChan chan elev
 
 	}
 	orderChangesChan <- currentMap
-	fmt.Printf("\n\n JEG HAR NÅ ENDRET TIL DETTE\n")
-	elevStateMap.PrintMap(currentMap)
-	fmt.Printf("ut av switch\n")
 
 
 	//elevStateMap.PrintMap(currentMap)
 }
 
 func shouldStop(elevMap elevStateMap.ElevStateMap) bool{
-	fmt.Printf("should stop?\n")
-
-	fmt.Printf("-------------------------- ORDERS -------------------------------")
 	elevStateMap.PrintMap(elevMap)
 
 	if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][elevio.BT_Cab]==elevStateMap.OT_OrderPlaced{
@@ -256,8 +246,6 @@ func ordersBelow(elevMap elevStateMap.ElevStateMap) bool{
 
 
 func orderCompleted(elevMap *elevStateMap.ElevStateMap, buttonLampChan chan elevio.ButtonLamp){
-	fmt.Printf("I completed an order\n")
-
 
 	if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][elevio.BT_Cab] == elevStateMap.OT_OrderPlaced{
 		elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][elevio.BT_Cab] = elevStateMap.OT_NoOrder
@@ -327,14 +315,12 @@ func orderInThisFloor( floor int, elevMap elevStateMap.ElevStateMap) bool{
 
 
 func chooseDirection(elevMap *elevStateMap.ElevStateMap) elevio.MotorDirection{
-	fmt.Printf("Choose dir\n")
 	switch elevMap[config.My_ID].CurrentDir{
 		case elevStateMap.ED_Up: 
 			if ordersAbove(*elevMap){
 				for f:= elevMap[config.My_ID].CurrentFloor + 1; f < config.NUM_FLOORS; f++{
 					if  orderInThisFloor(f, *elevMap) && (nearestElevator(*elevMap, f) || elevMap[config.My_ID].Orders[f][elevio.BT_Cab] == elevStateMap.OT_OrderPlaced){
 						elevMap[config.My_ID].CurrentDir = elevStateMap.ED_Up
-						fmt.Printf("Opp fra før velger retning opp \n")
 						return elevio.MD_Up
 					}
 				}
@@ -343,7 +329,6 @@ func chooseDirection(elevMap *elevStateMap.ElevStateMap) elevio.MotorDirection{
 				for f:= elevMap[config.My_ID].CurrentFloor - 1; f >= 0; f--{
 					if orderInThisFloor(f, *elevMap) && (nearestElevator(*elevMap, f) || elevMap[config.My_ID].Orders[f][elevio.BT_Cab] == elevStateMap.OT_OrderPlaced){
 						elevMap[config.My_ID].CurrentDir = elevStateMap.ED_Down
-						fmt.Printf("Opp fra før velger retning ned \n")
 						return elevio.MD_Down
 					}
 				}
@@ -355,7 +340,6 @@ func chooseDirection(elevMap *elevStateMap.ElevStateMap) elevio.MotorDirection{
 				for f:= elevMap[config.My_ID].CurrentFloor - 1; f >= 0; f--{
 					if orderInThisFloor(f, *elevMap) && (nearestElevator(*elevMap, f) || elevMap[config.My_ID].Orders[f][elevio.BT_Cab] == elevStateMap.OT_OrderPlaced){
 						elevMap[config.My_ID].CurrentDir = elevStateMap.ED_Down
-						fmt.Printf("Ned fra før velger retning ned \n")
 						return elevio.MD_Down
 					}
 				}
@@ -364,7 +348,6 @@ func chooseDirection(elevMap *elevStateMap.ElevStateMap) elevio.MotorDirection{
 				for f:= elevMap[config.My_ID].CurrentFloor + 1; f < config.NUM_FLOORS; f++{
 					if orderInThisFloor(f, *elevMap) && (nearestElevator(*elevMap, f) || elevMap[config.My_ID].Orders[f][elevio.BT_Cab] == elevStateMap.OT_OrderPlaced){
 						elevMap[config.My_ID].CurrentDir = elevStateMap.ED_Up
-						fmt.Printf("Ned fra før velger retning opp \n")
 						return elevio.MD_Up
 					}
 				}
@@ -372,7 +355,6 @@ func chooseDirection(elevMap *elevStateMap.ElevStateMap) elevio.MotorDirection{
 				return elevio.MD_Stop
 			}
 	}
-	fmt.Printf("jeg blir stånde\n")
 	return elevio.MD_Stop
 }
 
@@ -385,19 +367,14 @@ func nearestElevator(elevMap elevStateMap.ElevStateMap, floor int) bool{
 
 
  	if elevMap[config.My_ID].CurrentFloor < floor { 
- 		fmt.Printf("jeg står under \n")
 	 	for e := 0; e<config.NUM_ELEVS; e++ {
 	 		if elevMap[e].Connected == true{	
 			 	if e != config.My_ID{	
 			 		distElev := int(math.Abs(float64(elevMap[e].CurrentFloor - floor)))
-			 		fmt.Printf("Den andre er %v etasjer unna\n", distElev)
 			 		if distElev < myDist{
-			 			fmt.Printf("den har kortere\n")
 			 			if elevMap[e].CurrentFloor <= floor && (elevMap[e].CurrentDir == elevStateMap.ED_Up || elevMap[e].IDLE ){
-			 				fmt.Printf("den andre tar den\n")
 			 				return false
 			 			} else if elevMap[e].CurrentFloor >= floor && (elevMap[e].CurrentDir == elevStateMap.ED_Down || elevMap[e].IDLE ) {
-			 				fmt.Printf("den andre tar den\n")
 			 				return false
 			 			}
 			 		} else if myDist == distElev && (elevMap[e].CurrentDir == elevStateMap.ED_Up || elevMap[e].IDLE){
@@ -409,23 +386,18 @@ func nearestElevator(elevMap elevStateMap.ElevStateMap, floor int) bool{
 			} 	
 		 }
  	} else if elevMap[config.My_ID].CurrentFloor > floor {
-	 		fmt.Printf("jeg står over \n")
 		 	for e := 0; e<config.NUM_ELEVS; e++ {
 		 		if elevMap[e].Connected == true{	
 				 	if e != config.My_ID{	
 				 		distElev := int(math.Abs(float64(elevMap[e].CurrentFloor - floor)))
 				 		if distElev < myDist{
-				 			fmt.Printf("den har kortere\n")
 				 			if elevMap[e].CurrentFloor >= floor && (elevMap[e].CurrentDir == elevStateMap.ED_Down || elevMap[e].IDLE ){
-				 				fmt.Printf("den andre tar den\n")
 				 				return false
 				 			} else if elevMap[e].CurrentFloor <= floor && (elevMap[e].CurrentDir == elevStateMap.ED_Up || elevMap[e].IDLE ) {
-			 					fmt.Printf("den andre tar den\n")
 			 					return false
 			 				}
 				 		}  else if myDist == distElev && (elevMap[e].CurrentDir == elevStateMap.ED_Down || elevMap[e].IDLE){
 			 			if e > config.My_ID{
-			 				fmt.Printf("Prioritert på ID")
 			 				return false
 			 			}
 			 		}
@@ -433,7 +405,5 @@ func nearestElevator(elevMap elevStateMap.ElevStateMap, floor int) bool{
 			}
 		}	
 	}
-
-	fmt.Printf("jeg var nærmest\n")
  	return true
 }

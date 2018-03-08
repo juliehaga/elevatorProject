@@ -82,7 +82,6 @@ func InitElevStateMap(){
 	LocalMap[config.My_ID].CurrentFloor = elevio.GetFloor()
 
 	LocalMap[config.My_ID].Connected = true
-	fmt.Printf("init elev state MAp\n")
 }
 
 
@@ -113,7 +112,6 @@ func UpdateLocalMap(changedMap ElevStateMap){
 	for e:= 0; e < config.NUM_ELEVS; e++{
 		if changedMap[e].Door == true && changedMap[e].Connected == true{
 			floorWithOpenDoor = changedMap[e].CurrentFloor
-			fmt.Printf("floor with open door %v \n", floorWithOpenDoor)
 		}
 	}
 	for e:= 0; e < config.NUM_ELEVS; e++{
@@ -125,7 +123,6 @@ func UpdateLocalMap(changedMap ElevStateMap){
 					if changedMap[e].Orders[f][b] == OT_OrderPlaced && currentMap[e].Orders[f][b] == OT_NoOrder{
 							currentMap[e].Orders[f][b] = changedMap[e].Orders[f][b]
 						} else if changedMap[e].Orders[f][b] == OT_NoOrder && currentMap[e].Orders[f][b] == OT_OrderPlaced && floorWithOpenDoor == f{
-							fmt.Printf("Sletter utført ordre \n")
 							currentMap[e].Orders[f][b] = changedMap[e].Orders[f][b]
 						}
 				}
@@ -145,13 +142,11 @@ func UpdateMapFromNetwork(recievedMap ElevStateMap, newOrderChan chan elevio.But
 	currentMap := GetLocalMap()
 
 	floorWithOpenDoor := -1
-	fmt.Print("MAP I ORDRE FROM NETWORK\n\n")
 	//PrintMap(recievedMap)
 	for e:= 0; e < config.NUM_ELEVS; e++{
 		if currentMap[e].Connected == true{
 			if recievedMap[e].Door == true{
 				floorWithOpenDoor = recievedMap[e].CurrentFloor
-				fmt.Printf("Floor with door open %v\n", floorWithOpenDoor)
 			}
 
 			//sjekk om heis e er i live
@@ -175,10 +170,10 @@ func UpdateMapFromNetwork(recievedMap ElevStateMap, newOrderChan chan elevio.But
 
 						newOrderChan <- elevio.ButtonEvent{f, b}
 						
-						fmt.Printf("Order from network, floor %v, button %v\n\n", f, b)
+						//fmt.Printf("Order from network, floor %v, button %v\n\n", f, b)
 
 					} else if recievedMap[config.My_ID].Orders[f][b] == OT_NoOrder && currentMap[config.My_ID].Orders[f][b] == OT_OrderPlaced && floorWithOpenDoor == f{
-						fmt.Printf("Ordered completed from netowrk floor %v, button %v\n", f, b)
+						//fmt.Printf("Ordered completed from netowrk floor %v, button %v\n", f, b)
 						//clear orders from all elevators
 						buttonLampChan <- elevio.ButtonLamp{f, b, false}
 						for elev := 0; elev < config.NUM_ELEVS; elev++{
