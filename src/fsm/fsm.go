@@ -75,7 +75,7 @@ func eventIdleTimeout(motorChan chan elevio.MotorDirection, statusChangesChan ch
 		currentMap[config.My_ID].IDLE = false
 		orderChangesChan <- currentMap
 		state = DOOR_OPEN
-	} else{
+	}else{
 		motorDir := chooseDirection(&currentMap)
 			if motorDir != elevio.MD_Stop {
 				motorChan <- motorDir
@@ -185,10 +185,11 @@ func eventNewAckOrder(buttonLampChan chan elevio.ButtonLamp, motorChan chan elev
 }
 
 func shouldStop(elevMap elevStateMap.ElevStateMap) bool{
+	fmt.Printf("Should stop")
 	switch(state){
 		case MOVING: 
 			fmt.Printf("state moving\n")
-			if elevMap[config.My_ID].CurrentFloor == config.NUM_FLOORS && elevMap[config.My_ID].CurrentDir == elevStateMap.ED_Up{
+			if elevMap[config.My_ID].CurrentFloor == config.NUM_FLOORS-1 && elevMap[config.My_ID].CurrentDir == elevStateMap.ED_Up{
 				return true
 			} else if elevMap[config.My_ID].CurrentFloor == 0 && elevMap[config.My_ID].CurrentDir == elevStateMap.ED_Down {
 				return true
