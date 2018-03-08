@@ -3,7 +3,7 @@ package config
 import "strconv"
 
 const(
-	NUM_ELEVS		= 2
+	NUM_ELEVS		= 3
 	NUM_FLOORS   	= 4
 	NUM_BUTTONS		= 3
 	
