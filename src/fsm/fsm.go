@@ -190,6 +190,11 @@ func eventNewAckOrder(buttonLampChan chan elevio.ButtonLamp, motorChan chan elev
 }
 
 func shouldStop(elevMap elevStateMap.ElevStateMap) bool{
+	if elevMap[config.My_ID].CurrentFloor == config.NUM_FLOORS && elevMap[config.My_ID].CurrentDir == MD_Up{
+		return true
+	} else if elevMap[config.My_ID].CurrentFloor == 0 && elevMap[config.My_ID].CurrentDir == MD_Down {
+		return true
+	}
 	//elevStateMap.PrintMap(elevMap)
 
 	if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][elevio.BT_Cab]==elevStateMap.OT_OrderPlaced{
