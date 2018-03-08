@@ -190,9 +190,9 @@ func eventNewAckOrder(buttonLampChan chan elevio.ButtonLamp, motorChan chan elev
 }
 
 func shouldStop(elevMap elevStateMap.ElevStateMap) bool{
-	if elevMap[config.My_ID].CurrentFloor == config.NUM_FLOORS && elevMap[config.My_ID].CurrentDir == MD_Up{
+	if elevMap[config.My_ID].CurrentFloor == config.NUM_FLOORS && elevMap[config.My_ID].CurrentDir == elevStateMap.ED_Up{
 		return true
-	} else if elevMap[config.My_ID].CurrentFloor == 0 && elevMap[config.My_ID].CurrentDir == MD_Down {
+	} else if elevMap[config.My_ID].CurrentFloor == 0 && elevMap[config.My_ID].CurrentDir == elevStateMap.ED_Down {
 		return true
 	}
 	//elevStateMap.PrintMap(elevMap)
