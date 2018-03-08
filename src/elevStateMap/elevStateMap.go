@@ -119,6 +119,7 @@ func UpdateLocalMap(changedMap ElevStateMap){
 	for e:= 0; e < config.NUM_ELEVS; e++{
 		if changedMap[e].Door == true{
 			floorWithOpenDoor = changedMap[e].CurrentFloor
+			fmt.Printf("floor with open door %v \n", floorWithOpenDoor)
 		}
 		currentMap[e].Connected = changedMap[e].Connected
 		for f:= 0; f < config.NUM_FLOORS; f++{
@@ -128,7 +129,7 @@ func UpdateLocalMap(changedMap ElevStateMap){
 				if changedMap[e].Orders[f][b] == OT_OrderPlaced && currentMap[e].Orders[f][b] == OT_NoOrder{
 						currentMap[e].Orders[f][b] = changedMap[e].Orders[f][b]
 					} else if changedMap[e].Orders[f][b] == OT_NoOrder && currentMap[e].Orders[f][b] == OT_OrderPlaced && floorWithOpenDoor == f{
-						fmt.Printf("Sletter utført ordre")
+						fmt.Printf("Sletter utført ordre \n")
 						currentMap[e].Orders[f][b] = changedMap[e].Orders[f][b]
 					}
 			}
