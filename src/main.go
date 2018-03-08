@@ -112,7 +112,7 @@ func main() {
 		case elevMap:= <-mapChangesChan:
 	
 			elevStateMap.UpdateLocalMap(elevMap)
-			fmt.Printf("MAP OPPDATERES lokalt\n \n\n")
+			//fmt.Printf("MAP OPPDATERES lokalt\n \n\n")
 
 			//currentMap := elevStateMap.GetLocalMap()
 

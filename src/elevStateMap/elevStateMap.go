@@ -75,37 +75,47 @@ func GetLocalMap() ElevStateMap{
 }
 
 
+func setLocalMap(changedMap ElevStateMap){
+	mutex.Lock()
+	LocalMap = changedMap
+	mutex.Unlock()
+}
+
+
 func UpdateLocalMap(changedMap ElevStateMap){
+	currentMap := GetLocalMap()
 	floorWithOpenDoor := -1
 
 
-	LocalMap[config.My_ID].CurrentFloor = changedMap[config.My_ID].CurrentFloor
-	LocalMap[config.My_ID].CurrentDir = changedMap[config.My_ID].CurrentDir
-	LocalMap[config.My_ID].Connected = changedMap[config.My_ID].Connected
-	LocalMap[config.My_ID].Door = changedMap[config.My_ID].Door
+	currentMap[config.My_ID].CurrentFloor = changedMap[config.My_ID].CurrentFloor
+	currentMap[config.My_ID].CurrentDir = changedMap[config.My_ID].CurrentDir
+	currentMap[config.My_ID].Connected = changedMap[config.My_ID].Connected
+	currentMap[config.My_ID].Door = changedMap[config.My_ID].Door
 
 	for e:= 0; e < config.NUM_ELEVS; e++{
 		if changedMap[e].Door == true{
 			floorWithOpenDoor = changedMap[e].CurrentFloor
 		}
-		LocalMap[e].Connected = changedMap[e].Connected
+		currentMap[e].Connected = changedMap[e].Connected
 		for f:= 0; f < config.NUM_FLOORS; f++{
-			LocalMap[config.My_ID].Orders[f][elevio.BT_Cab] = changedMap[config.My_ID].Orders[f][elevio.BT_Cab]
+			currentMap[config.My_ID].Orders[f][elevio.BT_Cab] = changedMap[config.My_ID].Orders[f][elevio.BT_Cab]
 			for b:= elevio.BT_HallUp; b < elevio.BT_Cab; b++{
 
-				if changedMap[e].Orders[f][b] == OT_OrderPlaced && LocalMap[config.My_ID].Orders[f][b] == OT_NoOrder{
-						LocalMap[e].Orders[f][b] = changedMap[config.My_ID].Orders[f][b]
-					} else if changedMap[e].Orders[f][b] == OT_NoOrder && LocalMap[config.My_ID].Orders[f][b] == OT_OrderPlaced && floorWithOpenDoor == f{
-						LocalMap[e].Orders[f][b] = changedMap[config.My_ID].Orders[f][b]
+				if changedMap[e].Orders[f][b] == OT_OrderPlaced && currentMap[config.My_ID].Orders[f][b] == OT_NoOrder{
+						currentMap[e].Orders[f][b] = changedMap[config.My_ID].Orders[f][b]
+					} else if changedMap[e].Orders[f][b] == OT_NoOrder && currentMap[config.My_ID].Orders[f][b] == OT_OrderPlaced && floorWithOpenDoor == f{
+						currentMap[e].Orders[f][b] = changedMap[config.My_ID].Orders[f][b]
 					}
 			}
 		}
 	}
-
+	setLocalMap(currentMap)
 }
 
 
 func UpdateMapFromNetwork(recievedMap ElevStateMap, newOrderChan chan elevio.ButtonEvent, buttonLampChan chan elevio.ButtonLamp){
+	currentMap := GetLocalMap()
+
 	floorWithOpenDoor := -1
 	fmt.Print("MAP I ORDRE FROM NETWORK\n\n")
 	//PrintMap(recievedMap)
@@ -118,30 +128,31 @@ func UpdateMapFromNetwork(recievedMap ElevStateMap, newOrderChan chan elevio.But
 		if recievedMap[e].Connected == true{
 
 			if e != config.My_ID {
-				LocalMap[e].CurrentFloor = recievedMap[e].CurrentFloor
-				LocalMap[e].CurrentDir = recievedMap[e].CurrentDir
-				LocalMap[e].Door = recievedMap[e].Door
+				currentMap[e].CurrentFloor = recievedMap[e].CurrentFloor
+				currentMap[e].CurrentDir = recievedMap[e].CurrentDir
+				currentMap[e].Door = recievedMap[e].Door
 			}
 			for f:= 0; f < config.NUM_FLOORS; f++{
 				for b:= elevio.BT_HallUp; b < elevio.BT_Cab; b++{
-					if recievedMap[e].Orders[f][b] == OT_OrderPlaced && LocalMap[e].Orders[f][b] == OT_NoOrder{
+					if recievedMap[e].Orders[f][b] == OT_OrderPlaced && currentMap[e].Orders[f][b] == OT_NoOrder{
 						newOrderChan <- elevio.ButtonEvent{f, b}
 						fmt.Printf("Order from network elev %v, floor %v, button %v\n\n", e, f, b)
-						LocalMap[e].Orders[f][b] = OT_OrderPlaced
-					} else if recievedMap[e].Orders[f][b] == OT_NoOrder && LocalMap[e].Orders[f][b] == OT_OrderPlaced && floorWithOpenDoor == f{
+						currentMap[e].Orders[f][b] = OT_OrderPlaced
+					} else if recievedMap[e].Orders[f][b] == OT_NoOrder && currentMap[e].Orders[f][b] == OT_OrderPlaced && floorWithOpenDoor == f{
 						fmt.Printf("Ordered completed from netowrk floor %v, button %v\n", f, b)
 						//clear orders from all elevators
 
 						buttonLampChan <- elevio.ButtonLamp{f, b, false}
 						for elev := 0; elev < config.NUM_ELEVS; elev++{
 
-							LocalMap[elev].Orders[f][b] = OT_NoOrder
+							currentMap[elev].Orders[f][b] = OT_NoOrder
 						}
 					}
 				}
 			}
 		}
 	}
+	setLocalMap(currentMap)
 }
 
 

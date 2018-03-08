@@ -176,6 +176,7 @@ func eventNewAckOrder(buttonLampChan chan elevio.ButtonLamp, motorChan chan elev
 	}
 	mapChangesChan <- currentMap
 	idleTimer.Reset(time.Second * IDLE_TIME)
+	elevStateMap.PrintMap(currentMap)
 }
 
 func shouldStop(elevMap elevStateMap.ElevStateMap) bool{
