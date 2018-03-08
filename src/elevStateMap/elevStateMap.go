@@ -134,7 +134,7 @@ func UpdateMapFromNetwork(recievedMap ElevStateMap, newOrderChan chan elevio.But
 			}
 			for f:= 0; f < config.NUM_FLOORS; f++{
 				for b:= elevio.BT_HallUp; b < elevio.BT_Cab; b++{
-					if recievedMap[e].Orders[f][b] == OT_OrderPlaced && currentMap[e].Orders[f][b] == OT_NoOrder{
+					if recievedMap[config.My_ID].Orders[f][b] == OT_OrderPlaced && currentMap[config.My_ID].Orders[f][b] == OT_NoOrder{
 						fmt.Printf("*******************MITT MAP******************")
 
 						PrintMap(currentMap)
@@ -148,7 +148,7 @@ func UpdateMapFromNetwork(recievedMap ElevStateMap, newOrderChan chan elevio.But
 						
 						fmt.Printf("Order from network elev %v, floor %v, button %v\n\n", e, f, b)
 
-					} else if recievedMap[e].Orders[f][b] == OT_NoOrder && currentMap[e].Orders[f][b] == OT_OrderPlaced && floorWithOpenDoor == f{
+					} else if recievedMap[config.My_ID].Orders[f][b] == OT_NoOrder && currentMap[config.My_ID].Orders[f][b] == OT_OrderPlaced && floorWithOpenDoor == f{
 						fmt.Printf("Ordered completed from netowrk floor %v, button %v\n", f, b)
 						//clear orders from all elevators
 						buttonLampChan <- elevio.ButtonLamp{f, b, false}
