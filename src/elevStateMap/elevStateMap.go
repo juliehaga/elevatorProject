@@ -109,9 +109,9 @@ func UpdateLocalMap(changedMap ElevStateMap){
 			currentMap[config.My_ID].Orders[f][elevio.BT_Cab] = changedMap[config.My_ID].Orders[f][elevio.BT_Cab]
 			for b:= elevio.BT_HallUp; b < elevio.BT_Cab; b++{
 
-				if changedMap[e].Orders[f][b] == OT_OrderPlaced && currentMap[config.My_ID].Orders[f][b] == OT_NoOrder{
+				if changedMap[e].Orders[f][b] == OT_OrderPlaced && currentMap[e].Orders[f][b] == OT_NoOrder{
 						currentMap[e].Orders[f][b] = changedMap[e].Orders[f][b]
-					} else if changedMap[e].Orders[f][b] == OT_NoOrder && currentMap[config.My_ID].Orders[f][b] == OT_OrderPlaced && floorWithOpenDoor == f{
+					} else if changedMap[e].Orders[f][b] == OT_NoOrder && currentMap[e].Orders[f][b] == OT_OrderPlaced && floorWithOpenDoor == f{
 						currentMap[e].Orders[f][b] = changedMap[e].Orders[f][b]
 					}
 			}
