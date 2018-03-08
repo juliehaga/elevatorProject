@@ -113,6 +113,8 @@ func main() {
 	
 			elevStateMap.UpdateLocalMap(elevMap)
 			network.SendOrders(messageTx, elevMap)
+			fmt.Printf("////////////////////DETTE SENDER JEG///////////////////")
+			elevStateMap.PrintMap(elevMap)
 
 		case elevMap:= <-statusChangesChan:
 			elevStateMap.UpdateLocalMap(elevMap)
