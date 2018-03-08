@@ -156,7 +156,6 @@ func eventNewAckOrder(buttonLampChan chan elevio.ButtonLamp, motorChan chan elev
 		}
 	}else {
 		currentMap[config.My_ID].Orders[buttonPushed.Floor][buttonPushed.Button] = elevStateMap.OT_OrderPlaced
-			//elevStateMap.PrintMap(currentMap)
 	}	
 
 	switch(state){
@@ -169,6 +168,7 @@ func eventNewAckOrder(buttonLampChan chan elevio.ButtonLamp, motorChan chan elev
 				orderCompleted(&currentMap, buttonLampChan, mapChangesChan)
 				doorTimer.Reset(time.Second * DOOR_TIME)
 				currentMap[config.My_ID].IDLE = false
+				mapChangesChan <- currentMap
 				state = DOOR_OPEN
 
 				
@@ -177,19 +177,19 @@ func eventNewAckOrder(buttonLampChan chan elevio.ButtonLamp, motorChan chan elev
 				if motorDir != elevio.MD_Stop {
 					motorChan <- motorDir
 					currentMap[config.My_ID].IDLE = false
+					mapChangesChan <- currentMap
 					state = MOVING
 				}
 			}			
 	}
 	fmt.Printf("ut av switch\n")
-	mapChangesChan <- currentMap
-	//idleTimer.Reset(time.Second * IDLE_TIME)
+
+
 	//elevStateMap.PrintMap(currentMap)
 }
 
 func shouldStop(elevMap elevStateMap.ElevStateMap) bool{
 	fmt.Printf("should stop?\n")
-	elevStateMap.PrintMap(elevMap)
 
 	if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][elevio.BT_Cab]==elevStateMap.OT_OrderPlaced{
 		return true
@@ -258,22 +258,44 @@ func orderCompleted(elevMap *elevStateMap.ElevStateMap, buttonLampChan chan elev
 		case elevStateMap.ED_Up: 
 			if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][elevio.BT_HallUp] == elevStateMap.OT_OrderPlaced{
 				
-				elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][elevio.BT_HallUp] = elevStateMap.OT_NoOrder
+				for elev := 0; elev < config.NUM_ELEVS; elev++{				
+					elevMap[elev].Orders[elevMap[config.My_ID].CurrentFloor][elevio.BT_HallUp] = elevStateMap.OT_NoOrder
+				}
+
+
+
 				
 				buttonLampChan <-  elevio.ButtonLamp{elevMap[config.My_ID].CurrentFloor, elevio.BT_HallUp, false}
 			} else if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][elevio.BT_HallDown] == elevStateMap.OT_OrderPlaced{
-				elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][elevio.BT_HallDown] = elevStateMap.OT_NoOrder
+
+				for elev := 0; elev < config.NUM_ELEVS; elev++{				
+					elevMap[elev].Orders[elevMap[config.My_ID].CurrentFloor][elevio.BT_HallDown] = elevStateMap.OT_NoOrder
+				}
 				
 				buttonLampChan <-  elevio.ButtonLamp{elevMap[config.My_ID].CurrentFloor, elevio.BT_HallDown, false}
 			}
 			
 		case elevStateMap.ED_Down:
 			if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][elevio.BT_HallDown] == elevStateMap.OT_OrderPlaced{
-				elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][elevio.BT_HallDown] = elevStateMap.OT_NoOrder
+
+				for elev := 0; elev < config.NUM_ELEVS; elev++{				
+					elevMap[elev].Orders[elevMap[config.My_ID].CurrentFloor][elevio.BT_HallDown] = elevStateMap.OT_NoOrder
+				}
+
+
+
 				buttonLampChan <-  elevio.ButtonLamp{elevMap[config.My_ID].CurrentFloor, elevio.BT_HallDown, false}
 			} else if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][elevio.BT_HallUp] == elevStateMap.OT_OrderPlaced{
-				elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][elevio.BT_HallUp] = elevStateMap.OT_NoOrder
+
+				for elev := 0; elev < config.NUM_ELEVS; elev++{				
+					elevMap[elev].Orders[elevMap[config.My_ID].CurrentFloor][elevio.BT_HallUp] = elevStateMap.OT_NoOrder
+				}
+
+
+				
 				buttonLampChan <-  elevio.ButtonLamp{elevMap[config.My_ID].CurrentFloor, elevio.BT_HallUp, false}
+
+
 			}
 			
 	}

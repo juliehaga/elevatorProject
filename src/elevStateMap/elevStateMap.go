@@ -75,7 +75,7 @@ func GetLocalMap() ElevStateMap{
 }
 
 
-func setLocalMap(changedMap ElevStateMap){
+func SetLocalMap(changedMap ElevStateMap){
 	mutex.Lock()
 	LocalMap = changedMap
 	mutex.Unlock()
@@ -109,7 +109,7 @@ func UpdateLocalMap(changedMap ElevStateMap){
 			}
 		}
 	}
-	setLocalMap(currentMap)
+	SetLocalMap(currentMap)
 }
 
 
@@ -135,6 +135,15 @@ func UpdateMapFromNetwork(recievedMap ElevStateMap, newOrderChan chan elevio.But
 			for f:= 0; f < config.NUM_FLOORS; f++{
 				for b:= elevio.BT_HallUp; b < elevio.BT_Cab; b++{
 					if recievedMap[e].Orders[f][b] == OT_OrderPlaced && currentMap[e].Orders[f][b] == OT_NoOrder{
+						fmt.Printf("*******************MITT MAP******************")
+
+						PrintMap(currentMap)
+
+						fmt.Printf("*******************RECIEVED MAP******************")
+
+						PrintMap(recievedMap)
+
+
 						newOrderChan <- elevio.ButtonEvent{f, b}
 						
 						fmt.Printf("Order from network elev %v, floor %v, button %v\n\n", e, f, b)
@@ -152,7 +161,7 @@ func UpdateMapFromNetwork(recievedMap ElevStateMap, newOrderChan chan elevio.But
 			}
 		}
 	}
-	setLocalMap(currentMap)
+	SetLocalMap(currentMap)
 }
 
 

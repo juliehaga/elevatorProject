@@ -102,6 +102,7 @@ func main() {
 
 
 			if networkMapMsg.ID != config.My_ID {
+				fmt.Printf("network\n")
 		
 				elevStateMap.UpdateMapFromNetwork(networkMapMsg.ElevMap, newOrderChan, buttonLampChan)
 				//currentMap := elevStateMap.GetLocalMap()

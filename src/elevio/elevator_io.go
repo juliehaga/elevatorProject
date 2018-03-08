@@ -57,6 +57,7 @@ func Elevio(motorChan chan MotorDirection, doorLampChan chan bool, newOrderChan 
 		case light := <-doorLampChan:
 			SetDoorOpenLamp(light)
 		case lamp := <- buttonLampChan:
+			fmt.Printf("Slukker lys %v", lamp)
 			SetButtonLamp(lamp)
 		}
 
