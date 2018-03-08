@@ -180,11 +180,13 @@ func eventNewAckOrder(buttonLampChan chan elevio.ButtonLamp, motorChan chan elev
 				if motorDir != elevio.MD_Stop {
 					motorChan <- motorDir
 					currentMap[config.My_ID].IDLE = false
-					orderChangesChan <- currentMap
-					fmt.Printf("\n\n JEG HAR NÅ ENDRET TIL DETTE\n")
-					elevStateMap.PrintMap(currentMap)
+					
 					state = MOVING
 				}
+
+				orderChangesChan <- currentMap
+				fmt.Printf("\n\n JEG HAR NÅ ENDRET TIL DETTE\n")
+				elevStateMap.PrintMap(currentMap)
 			}			
 	}
 	fmt.Printf("ut av switch\n")

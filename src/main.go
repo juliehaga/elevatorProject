@@ -98,8 +98,8 @@ func main() {
 				fmt.Printf("network\n")
 		
 				elevStateMap.UpdateMapFromNetwork(orderMsgFromNetwork.ElevMap, newOrderChan, buttonLampChan)
-				currentMap := elevStateMap.GetLocalMap()
-				elevStateMap.PrintMap(currentMap)
+				//currentMap := elevStateMap.GetLocalMap()
+				//elevStateMap.PrintMap(currentMap)
 				//elevStateMap.PrintMap(networkMapMsg.ElevMap)
 			}
 		case statusMsgFromNetwork := <- statusMsgRx:
@@ -113,8 +113,8 @@ func main() {
 	
 			elevStateMap.UpdateLocalMap(elevMap)
 			network.SendOrders(messageTx, elevMap)
-			fmt.Printf("\n\n////////////////////DETTE SENDER JEG///////////////////\n")
-			elevStateMap.PrintMap(elevMap)
+			//fmt.Printf("\n\n////////////////////DETTE SENDER JEG///////////////////\n")
+			//elevStateMap.PrintMap(elevMap)
 
 		case elevMap:= <-statusChangesChan:
 			elevStateMap.UpdateLocalMap(elevMap)

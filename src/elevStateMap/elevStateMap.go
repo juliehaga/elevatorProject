@@ -155,6 +155,7 @@ func UpdateMapFromNetwork(recievedMap ElevStateMap, newOrderChan chan elevio.But
 	for e:= 0; e < config.NUM_ELEVS; e++{
 		if recievedMap[e].Door == true{
 			floorWithOpenDoor = recievedMap[e].CurrentFloor
+			fmt.Printf("Floor with door open %v\n", floorWithOpenDoor)
 		}
 
 		//sjekk om heis e er i live
@@ -168,17 +169,20 @@ func UpdateMapFromNetwork(recievedMap ElevStateMap, newOrderChan chan elevio.But
 			
 		}
 	}
+	fmt.Printf("*******************MITT MAP******************")
+
+	PrintMap(currentMap)
+
+	fmt.Printf("*******************RECIEVED MAP******************")
+
+	PrintMap(recievedMap)
+
+
+
 	for f:= 0; f < config.NUM_FLOORS; f++{
 			for b:= elevio.BT_HallUp; b < elevio.BT_Cab; b++{
 					if recievedMap[config.My_ID].Orders[f][b] == OT_OrderPlaced && currentMap[config.My_ID].Orders[f][b] == OT_NoOrder{
-						fmt.Printf("*******************MITT MAP******************")
-
-						PrintMap(currentMap)
-
-						fmt.Printf("*******************RECIEVED MAP******************")
-
-						PrintMap(recievedMap)
-
+						
 
 						newOrderChan <- elevio.ButtonEvent{f, b}
 						
