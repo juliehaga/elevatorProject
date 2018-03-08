@@ -121,6 +121,8 @@ func UpdateLocalMap(changedMap ElevStateMap){
 			floorWithOpenDoor = changedMap[e].CurrentFloor
 			fmt.Printf("floor with open door %v \n", floorWithOpenDoor)
 		}
+	}
+	for e:= 0; e < config.NUM_ELEVS; e++{
 		currentMap[e].Connected = changedMap[e].Connected
 		for f:= 0; f < config.NUM_FLOORS; f++{
 			currentMap[config.My_ID].Orders[f][elevio.BT_Cab] = changedMap[config.My_ID].Orders[f][elevio.BT_Cab]
