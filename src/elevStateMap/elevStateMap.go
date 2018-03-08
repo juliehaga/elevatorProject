@@ -128,6 +128,7 @@ func UpdateLocalMap(changedMap ElevStateMap){
 				if changedMap[e].Orders[f][b] == OT_OrderPlaced && currentMap[e].Orders[f][b] == OT_NoOrder{
 						currentMap[e].Orders[f][b] = changedMap[e].Orders[f][b]
 					} else if changedMap[e].Orders[f][b] == OT_NoOrder && currentMap[e].Orders[f][b] == OT_OrderPlaced && floorWithOpenDoor == f{
+						fmt.Printf("Sletter utført ordre")
 						currentMap[e].Orders[f][b] = changedMap[e].Orders[f][b]
 					}
 			}
