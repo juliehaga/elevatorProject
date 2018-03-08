@@ -261,11 +261,8 @@ func orderCompleted(elevMap *elevStateMap.ElevStateMap, buttonLampChan chan elev
 				for elev := 0; elev < config.NUM_ELEVS; elev++{				
 					elevMap[elev].Orders[elevMap[config.My_ID].CurrentFloor][elevio.BT_HallUp] = elevStateMap.OT_NoOrder
 				}
-
-
-
-				
 				buttonLampChan <-  elevio.ButtonLamp{elevMap[config.My_ID].CurrentFloor, elevio.BT_HallUp, false}
+				
 			} else if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][elevio.BT_HallDown] == elevStateMap.OT_OrderPlaced{
 
 				for elev := 0; elev < config.NUM_ELEVS; elev++{				
@@ -289,10 +286,7 @@ func orderCompleted(elevMap *elevStateMap.ElevStateMap, buttonLampChan chan elev
 
 				for elev := 0; elev < config.NUM_ELEVS; elev++{				
 					elevMap[elev].Orders[elevMap[config.My_ID].CurrentFloor][elevio.BT_HallUp] = elevStateMap.OT_NoOrder
-				}
-
-
-				
+				}				
 				buttonLampChan <-  elevio.ButtonLamp{elevMap[config.My_ID].CurrentFloor, elevio.BT_HallUp, false}
 
 

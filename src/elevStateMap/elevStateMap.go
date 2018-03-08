@@ -85,6 +85,14 @@ func SetLocalMap(changedMap ElevStateMap){
 func UpdateLocalMap(changedMap ElevStateMap){
 	currentMap := GetLocalMap()
 	floorWithOpenDoor := -1
+	fmt.Printf("*******************MITT MAP******************")
+
+	PrintMap(currentMap)
+
+	fmt.Printf("*******************CHANGED MAP******************")
+
+	PrintMap(changedMap)
+
 
 
 	currentMap[config.My_ID].CurrentFloor = changedMap[config.My_ID].CurrentFloor
