@@ -69,9 +69,21 @@ func eventIdleTimeout(motorChan chan elevio.MotorDirection, statusChangesChan ch
 	if motorDir != elevio.MD_Stop {
 		motorChan <- motorDir
 		currentMap[config.My_ID].IDLE = false
+		statusChangesChan <- currentMap	
 		state = MOVING
+		
+	} else{
+		doorLampChan <- true
+		doorTimer.Reset(time.Second * DOOR_TIME)
+
+		currentMap[config.My_ID].Door = true
+		orderCompleted(&currentMap, buttonLampChan)
+		currentMap[config.My_ID].IDLE = false
+		orderChangesChan <- currentMap
+		state = DOOR_OPEN
 	}
-	statusChangesChan <- currentMap		
+
+	
 	
 }
 
