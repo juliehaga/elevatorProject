@@ -152,9 +152,11 @@ func eventNewAckOrder(buttonLampChan chan elevio.ButtonLamp, motorChan chan elev
 	currentMap := elevStateMap.GetLocalMap()
 	buttonLampChan <- elevio.ButtonLamp{buttonPushed.Floor, buttonPushed.Button, true}
 	if buttonPushed.Button != elevio.BT_Cab{
-		for elev := 0; elev < config.NUM_ELEVS; elev++{				
-			currentMap[elev].Orders[buttonPushed.Floor][buttonPushed.Button] = elevStateMap.OT_OrderPlaced
-		}
+		for elev := 0; elev < config.NUM_ELEVS; elev++{		
+			if currentMap[elev].Connected == true{		
+				currentMap[elev].Orders[buttonPushed.Floor][buttonPushed.Button] = elevStateMap.OT_OrderPlaced
+			}
+		}	
 	}else {
 		currentMap[config.My_ID].Orders[buttonPushed.Floor][buttonPushed.Button] = elevStateMap.OT_OrderPlaced
 	}	
@@ -264,15 +266,19 @@ func orderCompleted(elevMap *elevStateMap.ElevStateMap, buttonLampChan chan elev
 		case elevStateMap.ED_Up: 
 			if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][elevio.BT_HallUp] == elevStateMap.OT_OrderPlaced{
 				
-				for elev := 0; elev < config.NUM_ELEVS; elev++{				
-					elevMap[elev].Orders[elevMap[config.My_ID].CurrentFloor][elevio.BT_HallUp] = elevStateMap.OT_NoOrder
-				}
+				for elev := 0; elev < config.NUM_ELEVS; elev++{	
+					if elevMap[elev].Connected == true{				
+						elevMap[elev].Orders[elevMap[config.My_ID].CurrentFloor][elevio.BT_HallUp] = elevStateMap.OT_NoOrder
+					}
+				}	
 				buttonLampChan <-  elevio.ButtonLamp{elevMap[config.My_ID].CurrentFloor, elevio.BT_HallUp, false}
 
 			} else if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][elevio.BT_HallDown] == elevStateMap.OT_OrderPlaced{
 
-				for elev := 0; elev < config.NUM_ELEVS; elev++{				
-					elevMap[elev].Orders[elevMap[config.My_ID].CurrentFloor][elevio.BT_HallDown] = elevStateMap.OT_NoOrder
+				for elev := 0; elev < config.NUM_ELEVS; elev++{			
+					if elevMap[elev].Connected == true{		
+						elevMap[elev].Orders[elevMap[config.My_ID].CurrentFloor][elevio.BT_HallDown] = elevStateMap.OT_NoOrder
+					}
 				}
 				
 				buttonLampChan <-  elevio.ButtonLamp{elevMap[config.My_ID].CurrentFloor, elevio.BT_HallDown, false}
@@ -281,18 +287,21 @@ func orderCompleted(elevMap *elevStateMap.ElevStateMap, buttonLampChan chan elev
 		case elevStateMap.ED_Down:
 			if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][elevio.BT_HallDown] == elevStateMap.OT_OrderPlaced{
 
-				for elev := 0; elev < config.NUM_ELEVS; elev++{				
-					elevMap[elev].Orders[elevMap[config.My_ID].CurrentFloor][elevio.BT_HallDown] = elevStateMap.OT_NoOrder
+				for elev := 0; elev < config.NUM_ELEVS; elev++{		
+					if elevMap[elev].Connected == true{			
+						elevMap[elev].Orders[elevMap[config.My_ID].CurrentFloor][elevio.BT_HallDown] = elevStateMap.OT_NoOrder
+					}
 				}
-
 
 
 				buttonLampChan <-  elevio.ButtonLamp{elevMap[config.My_ID].CurrentFloor, elevio.BT_HallDown, false}
 			} else if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][elevio.BT_HallUp] == elevStateMap.OT_OrderPlaced{
 
-				for elev := 0; elev < config.NUM_ELEVS; elev++{				
-					elevMap[elev].Orders[elevMap[config.My_ID].CurrentFloor][elevio.BT_HallUp] = elevStateMap.OT_NoOrder
-				}				
+				for elev := 0; elev < config.NUM_ELEVS; elev++{	
+					if elevMap[elev].Connected == true{				
+						elevMap[elev].Orders[elevMap[config.My_ID].CurrentFloor][elevio.BT_HallUp] = elevStateMap.OT_NoOrder
+					}
+				}					
 				buttonLampChan <-  elevio.ButtonLamp{elevMap[config.My_ID].CurrentFloor, elevio.BT_HallUp, false}
 
 
@@ -375,47 +384,51 @@ func nearestElevator(elevMap elevStateMap.ElevStateMap, floor int) bool{
  	if elevMap[config.My_ID].CurrentFloor < floor { 
  		fmt.Printf("jeg står under \n")
 	 	for e := 0; e<config.NUM_ELEVS; e++ {
-		 	if e != config.My_ID{	
-		 		distElev := int(math.Abs(float64(elevMap[e].CurrentFloor - floor)))
-		 		fmt.Printf("Den andre er %v etasjer unna\n", distElev)
-		 		if distElev < myDist{
-		 			fmt.Printf("den har kortere\n")
-		 			if elevMap[e].CurrentFloor <= floor && (elevMap[e].CurrentDir == elevStateMap.ED_Up || elevMap[e].IDLE ){
-		 				fmt.Printf("den andre tar den\n")
-		 				return false
-		 			} else if elevMap[e].CurrentFloor >= floor && (elevMap[e].CurrentDir == elevStateMap.ED_Down || elevMap[e].IDLE ) {
-		 				fmt.Printf("den andre tar den\n")
-		 				return false
-		 			}
-		 		} else if myDist == distElev && (elevMap[e].CurrentDir == elevStateMap.ED_Up || elevMap[e].IDLE){
-		 			if e > config.My_ID{
-		 				return false
-		 			}
-		 		}
-		 	}
+	 		if elevMap[e].Connected == true{	
+			 	if e != config.My_ID{	
+			 		distElev := int(math.Abs(float64(elevMap[e].CurrentFloor - floor)))
+			 		fmt.Printf("Den andre er %v etasjer unna\n", distElev)
+			 		if distElev < myDist{
+			 			fmt.Printf("den har kortere\n")
+			 			if elevMap[e].CurrentFloor <= floor && (elevMap[e].CurrentDir == elevStateMap.ED_Up || elevMap[e].IDLE ){
+			 				fmt.Printf("den andre tar den\n")
+			 				return false
+			 			} else if elevMap[e].CurrentFloor >= floor && (elevMap[e].CurrentDir == elevStateMap.ED_Down || elevMap[e].IDLE ) {
+			 				fmt.Printf("den andre tar den\n")
+			 				return false
+			 			}
+			 		} else if myDist == distElev && (elevMap[e].CurrentDir == elevStateMap.ED_Up || elevMap[e].IDLE){
+			 			if e > config.My_ID{
+			 				return false
+			 			}
+			 		}
+			 	}
+			} 	
 		 }
  	} else if elevMap[config.My_ID].CurrentFloor > floor {
 	 		fmt.Printf("jeg står over \n")
 		 	for e := 0; e<config.NUM_ELEVS; e++ {
-			 	if e != config.My_ID{	
-			 		distElev := int(math.Abs(float64(elevMap[e].CurrentFloor - floor)))
-			 		if distElev < myDist{
-			 			fmt.Printf("den har kortere\n")
-			 			if elevMap[e].CurrentFloor >= floor && (elevMap[e].CurrentDir == elevStateMap.ED_Down || elevMap[e].IDLE ){
-			 				fmt.Printf("den andre tar den\n")
+		 		if elevMap[e].Connected == true{	
+				 	if e != config.My_ID{	
+				 		distElev := int(math.Abs(float64(elevMap[e].CurrentFloor - floor)))
+				 		if distElev < myDist{
+				 			fmt.Printf("den har kortere\n")
+				 			if elevMap[e].CurrentFloor >= floor && (elevMap[e].CurrentDir == elevStateMap.ED_Down || elevMap[e].IDLE ){
+				 				fmt.Printf("den andre tar den\n")
+				 				return false
+				 			} else if elevMap[e].CurrentFloor <= floor && (elevMap[e].CurrentDir == elevStateMap.ED_Up || elevMap[e].IDLE ) {
+			 					fmt.Printf("den andre tar den\n")
+			 					return false
+			 				}
+				 		}  else if myDist == distElev && (elevMap[e].CurrentDir == elevStateMap.ED_Down || elevMap[e].IDLE){
+			 			if e > config.My_ID{
+			 				fmt.Printf("Prioritert på ID")
 			 				return false
-			 			} else if elevMap[e].CurrentFloor <= floor && (elevMap[e].CurrentDir == elevStateMap.ED_Up || elevMap[e].IDLE ) {
-		 					fmt.Printf("den andre tar den\n")
-		 					return false
-		 				}
-			 		}  else if myDist == distElev && (elevMap[e].CurrentDir == elevStateMap.ED_Down || elevMap[e].IDLE){
-		 			if e > config.My_ID{
-		 				fmt.Printf("Prioritert på ID")
-		 				return false
-		 			}
-		 		}
+			 			}
+			 		}
 			 	}
 			}
+		}	
 	}
 
 	fmt.Printf("jeg var nærmest\n")

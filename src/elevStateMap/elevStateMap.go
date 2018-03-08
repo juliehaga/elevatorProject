@@ -118,18 +118,19 @@ func UpdateLocalMap(changedMap ElevStateMap){
 	}
 	for e:= 0; e < config.NUM_ELEVS; e++{
 		if currentMap[e].Connected == true { 
-		for f:= 0; f < config.NUM_FLOORS; f++{
-			currentMap[config.My_ID].Orders[f][elevio.BT_Cab] = changedMap[config.My_ID].Orders[f][elevio.BT_Cab]
-			for b:= elevio.BT_HallUp; b < elevio.BT_Cab; b++{
+			for f:= 0; f < config.NUM_FLOORS; f++{
+				currentMap[config.My_ID].Orders[f][elevio.BT_Cab] = changedMap[config.My_ID].Orders[f][elevio.BT_Cab]
+				for b:= elevio.BT_HallUp; b < elevio.BT_Cab; b++{
 
-				if changedMap[e].Orders[f][b] == OT_OrderPlaced && currentMap[e].Orders[f][b] == OT_NoOrder{
-						currentMap[e].Orders[f][b] = changedMap[e].Orders[f][b]
-					} else if changedMap[e].Orders[f][b] == OT_NoOrder && currentMap[e].Orders[f][b] == OT_OrderPlaced && floorWithOpenDoor == f{
-						fmt.Printf("Sletter utført ordre \n")
-						currentMap[e].Orders[f][b] = changedMap[e].Orders[f][b]
-					}
+					if changedMap[e].Orders[f][b] == OT_OrderPlaced && currentMap[e].Orders[f][b] == OT_NoOrder{
+							currentMap[e].Orders[f][b] = changedMap[e].Orders[f][b]
+						} else if changedMap[e].Orders[f][b] == OT_NoOrder && currentMap[e].Orders[f][b] == OT_OrderPlaced && floorWithOpenDoor == f{
+							fmt.Printf("Sletter utført ordre \n")
+							currentMap[e].Orders[f][b] = changedMap[e].Orders[f][b]
+						}
+				}
 			}
-		}
+		}	
 	}
 	//fmt.Printf("*******************MITT MAP etter endring******************")
 
@@ -147,20 +148,22 @@ func UpdateMapFromNetwork(recievedMap ElevStateMap, newOrderChan chan elevio.But
 	fmt.Print("MAP I ORDRE FROM NETWORK\n\n")
 	//PrintMap(recievedMap)
 	for e:= 0; e < config.NUM_ELEVS; e++{
-		if recievedMap[e].Door == true{
-			floorWithOpenDoor = recievedMap[e].CurrentFloor
-			fmt.Printf("Floor with door open %v\n", floorWithOpenDoor)
-		}
-
-		//sjekk om heis e er i live
-		if recievedMap[e].Connected == true{
-
-			if e != config.My_ID {
-				currentMap[e].CurrentFloor = recievedMap[e].CurrentFloor
-				currentMap[e].CurrentDir = recievedMap[e].CurrentDir
-				currentMap[e].Door = recievedMap[e].Door
+		if currentMap[e].Connected == true{
+			if recievedMap[e].Door == true{
+				floorWithOpenDoor = recievedMap[e].CurrentFloor
+				fmt.Printf("Floor with door open %v\n", floorWithOpenDoor)
 			}
-			
+
+			//sjekk om heis e er i live
+			if recievedMap[e].Connected == true{
+
+				if e != config.My_ID {
+					currentMap[e].CurrentFloor = recievedMap[e].CurrentFloor
+					currentMap[e].CurrentDir = recievedMap[e].CurrentDir
+					currentMap[e].Door = recievedMap[e].Door
+				}
+				
+			}
 		}
 	}
 
