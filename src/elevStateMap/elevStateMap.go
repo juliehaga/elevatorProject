@@ -140,6 +140,7 @@ func UpdateMapFromNetwork(recievedMap ElevStateMap, newOrderChan chan elevio.But
 						newOrderChan <- elevio.ButtonEvent{f, b}
 						fmt.Printf("Order from network elev %v, floor %v, button %v\n\n", e, f, b)
 						currentMap[config.My_ID].Orders[f][b] = OT_OrderPlaced
+						currentMap[e].Orders[f][b] = OT_OrderPlaced
 
 
 					} else if recievedMap[e].Orders[f][b] == OT_NoOrder && currentMap[e].Orders[f][b] == OT_OrderPlaced && floorWithOpenDoor == f{
