@@ -19,7 +19,7 @@ const(
 )
 
 const DOOR_TIME 	= 2
-const IDLE_TIME 	= 3
+const IDLE_TIME 	= 5
 
 
 func Fsm(motorChan chan elevio.MotorDirection, doorLampChan chan bool, floorChan chan int, buttonLampChan chan elevio.ButtonLamp, orderChangesChan chan elevStateMap.ElevStateMap, newOrderChan chan elevio.ButtonEvent, statusChangesChan chan elevStateMap.ElevStateMap){
