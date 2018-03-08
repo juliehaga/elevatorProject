@@ -150,8 +150,13 @@ func eventNewAckOrder(buttonLampChan chan elevio.ButtonLamp, motorChan chan elev
 
 	currentMap := elevStateMap.GetLocalMap()
 	buttonLampChan <- elevio.ButtonLamp{buttonPushed.Floor, buttonPushed.Button, true}
-	currentMap[config.My_ID].Orders[buttonPushed.Floor][buttonPushed.Button] = elevStateMap.OT_OrderPlaced
-
+	if buttonPushed.Button != elevio.BT_Cab{
+		for elev := 0; elev < config.NUM_ELEVS; elev++{				
+			currentMap[elev].Orders[buttonPushed.Floor][buttonPushed.Button] = elevStateMap.OT_OrderPlaced
+		}
+	}else {
+		currentMap[config.My_ID].Orders[buttonPushed.Floor][buttonPushed.Button] = elevStateMap.OT_OrderPlaced
+	}	
 	switch(state){
 		case IDLE:
 
