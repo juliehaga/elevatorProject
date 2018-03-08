@@ -71,8 +71,8 @@ func eventIdleTimeout(motorChan chan elevio.MotorDirection, statusChangesChan ch
 		currentMap[config.My_ID].IDLE = false
 		statusChangesChan <- currentMap	
 		state = MOVING
-		
-	} else{
+
+	} else if orderInThisFloor(currentMap[config.My_ID].CurrentFloor, currentMap){
 		doorLampChan <- true
 		doorTimer.Reset(time.Second * DOOR_TIME)
 
@@ -82,9 +82,6 @@ func eventIdleTimeout(motorChan chan elevio.MotorDirection, statusChangesChan ch
 		orderChangesChan <- currentMap
 		state = DOOR_OPEN
 	}
-
-	
-	
 }
 
 
