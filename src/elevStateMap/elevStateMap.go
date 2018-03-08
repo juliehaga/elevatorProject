@@ -39,6 +39,25 @@ type ElevInfo struct{
 
 type ElevStateMap [config.NUM_ELEVS]ElevInfo
 
+type Message struct {
+	ID int
+	MsgType int
+	ElevMap   ElevStateMap
+}
+
+
+type StatusMsg struct {
+	ID int
+	CurrentFloor int
+	CurrentDir ElevDir
+	Door bool
+}
+
+type OrderMsg struct{
+	ID int
+	ElevMap ElevStateMap
+}
+
 
 
 
@@ -173,6 +192,15 @@ func UpdateMapFromNetwork(recievedMap ElevStateMap, newOrderChan chan elevio.But
 				}
 			}
 	SetLocalMap(currentMap)
+}
+
+func UpdateElevStatusFromNetwork(newStatus StatusMsg){
+	currentMap := GetLocalMap()
+	currentMap[newStatus.ID].CurrentFloor = newStatus.CurrentFloor
+	currentMap[newStatus.ID].CurrentDir = newStatus.CurrentDir
+	currentMap[newStatus.ID].Door = newStatus.Door
+	SetLocalMap(currentMap)
+
 }
 
 

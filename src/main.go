@@ -46,10 +46,9 @@ func main() {
 
     floorChan  := make(chan int)  
     buttonLampChan  := make(chan elevio.ButtonLamp)
-    mapChangesChan := make(chan elevStateMap.ElevStateMap)
-  
+    statusChangesChan := make(chan elevStateMap.ElevStateMap)
+    orderChangesChan := make(chan elevStateMap.ElevStateMap)
     newOrderChan := make(chan elevio.ButtonEvent)
-
 
     // We make a channel for receiving updates on the id's of the peers that are
 	//  alive on the network
@@ -58,22 +57,19 @@ func main() {
     peerTxEnable := make(chan bool)
 
 
-    
-    // We make channels for sending and receiving our custom data types
-	elevMapTx := make(chan network.ElevMapMsg)
-	elevMapRx := make(chan network.ElevMapMsg)
-	// ... and start the transmitter/receiver pair on some port
-	// These functions can take any number of channels! It is also possible to
-	//  start multiple transmitters/receivers on the same port.
-	
+ 
+	messageTx := make(chan elevStateMap.Message)
+	orderMsgRx := make(chan elevStateMap.OrderMsg)
+	statusMsgRx := make(chan elevStateMap.StatusMsg)
 
 
-    go fsm.Fsm(motorChan, doorLampChan, floorChan, buttonLampChan, mapChangesChan, newOrderChan)
+
+    go fsm.Fsm(motorChan, doorLampChan, floorChan, buttonLampChan, orderChangesChan, newOrderChan, statusChangesChan)
     go elevio.Elevio(motorChan, doorLampChan, newOrderChan, floorChan, buttonLampChan)
-	go network.Transmitter(16502, elevMapTx)
-	go network.Receiver(16502, elevMapRx)
+	go network.Transmitter(16502, messageTx)
+	go network.Receiver(16502, orderMsgRx, statusMsgRx)
     go network.PeerTransmitter(15600, id, peerTxEnable)
-	go network.PeerReceiver(15600, peerUpdateCh, mapChangesChan)
+	go network.PeerReceiver(15600, peerUpdateCh)
 
     
    
@@ -96,30 +92,32 @@ func main() {
 
 
 
-		case networkMapMsg := <- elevMapRx:
-
-			//Når vi mottar melding bør vi sjekke at hardware er oppdatert?
-
-
-			if networkMapMsg.ID != config.My_ID {
+		case orderMsgFromNetwork := <- orderMsgRx:
+			//Når vi mottar melding bør vi sjekke at hardware er oppdatert
+			if orderMsgFromNetwork.ID != config.My_ID {
 				fmt.Printf("network\n")
 		
-				elevStateMap.UpdateMapFromNetwork(networkMapMsg.ElevMap, newOrderChan, buttonLampChan)
+				elevStateMap.UpdateMapFromNetwork(orderMsgFromNetwork.ElevMap, newOrderChan, buttonLampChan)
 				//currentMap := elevStateMap.GetLocalMap()
 				//elevStateMap.PrintMap(currentMap)
 				//elevStateMap.PrintMap(networkMapMsg.ElevMap)
 			}
-			
-		case elevMap:= <-mapChangesChan:
+		case statusMsgFromNetwork := <- statusMsgRx:
+			if statusMsgFromNetwork.ID != config.My_ID {
+				elevStateMap.UpdateElevStatusFromNetwork(statusMsgFromNetwork)
+			}
+
+
+		case elevMap:= <-orderChangesChan:
 			fmt.Printf("gjør forandring\n")	
 	
 			elevStateMap.UpdateLocalMap(elevMap)
-			//fmt.Printf("MAP OPPDATERES lokalt\n \n\n")
+			network.SendOrders(messageTx, elevMap)
 
-			//currentMap := elevStateMap.GetLocalMap()
+		case elevMap:= <-statusChangesChan:
+			elevStateMap.UpdateLocalMap(elevMap)
+			network.SendElevStatus(messageTx, elevMap)
 
-			//elevStateMap.PrintMap(currentMap)
-			network.SendElevMap(elevMapTx, elevMap)
 
 		}
 	}

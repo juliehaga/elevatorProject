@@ -22,7 +22,7 @@ const DOOR_TIME 	= 2
 const IDLE_TIME 	= 2
 
 
-func Fsm(motorChan chan elevio.MotorDirection, doorLampChan chan bool, floorChan chan int, buttonLampChan chan elevio.ButtonLamp, mapChangesChan chan elevStateMap.ElevStateMap, newOrderChan chan elevio.ButtonEvent){
+func Fsm(motorChan chan elevio.MotorDirection, doorLampChan chan bool, floorChan chan int, buttonLampChan chan elevio.ButtonLamp, orderChangesChan chan elevStateMap.ElevStateMap, newOrderChan chan elevio.ButtonEvent, statusChangesChan chan elevStateMap.ElevStateMap){
 	doorTimer := time.NewTimer(time.Second * DOOR_TIME)
 	doorTimer.Stop()
 
@@ -36,15 +36,15 @@ func Fsm(motorChan chan elevio.MotorDirection, doorLampChan chan bool, floorChan
 		select{
 		case  floor := <- floorChan:
 			fmt.Printf("floor event\n")
-			eventNewFloor(motorChan, doorLampChan, doorTimer, mapChangesChan, buttonLampChan, floor, idleTimer)
+			eventNewFloor(motorChan, doorLampChan, doorTimer,orderChangesChan, buttonLampChan, floor, idleTimer, statusChangesChan)
 			
 		case buttonPushed := <- newOrderChan:
 			fmt.Printf("buttonpushed\n")
-			eventNewAckOrder(buttonLampChan, motorChan, doorLampChan, doorTimer, mapChangesChan, buttonPushed, idleTimer)
+			eventNewAckOrder(buttonLampChan, motorChan, doorLampChan, doorTimer, orderChangesChan, buttonPushed, idleTimer, statusChangesChan)
 			
 		case <- doorTimer.C:
 			fmt.Printf("door timeout\n")
-			eventDoorTimeout(doorLampChan, mapChangesChan, idleTimer, motorChan)
+			eventDoorTimeout(doorLampChan, statusChangesChan, idleTimer, motorChan)
 			
 		//case <- idleTimer.C:
 		//	eventIdleTimeout(motorChan, mapChangesChan, newOrderChan, doorLampChan, doorTimer, buttonLampChan)
@@ -69,7 +69,7 @@ func eventIdleTimeout(motorChan chan elevio.MotorDirection, mapChangesChan chan 
 						doorTimer.Reset(time.Second * DOOR_TIME)
 
 						currentMap[config.My_ID].Door = true
-						orderCompleted(&currentMap, buttonLampChan, mapChangesChan)
+						orderCompleted(&currentMap, buttonLampChan)
 						
 						currentMap[config.My_ID].IDLE = false
 						state = DOOR_OPEN
@@ -97,10 +97,11 @@ func eventIdleTimeout(motorChan chan elevio.MotorDirection, mapChangesChan chan 
 
 
 
-func eventNewFloor(motorChan chan elevio.MotorDirection, doorLampChan chan bool, doorTimer *time.Timer, mapChangesChan chan elevStateMap.ElevStateMap, buttonLampChan chan elevio.ButtonLamp, floor int, idleTimer *time.Timer){
+func eventNewFloor(motorChan chan elevio.MotorDirection, doorLampChan chan bool, doorTimer *time.Timer, orderChangesChan chan elevStateMap.ElevStateMap, buttonLampChan chan elevio.ButtonLamp, floor int, idleTimer *time.Timer, statusChangesChan chan elevStateMap.ElevStateMap){
 	currentMap := elevStateMap.GetLocalMap()
 	if floor != -1 {
 		currentMap[config.My_ID].CurrentFloor = floor
+		statusChangesChan <- currentMap
 	}
 	idleTimer.Reset(time.Second * IDLE_TIME)
 
@@ -112,21 +113,20 @@ func eventNewFloor(motorChan chan elevio.MotorDirection, doorLampChan chan bool,
 				doorTimer.Reset(time.Second * DOOR_TIME)
 
 				currentMap[config.My_ID].Door = true
-				orderCompleted(&currentMap, buttonLampChan, mapChangesChan)
+				orderCompleted(&currentMap, buttonLampChan)
 				currentMap[config.My_ID].IDLE = false
-				mapChangesChan <- currentMap
+				orderChangesChan <- currentMap
 				state = DOOR_OPEN
 			}
 	}
 }
 
-func eventDoorTimeout(doorLampChan chan bool, mapChangesChan chan elevStateMap.ElevStateMap, idleTimer *time.Timer, motorChan chan elevio.MotorDirection){
+func eventDoorTimeout(doorLampChan chan bool, statusChangesChan chan elevStateMap.ElevStateMap, idleTimer *time.Timer, motorChan chan elevio.MotorDirection){
 	currentMap := elevStateMap.GetLocalMap()
 	switch(state){
 		case DOOR_OPEN:
 			doorLampChan <- false
 			currentMap[config.My_ID].Door = false
-			mapChangesChan <- currentMap
 			currentMap[config.My_ID].IDLE = true
 			state = IDLE
 			idleTimer.Reset(time.Second * IDLE_TIME)
@@ -138,14 +138,15 @@ func eventDoorTimeout(doorLampChan chan bool, mapChangesChan chan elevStateMap.E
 				currentMap[config.My_ID].IDLE = false
 				state = MOVING
 			}
+			statusChangesChan <- currentMap	
 		
 	}
-	mapChangesChan <- currentMap	
+
 	
 }
 
 
-func eventNewAckOrder(buttonLampChan chan elevio.ButtonLamp, motorChan chan elevio.MotorDirection, doorLampChan chan bool, doorTimer *time.Timer, mapChangesChan chan elevStateMap.ElevStateMap, buttonPushed elevio.ButtonEvent, idleTimer *time.Timer){
+func eventNewAckOrder(buttonLampChan chan elevio.ButtonLamp, motorChan chan elevio.MotorDirection, doorLampChan chan bool, doorTimer *time.Timer, orderChangesChan chan elevStateMap.ElevStateMap, buttonPushed elevio.ButtonEvent, idleTimer *time.Timer, statusChangesChan chan elevStateMap.ElevStateMap){
 	fmt.Printf("evenNewAckOrder\n")
 
 	currentMap := elevStateMap.GetLocalMap()
@@ -165,10 +166,10 @@ func eventNewAckOrder(buttonLampChan chan elevio.ButtonLamp, motorChan chan elev
 				fmt.Printf("I am in ordered floor\n")
 				doorLampChan <- true	
 				currentMap[config.My_ID].Door = true
-				orderCompleted(&currentMap, buttonLampChan, mapChangesChan)
+				orderCompleted(&currentMap, buttonLampChan)
 				doorTimer.Reset(time.Second * DOOR_TIME)
 				currentMap[config.My_ID].IDLE = false
-				mapChangesChan <- currentMap
+				orderChangesChan <- currentMap
 				state = DOOR_OPEN
 
 				
@@ -177,7 +178,7 @@ func eventNewAckOrder(buttonLampChan chan elevio.ButtonLamp, motorChan chan elev
 				if motorDir != elevio.MD_Stop {
 					motorChan <- motorDir
 					currentMap[config.My_ID].IDLE = false
-					mapChangesChan <- currentMap
+					statusChangesChan <- currentMap
 					state = MOVING
 				}
 			}			
@@ -244,7 +245,7 @@ func ordersBelow(elevMap elevStateMap.ElevStateMap) bool{
 
 
 
-func orderCompleted(elevMap *elevStateMap.ElevStateMap, buttonLampChan chan elevio.ButtonLamp, mapChangesChan chan elevStateMap.ElevStateMap){
+func orderCompleted(elevMap *elevStateMap.ElevStateMap, buttonLampChan chan elevio.ButtonLamp){
 	fmt.Printf("I completed an order\n")
 
 
@@ -262,7 +263,7 @@ func orderCompleted(elevMap *elevStateMap.ElevStateMap, buttonLampChan chan elev
 					elevMap[elev].Orders[elevMap[config.My_ID].CurrentFloor][elevio.BT_HallUp] = elevStateMap.OT_NoOrder
 				}
 				buttonLampChan <-  elevio.ButtonLamp{elevMap[config.My_ID].CurrentFloor, elevio.BT_HallUp, false}
-				
+
 			} else if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][elevio.BT_HallDown] == elevStateMap.OT_OrderPlaced{
 
 				for elev := 0; elev < config.NUM_ELEVS; elev++{				
