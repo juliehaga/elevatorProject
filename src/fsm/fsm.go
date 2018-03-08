@@ -40,7 +40,7 @@ func Fsm(motorChan chan elevio.MotorDirection, doorLampChan chan bool, floorChan
 			
 		case buttonPushed := <- newOrderChan:
 			fmt.Printf("buttonpushed\n")
-			eventNewAckOrder(buttonLampChan, motorChan, doorLampChan, doorTimer, orderChangesChan, buttonPushed, idleTimer, statusChangesChan)
+			eventNewAckOrder(buttonLampChan, motorChan, doorLampChan, doorTimer, orderChangesChan, buttonPushed, idleTimer)
 			
 		case <- doorTimer.C:
 			fmt.Printf("door timeout\n")
@@ -146,7 +146,7 @@ func eventDoorTimeout(doorLampChan chan bool, statusChangesChan chan elevStateMa
 }
 
 
-func eventNewAckOrder(buttonLampChan chan elevio.ButtonLamp, motorChan chan elevio.MotorDirection, doorLampChan chan bool, doorTimer *time.Timer, orderChangesChan chan elevStateMap.ElevStateMap, buttonPushed elevio.ButtonEvent, idleTimer *time.Timer, statusChangesChan chan elevStateMap.ElevStateMap){
+func eventNewAckOrder(buttonLampChan chan elevio.ButtonLamp, motorChan chan elevio.MotorDirection, doorLampChan chan bool, doorTimer *time.Timer, orderChangesChan chan elevStateMap.ElevStateMap, buttonPushed elevio.ButtonEvent, idleTimer *time.Timer){
 	fmt.Printf("evenNewAckOrder\n")
 
 	currentMap := elevStateMap.GetLocalMap()
@@ -180,7 +180,7 @@ func eventNewAckOrder(buttonLampChan chan elevio.ButtonLamp, motorChan chan elev
 				if motorDir != elevio.MD_Stop {
 					motorChan <- motorDir
 					currentMap[config.My_ID].IDLE = false
-					statusChangesChan <- currentMap
+					orderChangesChan <- currentMap
 					fmt.Printf("\n\n JEG HAR NÅ ENDRET TIL DETTE\n")
 					elevStateMap.PrintMap(currentMap)
 					state = MOVING
