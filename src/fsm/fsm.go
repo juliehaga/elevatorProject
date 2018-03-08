@@ -169,9 +169,6 @@ func eventNewAckOrder(buttonLampChan chan elevio.ButtonLamp, motorChan chan elev
 				orderCompleted(&currentMap, buttonLampChan)
 				doorTimer.Reset(time.Second * DOOR_TIME)
 				currentMap[config.My_ID].IDLE = false
-				fmt.Printf("\n\n JEG HAR NÅ ENDRET TIL DETTE\n")
-				elevStateMap.PrintMap(currentMap)
-				orderChangesChan <- currentMap
 				state = DOOR_OPEN
 
 				
@@ -184,11 +181,13 @@ func eventNewAckOrder(buttonLampChan chan elevio.ButtonLamp, motorChan chan elev
 					state = MOVING
 				}
 
-				orderChangesChan <- currentMap
-				fmt.Printf("\n\n JEG HAR NÅ ENDRET TIL DETTE\n")
-				elevStateMap.PrintMap(currentMap)
-			}			
+				
+			}	
+
 	}
+	orderChangesChan <- currentMap
+	fmt.Printf("\n\n JEG HAR NÅ ENDRET TIL DETTE\n")
+	elevStateMap.PrintMap(currentMap)
 	fmt.Printf("ut av switch\n")
 
 
