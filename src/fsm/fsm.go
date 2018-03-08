@@ -147,6 +147,7 @@ func eventDoorTimeout(doorLampChan chan bool, statusChangesChan chan elevStateMa
 func eventNewAckOrder(buttonLampChan chan elevio.ButtonLamp, motorChan chan elevio.MotorDirection, doorLampChan chan bool, doorTimer *time.Timer, orderChangesChan chan elevStateMap.ElevStateMap, buttonPushed elevio.ButtonEvent, idleTimer *time.Timer){
 
 	currentMap := elevStateMap.GetLocalMap()
+	fmt.Printf("\n \n CURRENT FLOOR %v \n \n", currentMap[config.My_ID].CurrentFloor)
 	buttonLampChan <- elevio.ButtonLamp{buttonPushed.Floor, buttonPushed.Button, true}
 	if buttonPushed.Button != elevio.BT_Cab{
 		for elev := 0; elev < config.NUM_ELEVS; elev++{		
@@ -162,6 +163,7 @@ func eventNewAckOrder(buttonLampChan chan elevio.ButtonLamp, motorChan chan elev
 		case IDLE:
 
 			if shouldStop(currentMap) {
+				fmt.Printf("IDLE -shouldstop\n")
 				doorLampChan <- true	
 				currentMap[config.My_ID].Door = true
 				orderCompleted(&currentMap, buttonLampChan)
@@ -190,11 +192,16 @@ func eventNewAckOrder(buttonLampChan chan elevio.ButtonLamp, motorChan chan elev
 }
 
 func shouldStop(elevMap elevStateMap.ElevStateMap) bool{
-	if elevMap[config.My_ID].CurrentFloor == config.NUM_FLOORS && elevMap[config.My_ID].CurrentDir == elevStateMap.ED_Up{
-		return true
-	} else if elevMap[config.My_ID].CurrentFloor == 0 && elevMap[config.My_ID].CurrentDir == elevStateMap.ED_Down {
-		return true
+	switch(state){
+		case MOVING: 
+			fmt.Printf("state moving\n")
+			if elevMap[config.My_ID].CurrentFloor == config.NUM_FLOORS && elevMap[config.My_ID].CurrentDir == elevStateMap.ED_Up{
+				return true
+			} else if elevMap[config.My_ID].CurrentFloor == 0 && elevMap[config.My_ID].CurrentDir == elevStateMap.ED_Down {
+				return true
+			}
 	}
+	
 	//elevStateMap.PrintMap(elevMap)
 
 	if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][elevio.BT_Cab]==elevStateMap.OT_OrderPlaced{
