@@ -62,12 +62,13 @@ func Init(addr string, numFloors int) {
 	}
 	_initialized = true
 	SetMotorDirection(config.MD_Up)
-	for GetFloor() == -1{}
+	for getFloor() == -1{}
 	SetMotorDirection(config.MD_Stop)
 
 
 
 	currentMap := elevStateMap.GetLocalMap()
+	currentMap[config.My_ID].CurrentFloor = getFloor()
 	for f := 0; f < config.NUM_FLOORS; f++{
 		for b:= config.BT_HallUp; b <= config.BT_Cab; b++{
 			if currentMap[config.My_ID].Orders[f][b] == config.OT_OrderPlaced{
@@ -81,6 +82,7 @@ func Init(addr string, numFloors int) {
 	}
 	
 	SetDoorOpenLamp(false)
+	elevStateMap.SetLocalMap(currentMap)
 }
 
 
@@ -145,7 +147,7 @@ func PollFloorSensor(receiver chan<- int) {
 	prev := -1
 	for {
 		time.Sleep(_pollRate)
-		v := GetFloor()
+		v := getFloor()
 		if v < _numFloors && v >= 0 {
 			SetFloorIndicator(v)
 
@@ -196,7 +198,7 @@ func getButton(button config.ButtonType, floor int) bool {
 }
 
 
-func GetFloor() int {
+func getFloor() int {
 	_mtx.Lock()
 	defer _mtx.Unlock()
 	_conn.Write([]byte{7, 0, 0, 0})

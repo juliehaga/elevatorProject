@@ -64,6 +64,9 @@ func main() {
 	config.Init(id, port)
 	elevStateMap.InitElevStateMap(newOrderChan)
 	elevio.Init("localhost:" + port, config.NUM_FLOORS)
+
+	currentMap := elevStateMap.GetLocalMap()
+	elevStateMap.PrintMap(currentMap)
 	
 	init := true
 
