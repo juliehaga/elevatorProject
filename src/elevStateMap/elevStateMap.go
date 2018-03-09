@@ -175,22 +175,18 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, newOrderChan chan con
 	floorWithOpenDoor := -1
 	//PrintMap(recievedMap)
 	for e:= 0; e < config.NUM_ELEVS; e++{
-		if currentMap[e].Connected == true{
-			if recievedMap[e].Door == true{
-				floorWithOpenDoor = recievedMap[e].CurrentFloor
-			}
-
-			//sjekk om heis e er i live
-			if recievedMap[e].Connected == true{
-
-				if e != config.My_ID {
-					currentMap[e].CurrentFloor = recievedMap[e].CurrentFloor
-					currentMap[e].CurrentDir = recievedMap[e].CurrentDir
-					currentMap[e].Door = recievedMap[e].Door
-				}
-				
-			}
+		if recievedMap[e].Door == true{
+			floorWithOpenDoor = recievedMap[e].CurrentFloor
 		}
+
+
+
+		if e != config.My_ID {
+			currentMap[e].CurrentFloor = recievedMap[e].CurrentFloor
+			currentMap[e].CurrentDir = recievedMap[e].CurrentDir
+			currentMap[e].Door = recievedMap[e].Door
+		}
+				
 	}
 
 
@@ -200,22 +196,18 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, newOrderChan chan con
 						if buttonEvent == false{
 							fmt.Printf("-------------order from network--------\n")
 							newOrderChan <- config.ButtonEvent{f, b}
+							
 							buttonEvent = true
 						}
 						for elev := 0; elev < config.NUM_ELEVS; elev++{
-
 							currentMap[elev].Orders[f][b] = config.OT_OrderPlaced
 						}
 
-					
 						//fmt.Printf("Order from network, floor %v, button %v\n\n", f, b)
 
-					} else if recievedMap[config.My_ID].Orders[f][b] ==config. OT_NoOrder && currentMap[config.My_ID].Orders[f][b] == config.OT_OrderPlaced && floorWithOpenDoor == f{
-						//fmt.Printf("Ordered completed from netowrk floor %v, button %v\n", f, b)
-						//clear orders from all elevators
+					} else if recievedMap[config.My_ID].Orders[f][b] ==config.OT_NoOrder && currentMap[config.My_ID].Orders[f][b] == config.OT_OrderPlaced && floorWithOpenDoor == f{
 						buttonLampChan <- config.ButtonLamp{f, b, false}
 						for elev := 0; elev < config.NUM_ELEVS; elev++{
-
 							currentMap[elev].Orders[f][b] = config.OT_NoOrder
 						}
 					}
@@ -239,7 +231,6 @@ func SetConnectedElevator(ID int, value bool){
 	currentMap[ID].Connected = value
 	SetLocalMap(currentMap)
 }
-
 
 
 

@@ -101,7 +101,7 @@ func eventNewFloor(motorChan chan config.MotorDirection, doorLampChan chan bool,
 
 	switch(state){
 		case MOVING:
-			motorTimer.Reset(time.Second * MOTOR_DEAD_TIME)
+			//motorTimer.Reset(time.Second * MOTOR_DEAD_TIME)
 			if shouldStop(currentMap) {
 				motorChan <- config.MD_Stop
 					if  orderInThisFloor(currentMap[config.My_ID].CurrentFloor, currentMap){
@@ -124,8 +124,6 @@ func eventDoorTimeout(doorLampChan chan bool, statusChangesChan chan config.Elev
 		case DOOR_OPEN:
 			doorLampChan <- false
 			currentMap[config.My_ID].Door = false
-			
-
 			motorDir := chooseDirection(&currentMap, motorTimer)
 			
 			if motorDir != config.MD_Stop {
@@ -136,22 +134,19 @@ func eventDoorTimeout(doorLampChan chan bool, statusChangesChan chan config.Elev
 				currentMap[config.My_ID].IDLE = true
 				state = IDLE
 			}
-
 			statusChangesChan <- currentMap	
-		
 	}
-
-	
 }
 
 
 func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan config.MotorDirection, doorLampChan chan bool, doorTimer *time.Timer, orderChangesChan chan config.ElevStateMap, buttonPushed config.ButtonEvent, idleTimer *time.Timer, motorTimer *time.Timer, statusChangesChan chan config.ElevStateMap){
-
 	currentMap := elevStateMap.GetLocalMap()
 	buttonLampChan <- config.ButtonLamp{buttonPushed.Floor, buttonPushed.Button, true}
 
 	if buttonPushed.Button == config.BT_Cab{
 		currentMap[config.My_ID].Orders[buttonPushed.Floor][buttonPushed.Button] = config.OT_OrderPlaced
+	}else{
+		orderChangesChan <- currentMap
 	}
 
 	switch(state){
@@ -173,20 +168,11 @@ func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan conf
 				if motorDir != config.MD_Stop {
 					motorChan <- motorDir
 					currentMap[config.My_ID].IDLE = false
-					
 					state = MOVING
 				}
 				statusChangesChan <- currentMap
-
-				
 			}	
-
 	}
-	
-
-
-
-	//elevStateMap.PrintMap(currentMap)
 }
 
 func shouldStop(elevMap config.ElevStateMap) bool{
