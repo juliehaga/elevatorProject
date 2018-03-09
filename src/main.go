@@ -47,14 +47,13 @@ func main() {
     buttonLampChan  := make(chan config.ButtonLamp)
     statusChangesChan := make(chan config.ElevStateMap)
     orderChangesChan := make(chan config.ElevStateMap)
-    newOrderChan := make(chan config.ButtonEvent)
+    newOrderChan := make(chan config.ButtonEvent, 10)
 
     // We make a channel for receiving updates on the id's of the peers that are
 	//  alive on the network
     peerUpdateCh := make(chan config.PeerUpdate)
     // This could be used to signal that we are somehow "unavailable".
     peerTxEnable := make(chan bool)
-
 
  
 	messageTx := make(chan config.Message)
