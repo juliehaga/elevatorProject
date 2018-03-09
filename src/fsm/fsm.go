@@ -150,7 +150,7 @@ func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan conf
 			currentMap[elev].Orders[buttonPushed.Floor][buttonPushed.Button] = config.OT_OrderPlaced
 		}
 
-		orderChangesChan <- currentMap
+		
 	}
 
 	switch(state){
@@ -163,7 +163,6 @@ func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan conf
 				orderCompleted(&currentMap, buttonLampChan)
 				doorTimer.Reset(time.Second * DOOR_TIME)
 				currentMap[config.My_ID].IDLE = false
-				orderChangesChan <- currentMap
 				state = DOOR_OPEN
 
 				
@@ -173,10 +172,12 @@ func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan conf
 					motorChan <- motorDir
 					currentMap[config.My_ID].IDLE = false
 					state = MOVING
+					
 				}
-				statusChangesChan <- currentMap
 			}	
 	}
+
+	orderChangesChan <- currentMap
 }
 
 func shouldStop(elevMap config.ElevStateMap) bool{
@@ -298,6 +299,7 @@ func orderCompleted(elevMap *config.ElevStateMap, buttonLampChan chan config.But
 
 
 func orderInThisFloor( floor int, elevMap config.ElevStateMap) bool{
+	elevStateMap.PrintMap(elevMap)
 	for b := config.BT_HallUp; b <= config.BT_Cab; b++ {
 		if elevMap[config.My_ID].Orders[floor][b] == config.OT_OrderPlaced {
 			return true

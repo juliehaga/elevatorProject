@@ -98,6 +98,7 @@ func main() {
 		case orderMsgFromNetwork := <- orderMsgRx:
 			//Når vi mottar melding bør vi sjekke at hardware er oppdatert
 			if orderMsgFromNetwork.ID != config.My_ID {
+				fmt.Printf("FÅR MELDING FRA %v\n", orderMsgFromNetwork.ID)
 				elevStateMap.UpdateMapFromNetwork(orderMsgFromNetwork.ElevMap, newOrderChan, buttonLampChan)
 			}
 			if init == true{
@@ -111,13 +112,13 @@ func main() {
 			}
 
 		case elevMap:= <-orderChangesChan:
+			fmt.Printf("Sender ordremelding\n")
 			elevStateMap.UpdateLocalMap(elevMap)
-			fmt.Printf("------------------------UPDATER--------------------------")
-			elevStateMap.PrintMap(elevMap)
 			network.SendOrders(messageTx, elevMap)
 			init = false
 
 		case elevMap:= <-statusChangesChan:
+			fmt.Printf("Sender statusmelding\n")
 			elevStateMap.UpdateLocalMap(elevMap)
 			network.SendElevStatus(messageTx, elevMap)
 			init = false
