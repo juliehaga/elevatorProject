@@ -32,8 +32,6 @@ func writeToBackup(){
 	// save changes
 	err = file.Sync()
 	if err != nil { return }
-
-	fmt.Println("==> done writing to file")
 }
 
 func readFromBackup(newOrderChan chan config.ButtonEvent){

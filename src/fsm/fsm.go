@@ -123,14 +123,16 @@ func eventDoorTimeout(doorLampChan chan bool, statusChangesChan chan config.Elev
 			doorLampChan <- false
 			currentMap[config.My_ID].Door = false
 			currentMap[config.My_ID].IDLE = true
-			state = IDLE
 
 			motorDir := chooseDirection(&currentMap, motorTimer)
+			state = IDLE
 			if motorDir != config.MD_Stop {
 				motorChan <- motorDir
 				currentMap[config.My_ID].IDLE = false
 				state = MOVING
 			}
+			fmt.Printf("kjører selv om vi har satt IDLE\n")
+
 			statusChangesChan <- currentMap	
 		
 	}
@@ -195,8 +197,11 @@ func shouldStop(elevMap config.ElevStateMap) bool{
 		case MOVING: 
 			fmt.Printf("state moving\n")
 			if elevMap[config.My_ID].CurrentFloor == config.NUM_FLOORS-1 && elevMap[config.My_ID].CurrentDir == config.ED_Up{
+
+				fmt.Printf("Jeg er øverst, STOPP \n")
 				return true
 			} else if elevMap[config.My_ID].CurrentFloor == 0 && elevMap[config.My_ID].CurrentDir == config.ED_Down {
+				fmt.Printf("Jeg er nedersr, STOPP \n")
 				return true
 			}
 	}
@@ -337,6 +342,7 @@ func chooseDirection(elevMap *config.ElevStateMap, motorTimer *time.Timer) confi
 				for f:= elevMap[config.My_ID].CurrentFloor + 1; f < config.NUM_FLOORS; f++{
 					if  orderInThisFloor(f, *elevMap) && (nearestElevator(*elevMap, f) || elevMap[config.My_ID].Orders[f][config.BT_Cab] == config.OT_OrderPlaced){
 						elevMap[config.My_ID].CurrentDir = config.ED_Up
+						fmt.Printf("velger opp\n")
 						return config.MD_Up
 					}
 				}
@@ -345,6 +351,7 @@ func chooseDirection(elevMap *config.ElevStateMap, motorTimer *time.Timer) confi
 				for f:= elevMap[config.My_ID].CurrentFloor - 1; f >= 0; f--{
 					if orderInThisFloor(f, *elevMap) && (nearestElevator(*elevMap, f) || elevMap[config.My_ID].Orders[f][config.BT_Cab] == config.OT_OrderPlaced){
 						elevMap[config.My_ID].CurrentDir = config.ED_Down
+						fmt.Printf("Velger ned \n")
 						return config.MD_Down
 					}
 				}
@@ -356,6 +363,7 @@ func chooseDirection(elevMap *config.ElevStateMap, motorTimer *time.Timer) confi
 				for f:= elevMap[config.My_ID].CurrentFloor - 1; f >= 0; f--{
 					if orderInThisFloor(f, *elevMap) && (nearestElevator(*elevMap, f) || elevMap[config.My_ID].Orders[f][config.BT_Cab] == config.OT_OrderPlaced){
 						elevMap[config.My_ID].CurrentDir = config.ED_Down
+						fmt.Printf("Velger ned \n")
 						return config.MD_Down
 					}
 				}
@@ -364,6 +372,7 @@ func chooseDirection(elevMap *config.ElevStateMap, motorTimer *time.Timer) confi
 				for f:= elevMap[config.My_ID].CurrentFloor + 1; f < config.NUM_FLOORS; f++{
 					if orderInThisFloor(f, *elevMap) && (nearestElevator(*elevMap, f) || elevMap[config.My_ID].Orders[f][config.BT_Cab] == config.OT_OrderPlaced){
 						elevMap[config.My_ID].CurrentDir = config.ED_Up
+						fmt.Printf("velger opp\n")
 						return config.MD_Up
 					}
 				}
