@@ -135,7 +135,6 @@ func SetLocalMap(changedMap config.ElevStateMap){
 
 func UpdateLocalMap(changedMap config.ElevStateMap){
 	currentMap := GetLocalMap()
-	floorWithOpenDoor := -1
 
 	currentMap[config.My_ID].CurrentFloor = changedMap[config.My_ID].CurrentFloor
 	currentMap[config.My_ID].CurrentDir = changedMap[config.My_ID].CurrentDir
