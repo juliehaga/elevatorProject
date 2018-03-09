@@ -2,66 +2,18 @@ package elevStateMap
 
 import(
 	"../config"
-	"../elevio"	
 	"fmt"
 	"sync"
 	"os"
 	"strconv"
 	"io"
-	"encoding/binary"
-	"bytes"
 )
 
 
-var LocalMap ElevStateMap
+var LocalMap config.ElevStateMap
 var mutex = &sync.Mutex{}
 
 
-type OrderType int
-const (
-	OT_NoOrder                = 0
-	OT_OrderPlaced            = 1
-)
-
-type ElevDir int
-
-const (
-	ED_Up   		ElevDir = 1
-	ED_Down                 = -1
-)
-
-
-
-type ElevInfo struct{
-	CurrentFloor int
-	CurrentDir ElevDir
-	Connected bool
-	Door bool
-	IDLE bool
-	Orders [config.NUM_FLOORS][config.NUM_BUTTONS] OrderType
-}
-
-
-type ElevStateMap [config.NUM_ELEVS]ElevInfo
-
-type Message struct {
-	ID int
-	MsgType int
-	ElevMap   ElevStateMap
-}
-
-
-type StatusMsg struct {
-	ID int
-	CurrentFloor int
-	CurrentDir ElevDir
-	Door bool
-}
-
-type OrderMsg struct{
-	ID int
-	ElevMap ElevStateMap
-}
 
 
 func writeToBackup(){
@@ -73,8 +25,8 @@ func writeToBackup(){
 	// write some text line-by-line to file
 
 	for f := 0; f< config.NUM_FLOORS; f++{
-		var order int = int(LocalMap[config.My_ID].Orders[f][elevio.BT_Cab])
-		_, err = file.WriteString(strconv.Itoa(order) + "\n")
+		var order int = int(LocalMap[config.My_ID].Orders[f][config.BT_Cab])
+		_, err = file.WriteString(strconv.Itoa(order))
 		if err != nil { return }
 	}
 	// save changes
@@ -84,7 +36,7 @@ func writeToBackup(){
 	fmt.Println("==> done writing to file")
 }
 
-func readFromBackup(){
+func readFromBackup(newOrderChan chan config.ButtonEvent){
 	// re-open file
 	var file, err = os.OpenFile("backup.txt", os.O_RDWR, 0644)
 	if err != nil { return }
@@ -92,21 +44,10 @@ func readFromBackup(){
 	currentMap := GetLocalMap()
 
 	// read file, line by line
+
 	var buf = make([]byte, 1024)
-	var order uint64
-	floor := 0
 	for {
-
 		_, err = file.Read(buf)
-		//order, _ := strconv.Atoi(string(buf))
-		reader := bytes.NewReader(buf)
-		binary.Read(reader, binary.LittleEndian, &order)
-		fmt.Printf("Ordren er %v\n", order)
-
-
-		currentMap[config.My_ID].Orders[floor][elevio.BT_Cab] = OrderType(order)
-
-		floor++
 		
 		// break if finally arrived at end of file
 		if err == io.EOF {
@@ -117,14 +58,25 @@ func readFromBackup(){
 		if err != nil && err != io.EOF {
 			break
 		}
+		//order := strconv.Atoi((string(buf)))
+
+		fmt.Printf("order 1: %v\n", string(buf[0]))
+		fmt.Printf("order 1: %v\n", string(buf[1]))
+		fmt.Printf("order 1: %v\n", string(buf[2]))
+		fmt.Printf("order 1: %v\n", string(buf[3]))
+
+
+		//fmt.Printf("New line %v \n", order)
 	}
+	for floor := 0; floor<config.NUM_FLOORS; floor++{
+		order, _ :=strconv.Atoi(string(buf[floor]))
+		currentMap[config.My_ID].Orders[floor][config.BT_Cab] = config.OrderType(order)
+	}
+
 	SetLocalMap(currentMap)
-	fmt.Printf("------------------READING BAVKUP -------------")
-	PrintMap(currentMap)
-	
 }
 
-func InitElevStateMap(){
+func InitElevStateMap(newOrderChan chan config.ButtonEvent){
 	var _, err = os.Stat("backup.txt")
 
 	if os.IsNotExist(err) {
@@ -135,40 +87,39 @@ func InitElevStateMap(){
 			//return
 		}	
 		for f := 0; f < config.NUM_FLOORS; f++{
-			LocalMap[config.My_ID].Orders[f][elevio.BT_Cab] = OT_NoOrder
+			LocalMap[config.My_ID].Orders[f][config.BT_Cab] = config.OT_NoOrder
 		}
 		defer file.Close()
 	}else{
-		fmt.Printf("else\n")
-		readFromBackup()
+		readFromBackup(newOrderChan)
 	}
 
 
 	//initialize map	
 	for e:= 0; e < config.NUM_ELEVS; e++{
 		LocalMap[e].IDLE = true
-		LocalMap[e].CurrentDir = ED_Down
+		LocalMap[e].CurrentDir = config.ED_Down
 		LocalMap[e].Connected = false
 		LocalMap[e].Door = false
 		LocalMap[e].CurrentFloor = -1
 			
 		for f := 0; f < config.NUM_FLOORS; f++{
-			for b :=0; b < elevio.BT_Cab; b++{
-				LocalMap[e].Orders[f][b] = OT_NoOrder
+			for b :=0; b < config.BT_Cab; b++{
+				LocalMap[e].Orders[f][b] = config.OT_NoOrder
 			
 			}
 		}
 
-		LocalMap[e].Orders[0][elevio.BT_HallDown] = -1
-		LocalMap[e].Orders[3][elevio.BT_HallUp] = -1
+		LocalMap[e].Orders[0][config.BT_HallDown] = -1
+		LocalMap[e].Orders[3][config.BT_HallUp] = -1
 	}
-	LocalMap[config.My_ID].CurrentFloor = elevio.GetFloor()
+	//LocalMap[config.My_ID].CurrentFloor = elevio.GetFloor()
 	LocalMap[config.My_ID].Connected = true
 	PrintMap(LocalMap)
 }
 
 
-func GetLocalMap() ElevStateMap{
+func GetLocalMap() config.ElevStateMap{
 	mutex.Lock()
 	currentMap := LocalMap
 	mutex.Unlock()
@@ -176,14 +127,14 @@ func GetLocalMap() ElevStateMap{
 }
 
 
-func SetLocalMap(changedMap ElevStateMap){
+func SetLocalMap(changedMap config.ElevStateMap){
 	mutex.Lock()
 	LocalMap = changedMap
 	mutex.Unlock()
 }
 
 
-func UpdateLocalMap(changedMap ElevStateMap){
+func UpdateLocalMap(changedMap config.ElevStateMap){
 	currentMap := GetLocalMap()
 	floorWithOpenDoor := -1
 
@@ -200,29 +151,25 @@ func UpdateLocalMap(changedMap ElevStateMap){
 	for e:= 0; e < config.NUM_ELEVS; e++{
 		if currentMap[e].Connected == true { 
 			for f:= 0; f < config.NUM_FLOORS; f++{
-				currentMap[config.My_ID].Orders[f][elevio.BT_Cab] = changedMap[config.My_ID].Orders[f][elevio.BT_Cab]
-				for b:= elevio.BT_HallUp; b < elevio.BT_Cab; b++{
+				currentMap[config.My_ID].Orders[f][config.BT_Cab] = changedMap[config.My_ID].Orders[f][config.BT_Cab]
+				for b:= config.BT_HallUp; b < config.BT_Cab; b++{
 
-					if changedMap[e].Orders[f][b] == OT_OrderPlaced && currentMap[e].Orders[f][b] == OT_NoOrder{
+					if changedMap[e].Orders[f][b] == config.OT_OrderPlaced && currentMap[e].Orders[f][b] == config.OT_NoOrder{
 							currentMap[e].Orders[f][b] = changedMap[e].Orders[f][b]
-						} else if changedMap[e].Orders[f][b] == OT_NoOrder && currentMap[e].Orders[f][b] == OT_OrderPlaced && floorWithOpenDoor == f{
+						} else if changedMap[e].Orders[f][b] == config.OT_NoOrder && currentMap[e].Orders[f][b] == config.OT_OrderPlaced && floorWithOpenDoor == f{
 							currentMap[e].Orders[f][b] = changedMap[e].Orders[f][b]
 						}
 				}
 			}
 		}	
 	}
-	//fmt.Printf("*******************MITT MAP etter endring******************")
-
-	//PrintMap(currentMap)
+	
 	SetLocalMap(currentMap)
-	//writeToBackup()
-
-
+	writeToBackup()
 }
 
 
-func UpdateMapFromNetwork(recievedMap ElevStateMap, newOrderChan chan elevio.ButtonEvent, buttonLampChan chan elevio.ButtonLamp){
+func UpdateMapFromNetwork(recievedMap config.ElevStateMap, newOrderChan chan config.ButtonEvent, buttonLampChan chan config.ButtonLamp){
 	currentMap := GetLocalMap()
 
 	floorWithOpenDoor := -1
@@ -248,21 +195,21 @@ func UpdateMapFromNetwork(recievedMap ElevStateMap, newOrderChan chan elevio.But
 
 
 	for f:= 0; f < config.NUM_FLOORS; f++{
-			for b:= elevio.BT_HallUp; b < elevio.BT_Cab; b++{
-					if recievedMap[config.My_ID].Orders[f][b] == OT_OrderPlaced && currentMap[config.My_ID].Orders[f][b] == OT_NoOrder{
+			for b:= config.BT_HallUp; b < config.BT_Cab; b++{
+					if recievedMap[config.My_ID].Orders[f][b] == config.OT_OrderPlaced && currentMap[config.My_ID].Orders[f][b] == config.OT_NoOrder{
 						
 
-						newOrderChan <- elevio.ButtonEvent{f, b}
+						newOrderChan <- config.ButtonEvent{f, b}
 						
 						//fmt.Printf("Order from network, floor %v, button %v\n\n", f, b)
 
-					} else if recievedMap[config.My_ID].Orders[f][b] == OT_NoOrder && currentMap[config.My_ID].Orders[f][b] == OT_OrderPlaced && floorWithOpenDoor == f{
+					} else if recievedMap[config.My_ID].Orders[f][b] ==config. OT_NoOrder && currentMap[config.My_ID].Orders[f][b] == config.OT_OrderPlaced && floorWithOpenDoor == f{
 						//fmt.Printf("Ordered completed from netowrk floor %v, button %v\n", f, b)
 						//clear orders from all elevators
-						buttonLampChan <- elevio.ButtonLamp{f, b, false}
+						buttonLampChan <- config.ButtonLamp{f, b, false}
 						for elev := 0; elev < config.NUM_ELEVS; elev++{
 
-							currentMap[elev].Orders[f][b] = OT_NoOrder
+							currentMap[elev].Orders[f][b] = config.OT_NoOrder
 						}
 					}
 				}
@@ -270,7 +217,7 @@ func UpdateMapFromNetwork(recievedMap ElevStateMap, newOrderChan chan elevio.But
 	SetLocalMap(currentMap)
 }
 
-func UpdateElevStatusFromNetwork(newStatus StatusMsg){
+func UpdateElevStatusFromNetwork(newStatus config.StatusMsg){
 	currentMap := GetLocalMap()
 	currentMap[newStatus.ID].CurrentFloor = newStatus.CurrentFloor
 	currentMap[newStatus.ID].CurrentDir = newStatus.CurrentDir
@@ -288,7 +235,7 @@ func SetConnectedElevator(ID int, value bool){
 
 
 
-func PrintMap(elevMap ElevStateMap){
+func PrintMap(elevMap config.ElevStateMap){
 	for e := 0; e < config.NUM_ELEVS; e++ {
 		fmt.Printf("\n \n \nSTATE MAP FOR ELEV %v\n", e)
 		fmt.Printf("Current floor: %v \n", elevMap[e].CurrentFloor)

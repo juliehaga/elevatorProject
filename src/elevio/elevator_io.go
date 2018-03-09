@@ -2,6 +2,8 @@ package elevio
 
 
 import( 
+	"../config"
+	"../elevStateMap"
 	"time"
 	"sync"
 	"net"
@@ -17,35 +19,11 @@ var _numFloors int = 4
 var _mtx sync.Mutex
 var _conn net.Conn
 
-type MotorDirection int
-
-const (
-	MD_Up   MotorDirection = 1
-	MD_Down                = -1
-	MD_Stop                = 0
-)
-
-type ButtonType int
-
-const (
-	BT_HallUp   ButtonType = 0
-	BT_HallDown            = 1
-	BT_Cab                 = 2
-)
-
-type ButtonEvent struct {
-	Floor  int
-	Button ButtonType
-}
-
-type ButtonLamp struct {
-	Floor  int
-	Button ButtonType
-	Set bool
-}
 
 
-func Elevio(motorChan chan MotorDirection, doorLampChan chan bool, newOrderChan chan ButtonEvent, floorChan chan int, buttonLampChan chan ButtonLamp) {
+
+
+func Elevio(motorChan chan config.MotorDirection, doorLampChan chan bool, newOrderChan chan config.ButtonEvent, floorChan chan int, buttonLampChan chan config.ButtonLamp) {
 	go PollButtons(newOrderChan)
     go PollFloorSensor(floorChan)
     //update map?
@@ -59,7 +37,10 @@ func Elevio(motorChan chan MotorDirection, doorLampChan chan bool, newOrderChan 
 		case lamp := <- buttonLampChan:
 			fmt.Printf("Slukker lys %v", lamp)
 			SetButtonLamp(lamp)
+
 		}
+	
+
 
 	}
 	
@@ -80,32 +61,45 @@ func Init(addr string, numFloors int) {
 		panic(err.Error())
 	}
 	_initialized = true
-	SetMotorDirection(MD_Up)
+	SetMotorDirection(config.MD_Up)
 	for GetFloor() == -1{}
-	SetMotorDirection(MD_Stop)
+	SetMotorDirection(config.MD_Stop)
 
 
-	ClearAllButtonLamps()
+
+	currentMap := elevStateMap.GetLocalMap()
+	for f := 0; f < config.NUM_FLOORS; f++{
+		for b:= config.BT_HallUp; b <= config.BT_Cab; b++{
+			if currentMap[config.My_ID].Orders[f][b] == config.OT_OrderPlaced{
+				lamp := config.ButtonLamp{f, b, true}	
+				SetButtonLamp(lamp)
+			} else {
+				lamp := config.ButtonLamp{f, b, false}	
+				SetButtonLamp(lamp)
+			}
+		}
+	}
+	
 	SetDoorOpenLamp(false)
 }
 
 
 func ClearAllButtonLamps(){
 	for f:= 0; f < _numFloors; f++ {
-		for b:= ButtonType(0); b < 3; b++ {
-			SetButtonLamp(ButtonLamp{f, b, false})	
+		for b:= config.ButtonType(0); b < 3; b++ {
+			SetButtonLamp(config.ButtonLamp{f, b, false})	
 		}
 	}
 }
 
 
-func SetMotorDirection(dir MotorDirection) {
+func SetMotorDirection(dir config.MotorDirection) {
 	_mtx.Lock()
 	defer _mtx.Unlock()
 	_conn.Write([]byte{1, byte(dir), 0, 0})
 }
 
-func SetButtonLamp(lamp ButtonLamp) {
+func SetButtonLamp(lamp config.ButtonLamp) {
 	_mtx.Lock()
 	defer _mtx.Unlock()
 	_conn.Write([]byte{2, byte(lamp.Button), byte(lamp.Floor), toByte(lamp.Set)})
@@ -131,15 +125,15 @@ func SetStopLamp(value bool) {
 
 
 
-func PollButtons(receiver chan<- ButtonEvent) {
+func PollButtons(receiver chan<- config.ButtonEvent) {
 	prev := make([][3]bool, _numFloors)
 	for {
 		time.Sleep(_pollRate)
 		for f := 0; f < _numFloors; f++ {
-			for b := ButtonType(0); b < 3; b++ {
+			for b := config.ButtonType(0); b < 3; b++ {
 				v := getButton(b, f)
 				if v != prev[f][b] && v != false {
-					receiver <- ButtonEvent{f, ButtonType(b)}
+					receiver <- config.ButtonEvent{f, config.ButtonType(b)}
 				}
 				prev[f][b] = v
 			}
@@ -192,7 +186,7 @@ func PollObstructionSwitch(receiver chan<- bool) {
 
 
 
-func getButton(button ButtonType, floor int) bool {
+func getButton(button config.ButtonType, floor int) bool {
 	_mtx.Lock()
 	defer _mtx.Unlock()
 	_conn.Write([]byte{6, byte(button), byte(floor), 0})

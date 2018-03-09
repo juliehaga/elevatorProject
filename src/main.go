@@ -33,36 +33,39 @@ func main() {
 	
 
 //init fuctions 
-	config.Init(id, port)
-	elevio.Init("localhost:" + port, config.NUM_FLOORS)
-	elevStateMap.InitElevStateMap()
-	init := true
+
 	
 	
 	
 //channels for communication between modules
 
 	//hardware channels
-	motorChan := make(chan elevio.MotorDirection)
+	motorChan := make(chan config.MotorDirection)
 	doorLampChan := make(chan bool)
 
     floorChan  := make(chan int)  
-    buttonLampChan  := make(chan elevio.ButtonLamp)
-    statusChangesChan := make(chan elevStateMap.ElevStateMap)
-    orderChangesChan := make(chan elevStateMap.ElevStateMap)
-    newOrderChan := make(chan elevio.ButtonEvent)
+    buttonLampChan  := make(chan config.ButtonLamp)
+    statusChangesChan := make(chan config.ElevStateMap)
+    orderChangesChan := make(chan config.ElevStateMap)
+    newOrderChan := make(chan config.ButtonEvent)
 
     // We make a channel for receiving updates on the id's of the peers that are
 	//  alive on the network
-    peerUpdateCh := make(chan network.PeerUpdate)
+    peerUpdateCh := make(chan config.PeerUpdate)
     // This could be used to signal that we are somehow "unavailable".
     peerTxEnable := make(chan bool)
 
 
  
-	messageTx := make(chan elevStateMap.Message)
-	orderMsgRx := make(chan elevStateMap.OrderMsg)
-	statusMsgRx := make(chan elevStateMap.StatusMsg)
+	messageTx := make(chan config.Message)
+	orderMsgRx := make(chan config.OrderMsg)
+	statusMsgRx := make(chan config.StatusMsg)
+
+	config.Init(id, port)
+	elevStateMap.InitElevStateMap(newOrderChan)
+	elevio.Init("localhost:" + port, config.NUM_FLOORS)
+	
+	init := true
 
 
 

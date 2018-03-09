@@ -19,17 +19,6 @@ import (
 
 
 
-const (
-	ElevStatus = 0
-	Orders     = 1
-)
-
-
-type PeerUpdate struct {
-	Peers []string
-	New   string
-	Lost  []string
-}
 
 
 const interval = 15 * time.Millisecond
@@ -40,13 +29,13 @@ const timeout = 1500 * time.Millisecond
 
 
 
-func SendOrders(messageTx chan elevStateMap.Message, elevMap elevStateMap.ElevStateMap) {
-	elevMapMsg := elevStateMap.Message{config.My_ID, Orders, elevMap}
+func SendOrders(messageTx chan config.Message, elevMap config.ElevStateMap) {
+	elevMapMsg := config.Message{config.My_ID, config.Orders, elevMap}
 	messageTx <- elevMapMsg
 }
 
-func SendElevStatus(messageTx chan elevStateMap.Message,  elevMap elevStateMap.ElevStateMap){
-	elevMapMsg := elevStateMap.Message{config.My_ID, ElevStatus, elevMap}
+func SendElevStatus(messageTx chan config.Message,  elevMap config.ElevStateMap){
+	elevMapMsg := config.Message{config.My_ID, config.ElevStatus, elevMap}
 	messageTx <- elevMapMsg
 }
 
@@ -69,10 +58,10 @@ func PeerTransmitter(port int, id string, transmitEnable <-chan bool) {
 	}
 }
 
-func PeerReceiver(port int, peerUpdateCh chan<- PeerUpdate) {
+func PeerReceiver(port int, peerUpdateCh chan<- config.PeerUpdate) {
 
 	var buf [1024]byte
-	var p PeerUpdate
+	var p config.PeerUpdate
 	lastSeen := make(map[string]time.Time)
 
 	conn := DialBroadcastUDP(port)
@@ -134,7 +123,7 @@ func PeerReceiver(port int, peerUpdateCh chan<- PeerUpdate) {
 }
 
 
-func Transmitter(port int, messageTx chan elevStateMap.Message){
+func Transmitter(port int, messageTx chan config.Message){
 	for {
 		select {
 		case message := <- messageTx:
@@ -150,9 +139,9 @@ func Transmitter(port int, messageTx chan elevStateMap.Message){
 
 // Matches type-tagged JSON received on `port` to element types of `chans`, then
 // sends the decoded value on the corresponding channel
-func Receiver(port int, orderMsgRx chan elevStateMap.OrderMsg, statusMsgRx chan elevStateMap.StatusMsg) {
+func Receiver(port int, orderMsgRx chan config.OrderMsg, statusMsgRx chan config.StatusMsg) {
 	//var receivedMap elevStateMap.ElevStateMap
-	var receivedMsg elevStateMap.Message
+	var receivedMsg config.Message
 	addr, _ := net.ResolveUDPAddr("udp", fmt.Sprintf("255.255.255.255:%d", port))
 	conn, _ := net.ListenUDP("udp", addr)
 
@@ -168,10 +157,10 @@ func Receiver(port int, orderMsgRx chan elevStateMap.OrderMsg, statusMsgRx chan 
 		if integer > 0 {
 
 			json.Unmarshal(b[:integer], &receivedMsg)
-			if receivedMsg.MsgType == ElevStatus{
-				statusMsgRx <- elevStateMap.StatusMsg{receivedMsg.ID, receivedMsg.ElevMap[receivedMsg.ID].CurrentFloor, receivedMsg.ElevMap[receivedMsg.ID].CurrentDir, receivedMsg.ElevMap[receivedMsg.ID].Door}
-			} else if receivedMsg.MsgType == Orders {
-				orderMsgRx <- elevStateMap.OrderMsg{receivedMsg.ID, receivedMsg.ElevMap}
+			if receivedMsg.MsgType == config.ElevStatus{
+				statusMsgRx <- config.StatusMsg{receivedMsg.ID, receivedMsg.ElevMap[receivedMsg.ID].CurrentFloor, receivedMsg.ElevMap[receivedMsg.ID].CurrentDir, receivedMsg.ElevMap[receivedMsg.ID].Door}
+			} else if receivedMsg.MsgType == config.Orders {
+				orderMsgRx <- config.OrderMsg{receivedMsg.ID, receivedMsg.ElevMap}
 			}
 			
 		} else {
