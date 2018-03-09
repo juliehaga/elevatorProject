@@ -146,6 +146,10 @@ func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan conf
 	if buttonPushed.Button == config.BT_Cab{
 		currentMap[config.My_ID].Orders[buttonPushed.Floor][buttonPushed.Button] = config.OT_OrderPlaced
 	}else{
+		for elev := 0; elev < config.NUM_ELEVS; elev++{
+			currentMap[elev].Orders[buttonPushed.Floor][buttonPushed.Button] = config.OT_OrderPlaced
+		}
+
 		orderChangesChan <- currentMap
 	}
 
