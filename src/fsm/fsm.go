@@ -18,7 +18,7 @@ const(
 )
 
 const DOOR_TIME 	    = 2
-const IDLE_TIME 	    = 2
+const IDLE_TIME 	    = 4
 const MOTOR_DEAD_TIME 	= 5
 
 
@@ -52,10 +52,10 @@ func Fsm(motorChan chan config.MotorDirection, doorLampChan chan bool, floorChan
 			eventDoorTimeout(doorLampChan, statusChangesChan, idleTimer, motorChan, motorTimer)
 			idleTimer.Reset(time.Second * IDLE_TIME)
 			
-		case <- idleTimer.C:
+		/*case <- idleTimer.C:
 			eventIdleTimeout(motorChan, statusChangesChan, orderChangesChan, doorLampChan, doorTimer, buttonLampChan, motorTimer)
 			idleTimer.Reset(time.Second * IDLE_TIME)
-
+*/
 		case <- motorTimer.C:
 			currentMap := elevStateMap.GetLocalMap()
 			if (currentMap[config.My_ID].IDLE == false){
@@ -436,11 +436,11 @@ func forceChooseDirection(elevMap *config.ElevStateMap, motorTimer *time.Timer) 
 		fmt.Printf("Er i etasje større eller lik 2\n")
 		if ordersAbove(*elevMap){
 			elevMap[config.My_ID].CurrentDir = config.ED_Up
-			fmt.Printf("orders above 2, OPP\n")
+			fmt.Printf("orders above 2, NED\n")
 			return config.MD_Up
 		} else if ordersBelow(*elevMap){
 			elevMap[config.My_ID].CurrentDir = config.ED_Down
-			fmt.Printf("orders below 2, OPP\n")
+			fmt.Printf("orders below 2, NED\n")
 			return config.MD_Down
 		}
 	} else if elevMap[config.My_ID].CurrentFloor < config.NUM_FLOORS/2{

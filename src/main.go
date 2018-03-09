@@ -121,7 +121,9 @@ func main() {
 				
 				//elevStateMap.PrintMap(networkMapMsg.ElevMap)
 			}
-
+			if init == true{
+				elevio.InitOrders()
+			}
 
 			init = false
 
