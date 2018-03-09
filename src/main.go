@@ -96,6 +96,7 @@ func main() {
 			}
 
 
+
 			
 
 
@@ -111,6 +112,9 @@ func main() {
 				//elevStateMap.PrintMap(networkMapMsg.ElevMap)
 			}
 			init = false
+
+			//currentMap := elevStateMap.GetLocalMap()
+			//elevStateMap.PrintMap(currentMap)
 		case statusMsgFromNetwork := <- statusMsgRx:
 			if statusMsgFromNetwork.ID != config.My_ID {
 				elevStateMap.UpdateElevStatusFromNetwork(statusMsgFromNetwork)

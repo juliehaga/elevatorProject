@@ -8,6 +8,8 @@ import(
 	"os"
 	"strconv"
 	"io"
+	"encoding/binary"
+	"bytes"
 )
 
 
@@ -91,11 +93,15 @@ func readFromBackup(){
 
 	// read file, line by line
 	var buf = make([]byte, 1024)
+	var order uint64
 	floor := 0
 	for {
 
 		_, err = file.Read(buf)
-		order, _ := strconv.Atoi(string(buf))
+		//order, _ := strconv.Atoi(string(buf))
+		reader := bytes.NewReader(buf)
+		binary.Read(reader, binary.LittleEndian, &order)
+		fmt.Printf("Ordren er %v\n", order)
 
 
 		currentMap[config.My_ID].Orders[floor][elevio.BT_Cab] = OrderType(order)
@@ -113,6 +119,8 @@ func readFromBackup(){
 		}
 	}
 	SetLocalMap(currentMap)
+	fmt.Printf("------------------READING BAVKUP -------------")
+	PrintMap(currentMap)
 	
 }
 
@@ -129,9 +137,9 @@ func InitElevStateMap(){
 		for f := 0; f < config.NUM_FLOORS; f++{
 			LocalMap[config.My_ID].Orders[f][elevio.BT_Cab] = OT_NoOrder
 		}
-		writeToBackup()
 		defer file.Close()
 	}else{
+		fmt.Printf("else\n")
 		readFromBackup()
 	}
 
@@ -145,7 +153,7 @@ func InitElevStateMap(){
 		LocalMap[e].CurrentFloor = -1
 			
 		for f := 0; f < config.NUM_FLOORS; f++{
-			for b :=0; b < config.NUM_BUTTONS; b++{
+			for b :=0; b < elevio.BT_Cab; b++{
 				LocalMap[e].Orders[f][b] = OT_NoOrder
 			
 			}
@@ -156,6 +164,7 @@ func InitElevStateMap(){
 	}
 	LocalMap[config.My_ID].CurrentFloor = elevio.GetFloor()
 	LocalMap[config.My_ID].Connected = true
+	PrintMap(LocalMap)
 }
 
 
@@ -207,6 +216,7 @@ func UpdateLocalMap(changedMap ElevStateMap){
 
 	//PrintMap(currentMap)
 	SetLocalMap(currentMap)
+	//writeToBackup()
 
 
 }
