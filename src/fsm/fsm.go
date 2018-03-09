@@ -234,7 +234,6 @@ func ordersAbove(elevMap config.ElevStateMap) bool{
 	fmt.Printf("Sjekker om ordre over\n")
 	//elevStateMap.PrintMap(elevMap)
 	for f := elevMap[config.My_ID].CurrentFloor + 1; f<config.NUM_FLOORS; f++{
-		fmt.Printf("Running foorloop\n")
 		for b := config.BT_HallUp; b<= config.BT_Cab; b++{ 
 			if elevMap[config.My_ID].Orders[f][b] == config.OT_OrderPlaced{
 
@@ -455,6 +454,6 @@ func forceChooseDirection(elevMap *config.ElevStateMap, motorTimer *time.Timer) 
 			return config.MD_Up
 		}
 	}
-	//fmt.Printf("Burde ikke komme hit\n")
+	fmt.Printf("Burde stoppe\n")
 	return config.MD_Stop
 } 
