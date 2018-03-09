@@ -141,12 +141,6 @@ func UpdateLocalMap(changedMap config.ElevStateMap){
 	currentMap[config.My_ID].Connected = changedMap[config.My_ID].Connected
 	currentMap[config.My_ID].Door = changedMap[config.My_ID].Door
 
-	for e:= 0; e < config.NUM_ELEVS; e++{
-		if changedMap[e].Door == true && changedMap[e].Connected == true{
-			floorWithOpenDoor = changedMap[e].CurrentFloor
-		}
-	}
-
 
 
 	for e:= 0; e < config.NUM_ELEVS; e++{
