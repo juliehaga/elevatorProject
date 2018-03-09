@@ -52,9 +52,9 @@ func Fsm(motorChan chan config.MotorDirection, doorLampChan chan bool, floorChan
 			eventDoorTimeout(doorLampChan, statusChangesChan, idleTimer, motorChan, motorTimer)
 			idleTimer.Reset(time.Second * IDLE_TIME)
 			
-		case <- idleTimer.C:
+		/*case <- idleTimer.C:
 			eventIdleTimeout(motorChan, statusChangesChan, orderChangesChan, doorLampChan, doorTimer, buttonLampChan, motorTimer)
-			idleTimer.Reset(time.Second * IDLE_TIME)
+			idleTimer.Reset(time.Second * IDLE_TIME)*/
 
 		case <- motorTimer.C:
 			currentMap := elevStateMap.GetLocalMap()
