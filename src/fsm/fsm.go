@@ -124,14 +124,17 @@ func eventDoorTimeout(doorLampChan chan bool, statusChangesChan chan config.Elev
 		case DOOR_OPEN:
 			doorLampChan <- false
 			currentMap[config.My_ID].Door = false
-			currentMap[config.My_ID].IDLE = true
+			
 
 			motorDir := chooseDirection(&currentMap, motorTimer)
-			state = IDLE
+			
 			if motorDir != config.MD_Stop {
 				motorChan <- motorDir
 				currentMap[config.My_ID].IDLE = false
 				state = MOVING
+			} else {
+				currentMap[config.My_ID].IDLE = true
+				state = IDLE
 			}
 
 			statusChangesChan <- currentMap	
@@ -371,6 +374,7 @@ func chooseDirection(elevMap *config.ElevStateMap, motorTimer *time.Timer) confi
 				return config.MD_Stop
 			}
 	}
+	fmt.Printf("STOP\n")
 	return config.MD_Stop
 }
 

@@ -98,7 +98,6 @@ func main() {
 		case orderMsgFromNetwork := <- orderMsgRx:
 			//Når vi mottar melding bør vi sjekke at hardware er oppdatert
 			if orderMsgFromNetwork.ID != config.My_ID {
-				fmt.Printf("MOTTAR MELDING\n")
 				elevStateMap.UpdateMapFromNetwork(orderMsgFromNetwork.ElevMap, newOrderChan, buttonLampChan)
 			}
 			if init == true{
