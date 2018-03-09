@@ -149,8 +149,6 @@ func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan conf
 		for elev := 0; elev < config.NUM_ELEVS; elev++{
 			currentMap[elev].Orders[buttonPushed.Floor][buttonPushed.Button] = config.OT_OrderPlaced
 		}
-
-		
 	}
 
 	switch(state){
@@ -164,7 +162,7 @@ func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan conf
 				doorTimer.Reset(time.Second * DOOR_TIME)
 				currentMap[config.My_ID].IDLE = false
 				state = DOOR_OPEN
-				statusChangesChan <- currentMap
+				orderChangesChan <- currentMap
 
 				
 			}else{
@@ -174,10 +172,18 @@ func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan conf
 					currentMap[config.My_ID].IDLE = false
 					state = MOVING
 				}
-				orderChangesChan <- currentMap
+				//så fremt det ikke va din knapp ønsker du ikke sende.
+				if buttonPushed.Local{
+					orderChangesChan <- currentMap
+				} else {
+					statusChangesChan <- currentMap
+				}
+				
 			}	
 	}
 }
+
+
 
 func shouldStop(elevMap config.ElevStateMap) bool{
 	switch(state){

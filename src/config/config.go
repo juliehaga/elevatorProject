@@ -36,6 +36,7 @@ const (
 type ButtonEvent struct {
 	Floor  int
 	Button ButtonType
+	Local bool
 }
 
 type ButtonLamp struct {
