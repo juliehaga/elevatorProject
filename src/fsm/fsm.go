@@ -179,7 +179,15 @@ func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan conf
 					statusChangesChan <- currentMap
 				}
 				
-			}	
+			}
+		case DOOR_OPEN:
+			fmt.Printf("Oppdaterer map i door open ")
+			orderChangesChan <- currentMap
+		
+		case MOVING:
+			fmt.Printf("Oppdaterer map i moving ")
+			orderChangesChan <- currentMap
+
 	}
 }
 
