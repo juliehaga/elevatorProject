@@ -201,7 +201,10 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, newOrderChan chan con
 							fmt.Printf("-------------order from network--------\n")
 							newOrderChan <- config.ButtonEvent{f, b}
 							buttonEvent = true
+						}
+						for elev := 0; elev < config.NUM_ELEVS; elev++{
 
+							currentMap[elev].Orders[f][b] = config.OT_OrderPlaced
 						}
 
 					
