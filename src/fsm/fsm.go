@@ -17,16 +17,20 @@ const(
 	DOOR_OPEN	    = 2
 )
 
-const DOOR_TIME 	= 2
-const IDLE_TIME 	= 5
+const DOOR_TIME 	    = 2
+const IDLE_TIME 	    = 2
+const MOTOR_DEAD_TIME 	= 5
 
 
 func Fsm(motorChan chan config.MotorDirection, doorLampChan chan bool, floorChan chan int, buttonLampChan chan config.ButtonLamp, orderChangesChan chan config.ElevStateMap, newOrderChan chan config.ButtonEvent, statusChangesChan chan config.ElevStateMap){
 	doorTimer := time.NewTimer(time.Second * DOOR_TIME)
 	doorTimer.Stop()
 
-	idleTimer := time.NewTimer(time.Second * DOOR_TIME)
+	idleTimer := time.NewTimer(time.Second * IDLE_TIME)
 	idleTimer.Stop()
+
+	motorTimer := time.NewTimer(time.Second * MOTOR_DEAD_TIME)
+	motorTimer.Stop()
 
 
 
@@ -35,38 +39,39 @@ func Fsm(motorChan chan config.MotorDirection, doorLampChan chan bool, floorChan
 		select{
 		case  floor := <- floorChan:
 			fmt.Printf("floor event\n")
-			eventNewFloor(motorChan, doorLampChan, doorTimer,orderChangesChan, buttonLampChan, floor, idleTimer, statusChangesChan)
+			eventNewFloor(motorChan, doorLampChan, doorTimer,orderChangesChan, buttonLampChan, floor, idleTimer, statusChangesChan, motorTimer)
 			idleTimer.Reset(time.Second * IDLE_TIME)
 
 		case buttonPushed := <- newOrderChan:
 			fmt.Printf("buttonpushed\n")
-			eventNewAckOrder(buttonLampChan, motorChan, doorLampChan, doorTimer, orderChangesChan, buttonPushed, idleTimer)
+			eventNewAckOrder(buttonLampChan, motorChan, doorLampChan, doorTimer, orderChangesChan, buttonPushed, idleTimer, motorTimer)
 			idleTimer.Reset(time.Second * IDLE_TIME)
 
 		case <- doorTimer.C:
 			fmt.Printf("door timeout\n")
-			eventDoorTimeout(doorLampChan, statusChangesChan, idleTimer, motorChan)
+			eventDoorTimeout(doorLampChan, statusChangesChan, idleTimer, motorChan, motorTimer)
 			idleTimer.Reset(time.Second * IDLE_TIME)
 			
 		case <- idleTimer.C:
-
-			eventIdleTimeout(motorChan, statusChangesChan, orderChangesChan, doorLampChan, doorTimer, buttonLampChan)
+			eventIdleTimeout(motorChan, statusChangesChan, orderChangesChan, doorLampChan, doorTimer, buttonLampChan, motorTimer)
 			idleTimer.Reset(time.Second * IDLE_TIME)
-			
 
+		case <- motorTimer.C:
+			currentMap := elevStateMap.GetLocalMap()
+			if (currentMap[config.My_ID].IDLE == false){
+				currentMap[config.My_ID].OutOfOrder = true
+				statusChangesChan <- currentMap
+				idleTimer.Reset(time.Second * MOTOR_DEAD_TIME)
+			}
 		}
-		
-
 	}
 }
 
 
-func eventIdleTimeout(motorChan chan config.MotorDirection, statusChangesChan chan config.ElevStateMap, orderChangesChan chan config.ElevStateMap, doorLampChan chan bool, doorTimer *time.Timer, buttonLampChan chan config.ButtonLamp) {
+func eventIdleTimeout(motorChan chan config.MotorDirection, statusChangesChan chan config.ElevStateMap, orderChangesChan chan config.ElevStateMap, doorLampChan chan bool, doorTimer *time.Timer, buttonLampChan chan config.ButtonLamp,  motorTimer *time.Timer) {
 	fmt.Printf("In idle timeout")
 	currentMap := elevStateMap.GetLocalMap()
-	fmt.Printf("----------------floor map--------------")
-	elevStateMap.PrintMap(currentMap)
-	motorDir := forceChooseDirection(&currentMap)
+	motorDir := forceChooseDirection(&currentMap, motorTimer)
 	if motorDir != config.MD_Stop {
 		motorChan <- motorDir
 		currentMap[config.My_ID].IDLE = false
@@ -87,7 +92,7 @@ func eventIdleTimeout(motorChan chan config.MotorDirection, statusChangesChan ch
 
 
 
-func eventNewFloor(motorChan chan config.MotorDirection, doorLampChan chan bool, doorTimer *time.Timer, orderChangesChan chan config.ElevStateMap, buttonLampChan chan config.ButtonLamp, floor int, idleTimer *time.Timer, statusChangesChan chan config.ElevStateMap){
+func eventNewFloor(motorChan chan config.MotorDirection, doorLampChan chan bool, doorTimer *time.Timer, orderChangesChan chan config.ElevStateMap, buttonLampChan chan config.ButtonLamp, floor int, idleTimer *time.Timer, statusChangesChan chan config.ElevStateMap, motorTimer *time.Timer){
 	currentMap := elevStateMap.GetLocalMap()
 	if floor != -1 {
 		currentMap[config.My_ID].CurrentFloor = floor
@@ -96,6 +101,7 @@ func eventNewFloor(motorChan chan config.MotorDirection, doorLampChan chan bool,
 
 	switch(state){
 		case MOVING:
+			motorTimer.Reset(time.Second * MOTOR_DEAD_TIME)
 			if shouldStop(currentMap) && orderInThisFloor(currentMap[config.My_ID].CurrentFloor, currentMap) {
 				motorChan <- config.MD_Stop
 				doorLampChan <- true
@@ -108,10 +114,9 @@ func eventNewFloor(motorChan chan config.MotorDirection, doorLampChan chan bool,
 				state = DOOR_OPEN
 			}
 	}
-	//idleTimer.Reset(time.Second * IDLE_TIME)
 }
 
-func eventDoorTimeout(doorLampChan chan bool, statusChangesChan chan config.ElevStateMap, idleTimer *time.Timer, motorChan chan config.MotorDirection){
+func eventDoorTimeout(doorLampChan chan bool, statusChangesChan chan config.ElevStateMap, idleTimer *time.Timer, motorChan chan config.MotorDirection, motorTimer *time.Timer){
 	currentMap := elevStateMap.GetLocalMap()
 	switch(state){
 		case DOOR_OPEN:
@@ -119,9 +124,8 @@ func eventDoorTimeout(doorLampChan chan bool, statusChangesChan chan config.Elev
 			currentMap[config.My_ID].Door = false
 			currentMap[config.My_ID].IDLE = true
 			state = IDLE
-			//idleTimer.Reset(time.Second * IDLE_TIME)
 
-			motorDir := chooseDirection(&currentMap)
+			motorDir := chooseDirection(&currentMap, motorTimer)
 			if motorDir != config.MD_Stop {
 				motorChan <- motorDir
 				currentMap[config.My_ID].IDLE = false
@@ -135,11 +139,12 @@ func eventDoorTimeout(doorLampChan chan bool, statusChangesChan chan config.Elev
 }
 
 
-func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan config.MotorDirection, doorLampChan chan bool, doorTimer *time.Timer, orderChangesChan chan config.ElevStateMap, buttonPushed config.ButtonEvent, idleTimer *time.Timer){
+func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan config.MotorDirection, doorLampChan chan bool, doorTimer *time.Timer, orderChangesChan chan config.ElevStateMap, buttonPushed config.ButtonEvent, idleTimer *time.Timer, motorTimer *time.Timer){
 
 	currentMap := elevStateMap.GetLocalMap()
 	fmt.Printf("\n \n CURRENT FLOOR %v \n \n", currentMap[config.My_ID].CurrentFloor)
 	buttonLampChan <- config.ButtonLamp{buttonPushed.Floor, buttonPushed.Button, true}
+
 	if buttonPushed.Button != config.BT_Cab{
 		for elev := 0; elev < config.NUM_ELEVS; elev++{		
 			if currentMap[elev].Connected == true{		
@@ -164,7 +169,7 @@ func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan conf
 
 				
 			}else{
-				motorDir := chooseDirection(&currentMap)
+				motorDir := chooseDirection(&currentMap, motorTimer)
 				if motorDir != config.MD_Stop {
 					motorChan <- motorDir
 					currentMap[config.My_ID].IDLE = false
@@ -177,7 +182,7 @@ func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan conf
 
 	}
 	orderChangesChan <- currentMap
-	//idleTimer.Reset(time.Second * IDLE_TIME)
+
 
 
 	//elevStateMap.PrintMap(currentMap)
@@ -185,6 +190,7 @@ func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan conf
 
 func shouldStop(elevMap config.ElevStateMap) bool{
 	fmt.Printf("Should stop")
+
 	switch(state){
 		case MOVING: 
 			fmt.Printf("state moving\n")
@@ -324,7 +330,8 @@ func orderInThisFloor( floor int, elevMap config.ElevStateMap) bool{
 }
 
 
-func chooseDirection(elevMap *config.ElevStateMap) config.MotorDirection{
+func chooseDirection(elevMap *config.ElevStateMap, motorTimer *time.Timer) config.MotorDirection{
+	motorTimer.Reset(time.Second * MOTOR_DEAD_TIME)
 	switch elevMap[config.My_ID].CurrentDir{
 		case config.ED_Up: 
 			if ordersAbove(*elevMap){
@@ -420,8 +427,8 @@ func nearestElevator(elevMap config.ElevStateMap, floor int) bool{
 
 
 
-func forceChooseDirection(elevMap *config.ElevStateMap) config.MotorDirection{
-	fmt.Printf("4/2 = %v\n", config.NUM_FLOORS/2)
+func forceChooseDirection(elevMap *config.ElevStateMap, motorTimer *time.Timer) config.MotorDirection{
+	motorTimer.Reset(time.Second * MOTOR_DEAD_TIME)
 	if orderInThisFloor(elevMap[config.My_ID].CurrentFloor, *elevMap){
 		fmt.Printf("order in this floor, Stopp\n")
 		return config.MD_Stop

@@ -37,6 +37,7 @@ func Elevio(motorChan chan config.MotorDirection, doorLampChan chan bool, newOrd
 		case lamp := <- buttonLampChan:
 			fmt.Printf("Slukker lys %v", lamp)
 			SetButtonLamp(lamp)
+			//InitOrders()
 
 		}
 	
@@ -48,7 +49,7 @@ func Elevio(motorChan chan config.MotorDirection, doorLampChan chan bool, newOrd
 
 
 
-func Init(addr string, numFloors int) {
+func InitDriver(addr string, numFloors int) {
 	if _initialized {
 		fmt.Println("Driver already initialized!")
 		return
@@ -64,11 +65,20 @@ func Init(addr string, numFloors int) {
 	SetMotorDirection(config.MD_Up)
 	for getFloor() == -1{}
 	SetMotorDirection(config.MD_Stop)
-
-
-
+	SetDoorOpenLamp(false)
 	currentMap := elevStateMap.GetLocalMap()
 	currentMap[config.My_ID].CurrentFloor = getFloor()
+	elevStateMap.SetLocalMap(currentMap)
+	InitOrders()
+
+
+
+}
+
+func InitOrders(){
+
+	currentMap := elevStateMap.GetLocalMap()
+	
 	for f := 0; f < config.NUM_FLOORS; f++{
 		for b:= config.BT_HallUp; b <= config.BT_Cab; b++{
 			if currentMap[config.My_ID].Orders[f][b] == config.OT_OrderPlaced{
@@ -80,9 +90,6 @@ func Init(addr string, numFloors int) {
 			}
 		}
 	}
-	
-	SetDoorOpenLamp(false)
-	elevStateMap.SetLocalMap(currentMap)
 }
 
 

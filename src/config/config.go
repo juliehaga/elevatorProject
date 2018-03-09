@@ -65,6 +65,7 @@ type ElevInfo struct{
 	Connected bool
 	Door bool
 	IDLE bool
+	OutOfOrder bool 
 	Orders [NUM_FLOORS][NUM_BUTTONS] OrderType
 }
 
@@ -83,6 +84,7 @@ type StatusMsg struct {
 	CurrentFloor int
 	CurrentDir ElevDir
 	Door bool
+	OutOfOrder bool
 }
 
 type OrderMsg struct{

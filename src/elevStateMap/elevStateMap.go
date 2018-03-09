@@ -102,6 +102,7 @@ func InitElevStateMap(newOrderChan chan config.ButtonEvent){
 		LocalMap[e].Connected = false
 		LocalMap[e].Door = false
 		LocalMap[e].CurrentFloor = -1
+		LocalMap[e].OutOfOrder = false
 			
 		for f := 0; f < config.NUM_FLOORS; f++{
 			for b :=0; b < config.BT_Cab; b++{
@@ -170,6 +171,7 @@ func UpdateLocalMap(changedMap config.ElevStateMap){
 
 
 func UpdateMapFromNetwork(recievedMap config.ElevStateMap, newOrderChan chan config.ButtonEvent, buttonLampChan chan config.ButtonLamp){
+	buttonEvent := false
 	currentMap := GetLocalMap()
 
 	floorWithOpenDoor := -1
@@ -197,10 +199,13 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, newOrderChan chan con
 	for f:= 0; f < config.NUM_FLOORS; f++{
 			for b:= config.BT_HallUp; b < config.BT_Cab; b++{
 					if recievedMap[config.My_ID].Orders[f][b] == config.OT_OrderPlaced && currentMap[config.My_ID].Orders[f][b] == config.OT_NoOrder{
-						
+						if buttonEvent == false{
+							newOrderChan <- config.ButtonEvent{f, b}
+							buttonEvent = true
 
-						newOrderChan <- config.ButtonEvent{f, b}
-						
+						}
+
+					
 						//fmt.Printf("Order from network, floor %v, button %v\n\n", f, b)
 
 					} else if recievedMap[config.My_ID].Orders[f][b] ==config. OT_NoOrder && currentMap[config.My_ID].Orders[f][b] == config.OT_OrderPlaced && floorWithOpenDoor == f{
@@ -222,6 +227,7 @@ func UpdateElevStatusFromNetwork(newStatus config.StatusMsg){
 	currentMap[newStatus.ID].CurrentFloor = newStatus.CurrentFloor
 	currentMap[newStatus.ID].CurrentDir = newStatus.CurrentDir
 	currentMap[newStatus.ID].Door = newStatus.Door
+	currentMap[newStatus.ID].OutOfOrder = newStatus.OutOfOrder
 	SetLocalMap(currentMap)
 
 }

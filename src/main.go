@@ -63,7 +63,7 @@ func main() {
 
 	config.Init(id, port)
 	elevStateMap.InitElevStateMap(newOrderChan)
-	elevio.Init("localhost:" + port, config.NUM_FLOORS)
+	elevio.InitDriver("localhost:" + port, config.NUM_FLOORS)
 
 	currentMap := elevStateMap.GetLocalMap()
 	elevStateMap.PrintMap(currentMap)
@@ -78,6 +78,7 @@ func main() {
 	go network.Receiver(16502, orderMsgRx, statusMsgRx)
     go network.PeerTransmitter(15600, id, peerTxEnable)
 	go network.PeerReceiver(15600, peerUpdateCh)
+
 
     
    
@@ -98,10 +99,10 @@ func main() {
 
 			//initalize from network()
 			if init != true{
-				network.SendOrders(messageTx, elevStateMap.GetLocalMap())
+				fmt.Printf("EN NY PEEER JEG SENDER MINE ORDRE\n")
+				network.SendOrders(messageTx, elevStateMap.GetLocalMap())	
+
 			}
-
-
 
 			
 
@@ -110,13 +111,19 @@ func main() {
 		case orderMsgFromNetwork := <- orderMsgRx:
 			//Når vi mottar melding bør vi sjekke at hardware er oppdatert
 			if orderMsgFromNetwork.ID != config.My_ID {
-				fmt.Printf("network\n")
-		
+				fmt.Printf("MOTTAR MELDING\n")
+
+				fmt.Printf("---------------------------\n")
+				fmt.Printf("ID %v sender ", orderMsgFromNetwork.ID)
+				elevStateMap.PrintMap(orderMsgFromNetwork.ElevMap)
+				
 				elevStateMap.UpdateMapFromNetwork(orderMsgFromNetwork.ElevMap, newOrderChan, buttonLampChan)
 				//currentMap := elevStateMap.GetLocalMap()
-				//elevStateMap.PrintMap(currentMap)
+				
 				//elevStateMap.PrintMap(networkMapMsg.ElevMap)
 			}
+
+
 			init = false
 
 			//currentMap := elevStateMap.GetLocalMap()
@@ -128,7 +135,6 @@ func main() {
 
 
 		case elevMap:= <-orderChangesChan:
-			fmt.Printf("gjør forandring\n")	
 	
 			elevStateMap.UpdateLocalMap(elevMap)
 			network.SendOrders(messageTx, elevMap)
