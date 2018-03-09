@@ -80,7 +80,6 @@ func main() {
 
 
     
-  s
 	
 	for {
 		select {
