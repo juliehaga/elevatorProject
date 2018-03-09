@@ -95,7 +95,7 @@ func eventNewFloor(motorChan chan elevio.MotorDirection, doorLampChan chan bool,
 
 	switch(state){
 		case MOVING:
-			if shouldStop(currentMap) {
+			if shouldStop(currentMap) && orderInThisFloor(currentMap[config.My_ID].CurrentFloor, currentMap) {
 				motorChan <- elevio.MD_Stop
 				doorLampChan <- true
 				doorTimer.Reset(time.Second * DOOR_TIME)
@@ -152,7 +152,7 @@ func eventNewAckOrder(buttonLampChan chan elevio.ButtonLamp, motorChan chan elev
 	switch(state){
 		case IDLE:
 
-			if shouldStop(currentMap) {
+			if shouldStop(currentMap) && orderInThisFloor(currentMap[config.My_ID].CurrentFloor, currentMap){
 				fmt.Printf("IDLE -shouldstop\n")
 				doorLampChan <- true	
 				currentMap[config.My_ID].Door = true
@@ -225,7 +225,7 @@ func shouldStop(elevMap elevStateMap.ElevStateMap) bool{
 
 func ordersAbove(elevMap elevStateMap.ElevStateMap) bool{
 	fmt.Printf("Sjekker om ordre over\n")
-	elevStateMap.PrintMap(elevMap)
+	//elevStateMap.PrintMap(elevMap)
 	for f := elevMap[config.My_ID].CurrentFloor + 1; f<config.NUM_FLOORS; f++{
 		fmt.Printf("Running foorloop\n")
 		for b := elevio.BT_HallUp; b<= elevio.BT_Cab; b++{ 
@@ -447,6 +447,6 @@ func forceChooseDirection(elevMap *elevStateMap.ElevStateMap) elevio.MotorDirect
 			return elevio.MD_Up
 		}
 	}
-	fmt.Printf("Burde ikke komme hit\n")
+	//fmt.Printf("Burde ikke komme hit\n")
 	return elevio.MD_Stop
 } 

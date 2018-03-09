@@ -5,6 +5,9 @@ import(
 	"../elevio"	
 	"fmt"
 	"sync"
+	"os"
+	"strconv"
+	"io"
 )
 
 
@@ -59,15 +62,87 @@ type OrderMsg struct{
 }
 
 
+func writeToBackup(){
+	// open file using READ & WRITE permission
+	var file, err = os.OpenFile("backup.txt", os.O_RDWR, 0644)
+	if err != nil { return }
+	defer file.Close()
 
+	// write some text line-by-line to file
+
+	for f := 0; f< config.NUM_FLOORS; f++{
+		var order int = int(LocalMap[config.My_ID].Orders[f][elevio.BT_Cab])
+		_, err = file.WriteString(strconv.Itoa(order) + "\n")
+		if err != nil { return }
+	}
+	// save changes
+	err = file.Sync()
+	if err != nil { return }
+
+	fmt.Println("==> done writing to file")
+}
+
+func readFromBackup(){
+	// re-open file
+	var file, err = os.OpenFile("backup.txt", os.O_RDWR, 0644)
+	if err != nil { return }
+	defer file.Close()
+	currentMap := GetLocalMap()
+
+	// read file, line by line
+	var buf = make([]byte, 1024)
+	floor := 0
+	for {
+
+		_, err = file.Read(buf)
+		order, _ := strconv.Atoi(string(buf))
+
+
+		currentMap[config.My_ID].Orders[floor][elevio.BT_Cab] = OrderType(order)
+
+		floor++
+		
+		// break if finally arrived at end of file
+		if err == io.EOF {
+			break
+		}
+		
+		// break if error occured
+		if err != nil && err != io.EOF {
+			break
+		}
+	}
+	SetLocalMap(currentMap)
+	
+}
 
 func InitElevStateMap(){
+	var _, err = os.Stat("backup.txt")
+
+	if os.IsNotExist(err) {
+		fmt.Printf("Creating new backup file\n")
+		var file, err = os.Create("backup.txt")
+		if err != nil{
+			fmt.Printf("Could not create file \n")
+			//return
+		}	
+		for f := 0; f < config.NUM_FLOORS; f++{
+			LocalMap[config.My_ID].Orders[f][elevio.BT_Cab] = OT_NoOrder
+		}
+		writeToBackup()
+		defer file.Close()
+	}else{
+		readFromBackup()
+	}
+
+
+	//initialize map	
 	for e:= 0; e < config.NUM_ELEVS; e++{
-		LocalMap[e].CurrentFloor = 3
 		LocalMap[e].IDLE = true
 		LocalMap[e].CurrentDir = ED_Down
 		LocalMap[e].Connected = false
 		LocalMap[e].Door = false
+		LocalMap[e].CurrentFloor = -1
 			
 		for f := 0; f < config.NUM_FLOORS; f++{
 			for b :=0; b < config.NUM_BUTTONS; b++{
@@ -80,7 +155,6 @@ func InitElevStateMap(){
 		LocalMap[e].Orders[3][elevio.BT_HallUp] = -1
 	}
 	LocalMap[config.My_ID].CurrentFloor = elevio.GetFloor()
-
 	LocalMap[config.My_ID].Connected = true
 }
 

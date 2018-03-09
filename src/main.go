@@ -36,6 +36,8 @@ func main() {
 	config.Init(id, port)
 	elevio.Init("localhost:" + port, config.NUM_FLOORS)
 	elevStateMap.InitElevStateMap()
+	init := true
+	
 	
 	
 //channels for communication between modules
@@ -88,7 +90,13 @@ func main() {
 			//currentMap := elevStateMap.GetLocalMap()
 			//elevStateMap.PrintMap(currentMap)
 
+			//initalize from network()
+			if init != true{
+				network.SendOrders(messageTx, elevStateMap.GetLocalMap())
+			}
 
+
+			
 
 
 
@@ -102,6 +110,7 @@ func main() {
 				//elevStateMap.PrintMap(currentMap)
 				//elevStateMap.PrintMap(networkMapMsg.ElevMap)
 			}
+			init = false
 		case statusMsgFromNetwork := <- statusMsgRx:
 			if statusMsgFromNetwork.ID != config.My_ID {
 				elevStateMap.UpdateElevStatusFromNetwork(statusMsgFromNetwork)
@@ -115,12 +124,11 @@ func main() {
 			network.SendOrders(messageTx, elevMap)
 			//fmt.Printf("\n\n////////////////////DETTE SENDER JEG///////////////////\n")
 			//elevStateMap.PrintMap(elevMap)
-
+			init = false
 		case elevMap:= <-statusChangesChan:
 			elevStateMap.UpdateLocalMap(elevMap)
 			network.SendElevStatus(messageTx, elevMap)
-
-
+			init = false
 		}
 	}
 }
