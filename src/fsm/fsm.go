@@ -148,7 +148,6 @@ func eventDoorTimeout(doorLampChan chan bool, statusChangesChan chan config.Elev
 func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan config.MotorDirection, doorLampChan chan bool, doorTimer *time.Timer, orderChangesChan chan config.ElevStateMap, buttonPushed config.ButtonEvent, idleTimer *time.Timer, motorTimer *time.Timer){
 
 	currentMap := elevStateMap.GetLocalMap()
-	fmt.Printf("\n \n CURRENT FLOOR %v \n \n", currentMap[config.My_ID].CurrentFloor)
 	buttonLampChan <- config.ButtonLamp{buttonPushed.Floor, buttonPushed.Button, true}
 
 	if buttonPushed.Button != config.BT_Cab{
@@ -164,7 +163,7 @@ func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan conf
 	switch(state){
 		case IDLE:
 
-			if shouldStop(currentMap) && orderInThisFloor(currentMap[config.My_ID].CurrentFloor, currentMap){
+			if orderInThisFloor(currentMap[config.My_ID].CurrentFloor, currentMap){
 				doorLampChan <- true	
 				currentMap[config.My_ID].Door = true
 				orderCompleted(&currentMap, buttonLampChan)
@@ -272,20 +271,23 @@ func orderCompleted(elevMap *config.ElevStateMap, buttonLampChan chan config.But
 			if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallUp] == config.OT_OrderPlaced{
 				
 				for elev := 0; elev < config.NUM_ELEVS; elev++{	
-					if elevMap[elev].Connected == true{				
+					if elevMap[elev].Connected == true{	
+									
 						elevMap[elev].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallUp] = config.OT_NoOrder
 					}
 				}	
+				fmt.Printf("complete\n")
 				buttonLampChan <-  config.ButtonLamp{elevMap[config.My_ID].CurrentFloor, config.BT_HallUp, false}
 
 			} else if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallDown] == config.OT_OrderPlaced{
 
 				for elev := 0; elev < config.NUM_ELEVS; elev++{			
 					if elevMap[elev].Connected == true{		
+						
 						elevMap[elev].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallDown] = config.OT_NoOrder
 					}
 				}
-				
+				fmt.Printf("complete\n")
 				buttonLampChan <-  config.ButtonLamp{elevMap[config.My_ID].CurrentFloor, config.BT_HallDown, false}
 			}
 			
@@ -294,11 +296,11 @@ func orderCompleted(elevMap *config.ElevStateMap, buttonLampChan chan config.But
 
 				for elev := 0; elev < config.NUM_ELEVS; elev++{		
 					if elevMap[elev].Connected == true{			
+
 						elevMap[elev].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallDown] = config.OT_NoOrder
 					}
 				}
-
-
+				fmt.Printf("complete\n")
 				buttonLampChan <-  config.ButtonLamp{elevMap[config.My_ID].CurrentFloor, config.BT_HallDown, false}
 			} else if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallUp] == config.OT_OrderPlaced{
 
@@ -306,7 +308,8 @@ func orderCompleted(elevMap *config.ElevStateMap, buttonLampChan chan config.But
 					if elevMap[elev].Connected == true{				
 						elevMap[elev].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallUp] = config.OT_NoOrder
 					}
-				}					
+				}	
+				fmt.Printf("complete\n")				
 				buttonLampChan <-  config.ButtonLamp{elevMap[config.My_ID].CurrentFloor, config.BT_HallUp, false}
 
 
