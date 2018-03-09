@@ -35,7 +35,7 @@ func Elevio(motorChan chan config.MotorDirection, doorLampChan chan bool, newOrd
 		case light := <-doorLampChan:
 			SetDoorOpenLamp(light)
 		case lamp := <- buttonLampChan:
-			fmt.Printf("Slukker lys %v", lamp)
+			fmt.Printf("LYSBESKJED %v", lamp)
 			SetButtonLamp(lamp)
 			//InitOrders()
 
@@ -76,9 +76,8 @@ func InitDriver(addr string, numFloors int) {
 }
 
 func InitOrders(){
-
+	fmt.Printf("INITIALISERER ORDRE FRA NETTET NÅR DU LOOGER PÅ\n")
 	currentMap := elevStateMap.GetLocalMap()
-	
 	for f := 0; f < config.NUM_FLOORS; f++{
 		for b:= config.BT_HallUp; b <= config.BT_Cab; b++{
 			if currentMap[config.My_ID].Orders[f][b] == config.OT_OrderPlaced{

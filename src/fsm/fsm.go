@@ -102,16 +102,18 @@ func eventNewFloor(motorChan chan config.MotorDirection, doorLampChan chan bool,
 	switch(state){
 		case MOVING:
 			motorTimer.Reset(time.Second * MOTOR_DEAD_TIME)
-			if shouldStop(currentMap) && orderInThisFloor(currentMap[config.My_ID].CurrentFloor, currentMap) {
+			if shouldStop(currentMap) {
 				motorChan <- config.MD_Stop
-				doorLampChan <- true
-				doorTimer.Reset(time.Second * DOOR_TIME)
+					if  orderInThisFloor(currentMap[config.My_ID].CurrentFloor, currentMap){
+						doorLampChan <- true
+						doorTimer.Reset(time.Second * DOOR_TIME)
 
-				currentMap[config.My_ID].Door = true
-				orderCompleted(&currentMap, buttonLampChan)
-				currentMap[config.My_ID].IDLE = false
-				orderChangesChan <- currentMap
-				state = DOOR_OPEN
+						currentMap[config.My_ID].Door = true
+						orderCompleted(&currentMap, buttonLampChan)
+						currentMap[config.My_ID].IDLE = false
+						orderChangesChan <- currentMap
+						state = DOOR_OPEN
+					}	
 			}
 	}
 }
@@ -131,7 +133,6 @@ func eventDoorTimeout(doorLampChan chan bool, statusChangesChan chan config.Elev
 				currentMap[config.My_ID].IDLE = false
 				state = MOVING
 			}
-			fmt.Printf("kjører selv om vi har satt IDLE\n")
 
 			statusChangesChan <- currentMap	
 		
@@ -161,7 +162,6 @@ func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan conf
 		case IDLE:
 
 			if shouldStop(currentMap) && orderInThisFloor(currentMap[config.My_ID].CurrentFloor, currentMap){
-				fmt.Printf("IDLE -shouldstop\n")
 				doorLampChan <- true	
 				currentMap[config.My_ID].Door = true
 				orderCompleted(&currentMap, buttonLampChan)
@@ -191,17 +191,11 @@ func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan conf
 }
 
 func shouldStop(elevMap config.ElevStateMap) bool{
-	fmt.Printf("Should stop")
-
 	switch(state){
 		case MOVING: 
-			fmt.Printf("state moving\n")
 			if elevMap[config.My_ID].CurrentFloor == config.NUM_FLOORS-1 && elevMap[config.My_ID].CurrentDir == config.ED_Up{
-
-				fmt.Printf("Jeg er øverst, STOPP \n")
 				return true
 			} else if elevMap[config.My_ID].CurrentFloor == 0 && elevMap[config.My_ID].CurrentDir == config.ED_Down {
-				fmt.Printf("Jeg er nedersr, STOPP \n")
 				return true
 			}
 	}
@@ -236,8 +230,6 @@ func shouldStop(elevMap config.ElevStateMap) bool{
 }
 
 func ordersAbove(elevMap config.ElevStateMap) bool{
-	fmt.Printf("Sjekker om ordre over\n")
-	//elevStateMap.PrintMap(elevMap)
 	for f := elevMap[config.My_ID].CurrentFloor + 1; f<config.NUM_FLOORS; f++{
 		for b := config.BT_HallUp; b<= config.BT_Cab; b++{ 
 			if elevMap[config.My_ID].Orders[f][b] == config.OT_OrderPlaced{
@@ -271,7 +263,6 @@ func orderCompleted(elevMap *config.ElevStateMap, buttonLampChan chan config.But
 		elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_Cab] = config.OT_NoOrder
 		buttonLampChan <- config.ButtonLamp{elevMap[config.My_ID].CurrentFloor, config.BT_Cab, false}
 	}
-
 
 	switch(elevMap[config.My_ID].CurrentDir){
 		case config.ED_Up: 
@@ -430,6 +421,7 @@ func nearestElevator(elevMap config.ElevStateMap, floor int) bool{
 			}
 		}	
 	}
+	fmt.Printf("Jeg er nærmest\n")
  	return true
 }
 
@@ -438,28 +430,22 @@ func nearestElevator(elevMap config.ElevStateMap, floor int) bool{
 func forceChooseDirection(elevMap *config.ElevStateMap, motorTimer *time.Timer) config.MotorDirection{
 	motorTimer.Reset(time.Second * MOTOR_DEAD_TIME)
 	if orderInThisFloor(elevMap[config.My_ID].CurrentFloor, *elevMap){
-		fmt.Printf("order in this floor, Stopp\n")
 		return config.MD_Stop
 	
 	} else if elevMap[config.My_ID].CurrentFloor >= config.NUM_FLOORS/2 {
-		fmt.Printf("Er i etasje større eller lik 2\n")
 		if ordersAbove(*elevMap){
 			elevMap[config.My_ID].CurrentDir = config.ED_Up
-			fmt.Printf("orders above 2, NED\n")
 			return config.MD_Up
 		} else if ordersBelow(*elevMap){
 			elevMap[config.My_ID].CurrentDir = config.ED_Down
-			fmt.Printf("orders below 2, NED\n")
 			return config.MD_Down
 		}
 	} else if elevMap[config.My_ID].CurrentFloor < config.NUM_FLOORS/2{
 		if ordersBelow(*elevMap) {
 			elevMap[config.My_ID].CurrentDir = config.ED_Down
-			fmt.Printf("orders below 1, OPP\n")
 			return config.MD_Down
 		} else if ordersAbove(*elevMap){
 			elevMap[config.My_ID].CurrentDir = config.ED_Up
-			fmt.Printf("orders above 1, OPP\n")
 			return config.MD_Up
 		}
 	}

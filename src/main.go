@@ -80,10 +80,7 @@ func main() {
 
 
     
-   
-
-	
-	
+  s
 	
 	for {
 		select {
@@ -93,54 +90,31 @@ func main() {
 			fmt.Printf("  Peers:    %q\n", p.Peers)
 			fmt.Printf("  New:      %q\n", p.New)
 			fmt.Printf("  Lost:     %q\n", p.Lost)
-			//currentMap := elevStateMap.GetLocalMap()
-			//elevStateMap.PrintMap(currentMap)
 
-			//initalize from network()
 			if init != true{
 				fmt.Printf("EN NY PEEER JEG SENDER MINE ORDRE\n")
 				network.SendOrders(messageTx, elevStateMap.GetLocalMap())	
-
 			}
-
-			
-
-
 
 		case orderMsgFromNetwork := <- orderMsgRx:
 			//Når vi mottar melding bør vi sjekke at hardware er oppdatert
 			if orderMsgFromNetwork.ID != config.My_ID {
 				fmt.Printf("MOTTAR MELDING\n")
-
-				fmt.Printf("---------------------------\n")
-				fmt.Printf("ID %v sender ", orderMsgFromNetwork.ID)
-				elevStateMap.PrintMap(orderMsgFromNetwork.ElevMap)
-				
-				elevStateMap.UpdateMapFromNetwork(orderMsgFromNetwork.ElevMap, newOrderChan, buttonLampChan)
-				//currentMap := elevStateMap.GetLocalMap()
-				
-				//elevStateMap.PrintMap(networkMapMsg.ElevMap)
 			}
 			if init == true{
 				elevio.InitOrders()
 			}
-
 			init = false
 
-			//currentMap := elevStateMap.GetLocalMap()
-			//elevStateMap.PrintMap(currentMap)
 		case statusMsgFromNetwork := <- statusMsgRx:
 			if statusMsgFromNetwork.ID != config.My_ID {
 				elevStateMap.UpdateElevStatusFromNetwork(statusMsgFromNetwork)
 			}
 
-
 		case elevMap:= <-orderChangesChan:
-	
 			elevStateMap.UpdateLocalMap(elevMap)
 			network.SendOrders(messageTx, elevMap)
-			//fmt.Printf("\n\n////////////////////DETTE SENDER JEG///////////////////\n")
-			//elevStateMap.PrintMap(elevMap)
+
 			init = false
 		case elevMap:= <-statusChangesChan:
 			elevStateMap.UpdateLocalMap(elevMap)
