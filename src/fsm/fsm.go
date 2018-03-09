@@ -164,6 +164,7 @@ func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan conf
 				doorTimer.Reset(time.Second * DOOR_TIME)
 				currentMap[config.My_ID].IDLE = false
 				state = DOOR_OPEN
+				statusChangesChan <- elevMap
 
 				
 			}else{
@@ -172,12 +173,10 @@ func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan conf
 					motorChan <- motorDir
 					currentMap[config.My_ID].IDLE = false
 					state = MOVING
-					
 				}
+				orderChangesChan <- elevMap
 			}	
 	}
-
-	orderChangesChan <- currentMap
 }
 
 func shouldStop(elevMap config.ElevStateMap) bool{

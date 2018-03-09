@@ -147,20 +147,18 @@ func UpdateLocalMap(changedMap config.ElevStateMap){
 			floorWithOpenDoor = changedMap[e].CurrentFloor
 		}
 	}
-	for e:= 0; e < config.NUM_ELEVS; e++{
-		if currentMap[e].Connected == true { 
-			for f:= 0; f < config.NUM_FLOORS; f++{
-				currentMap[config.My_ID].Orders[f][config.BT_Cab] = changedMap[config.My_ID].Orders[f][config.BT_Cab]
-				for b:= config.BT_HallUp; b < config.BT_Cab; b++{
 
-					if changedMap[e].Orders[f][b] == config.OT_OrderPlaced && currentMap[e].Orders[f][b] == config.OT_NoOrder{
-							currentMap[e].Orders[f][b] = changedMap[e].Orders[f][b]
-						} else if changedMap[e].Orders[f][b] == config.OT_NoOrder && currentMap[e].Orders[f][b] == config.OT_OrderPlaced && floorWithOpenDoor == f{
-							currentMap[e].Orders[f][b] = changedMap[e].Orders[f][b]
-						}
-				}
+
+
+	for e:= 0; e < config.NUM_ELEVS; e++{
+		for f:= 0; f < config.NUM_FLOORS; f++{
+			currentMap[config.My_ID].Orders[f][config.BT_Cab] = changedMap[config.My_ID].Orders[f][config.BT_Cab]
+
+			for b:= config.BT_HallUp; b < config.BT_Cab; b++{
+
+				currentMap[e].Orders[f][b] = changedMap[e].Orders[f][b]	
 			}
-		}	
+		}
 	}
 	
 	SetLocalMap(currentMap)
@@ -198,6 +196,9 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, newOrderChan chan con
 							newOrderChan <- config.ButtonEvent{f, b}
 							
 							buttonEvent = true
+						}
+						for elev := 0; elev < config.NUM_ELEVS; elev++{
+							currentMap[elev].Orders[f][b] = config.OT_OrderPlaced
 						}
 						//fmt.Printf("Order from network, floor %v, button %v\n\n", f, b)
 
