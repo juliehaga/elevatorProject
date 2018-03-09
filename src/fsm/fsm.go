@@ -182,6 +182,16 @@ func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan conf
 			}
 		case DOOR_OPEN:
 			fmt.Printf("Oppdaterer map i door open ")
+
+			if orderInThisFloor(currentMap[config.My_ID].CurrentFloor, currentMap){
+				fmt.Printf("order, in this floor\n")
+				doorLampChan <- true	
+				currentMap[config.My_ID].Door = true
+				orderCompleted(&currentMap, buttonLampChan)
+				doorTimer.Reset(time.Second * DOOR_TIME)
+				currentMap[config.My_ID].IDLE = false
+				orderChangesChan <- currentMap
+			}
 			orderChangesChan <- currentMap
 		
 		case MOVING:
