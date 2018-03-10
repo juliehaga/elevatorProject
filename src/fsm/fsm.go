@@ -142,7 +142,7 @@ func eventDoorTimeout(doorLampChan chan bool, statusChangesChan chan config.Elev
 func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan config.MotorDirection, doorLampChan chan bool, doorTimer *time.Timer, orderChangesChan chan config.ElevStateMap, buttonPushed config.ButtonEvent, idleTimer *time.Timer, motorTimer *time.Timer, statusChangesChan chan config.ElevStateMap){
 	currentMap := elevStateMap.GetLocalMap()
 	buttonLampChan <- config.ButtonLamp{buttonPushed.Floor, buttonPushed.Button, true}
-
+	//elevStateMap.PrintMap(currentMap)
 	if buttonPushed.Button == config.BT_Cab{
 		currentMap[config.My_ID].Orders[buttonPushed.Floor][buttonPushed.Button] = config.OT_OrderPlaced
 	}else{
@@ -322,7 +322,7 @@ func orderCompleted(elevMap *config.ElevStateMap, buttonLampChan chan config.But
 
 
 func orderInThisFloor( floor int, elevMap config.ElevStateMap) bool{
-	elevStateMap.PrintMap(elevMap)
+	//elevStateMap.PrintMap(elevMap)
 	for b := config.BT_HallUp; b <= config.BT_Cab; b++ {
 		if elevMap[config.My_ID].Orders[floor][b] == config.OT_OrderPlaced {
 			return true

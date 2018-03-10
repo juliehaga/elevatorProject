@@ -131,27 +131,27 @@ func Transmitter(port int, messageTx chan config.Message, ackChan chan config.Ac
 	for {
 		select {
 			case message := <- messageTx:
-				fmt.Printf("nessageTx\n")
+				fmt.Printf("messageTx\n")
 
 				addr, _ := net.ResolveUDPAddr("udp", fmt.Sprintf("255.255.255.255:%d", port))
 				conn, _ := net.DialUDP("udp", nil, addr)
 				buf, _ := json.Marshal(message)
-
+				elevStateMap.PrintMap(message.ElevMap)
 
 				for e:= 0; e < config.NUM_ELEVS; e++{
 					if e != config.My_ID{
-						fmt.Printf("heis %v er connected %v\n", e, message.ElevMap[e].Connected)
+						//fmt.Printf("heis %v er connected %v\n", e, message.ElevMap[e].Connected)
 						if message.ElevMap[e].Connected == true{
 							
-							//WAIT_FOR_ACK:
+							WAIT_FOR_ACK:
 								for i := 0; i < 5; i++{
-									fmt.Printf("Sender melding\n")
+									//fmt.Printf("Sender melding\n")
 									conn.Write(buf)
 									select {
 										case ackMsg := <- ackChan:
 											if ackMsg.ID == e {
-												fmt.Printf("Recieved ack from %v\n", ackMsg.ID)
-												//break WAIT_FOR_ACK
+												//fmt.Printf("Recieved ack from %v\n", ackMsg.ID)
+												break WAIT_FOR_ACK
 											}
 										default:
 
@@ -174,7 +174,9 @@ func Receiver(port int, orderMsgRx chan config.OrderMsg, statusMsgRx chan config
 	conn, _ := net.ListenUDP("udp", addr)
 
 	var b[1048576] byte	
-	elevMap := elevStateMap.GetLocalMap()
+	
+
+
 	for {
 		integer, _, err := conn.ReadFromUDP(b[:])
 		if err != nil {
@@ -186,10 +188,10 @@ func Receiver(port int, orderMsgRx chan config.OrderMsg, statusMsgRx chan config
 			if receivedMsg.MsgType == config.ElevStatus{	
 				statusMsgRx <- config.StatusMsg{receivedMsg.ID, receivedMsg.ElevMap[receivedMsg.ID].CurrentFloor, receivedMsg.ElevMap[receivedMsg.ID].CurrentDir, receivedMsg.ElevMap[receivedMsg.ID].Door, receivedMsg.ElevMap[receivedMsg.ID].OutOfOrder}
 				fmt.Printf("Sender Ack\n")
-				SendAck(messageTx, elevMap)
+				SendAck(messageTx, receivedMsg.ElevMap)
 			} else if receivedMsg.MsgType == config.Orders {
 				orderMsgRx <- config.OrderMsg{receivedMsg.ID, receivedMsg.ElevMap}
-				SendAck(messageTx, elevMap)
+				SendAck(messageTx, receivedMsg.ElevMap)
 				fmt.Printf("Sender Ack\n")
 			} else if receivedMsg.MsgType == config.Ack{
 				ackChan <- config.AckMsg{receivedMsg.ID}

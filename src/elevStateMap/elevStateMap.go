@@ -114,7 +114,7 @@ func InitElevStateMap(newOrderChan chan config.ButtonEvent){
 	}
 	//LocalMap[config.My_ID].CurrentFloor = elevio.GetFloor()
 	LocalMap[config.My_ID].Connected = true
-	PrintMap(LocalMap)
+	//PrintMap(LocalMap)
 }
 
 
@@ -138,7 +138,6 @@ func UpdateLocalMap(changedMap config.ElevStateMap){
 
 	currentMap[config.My_ID].CurrentFloor = changedMap[config.My_ID].CurrentFloor
 	currentMap[config.My_ID].CurrentDir = changedMap[config.My_ID].CurrentDir
-	currentMap[config.My_ID].Connected = changedMap[config.My_ID].Connected
 	currentMap[config.My_ID].Door = changedMap[config.My_ID].Door
 
 
