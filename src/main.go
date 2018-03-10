@@ -65,8 +65,7 @@ func main() {
 	elevStateMap.InitElevStateMap(newOrderChan)
 	elevio.InitDriver("localhost:" + port, config.NUM_FLOORS)
 
-	currentMap := elevStateMap.GetLocalMap()
-	elevStateMap.PrintMap(currentMap)
+	
 	
 	init := true
 
@@ -97,9 +96,10 @@ func main() {
 			}
 
 		case orderMsgFromNetwork := <- orderMsgRx:
+			fmt.Printf("FÅR MELDING FRA %v\n", orderMsgFromNetwork.ID)
 			//Når vi mottar melding bør vi sjekke at hardware er oppdatert
 			if orderMsgFromNetwork.ID != config.My_ID {
-				fmt.Printf("FÅR MELDING FRA %v\n", orderMsgFromNetwork.ID)
+				
 				elevStateMap.UpdateMapFromNetwork(orderMsgFromNetwork.ElevMap, newOrderChan, buttonLampChan)
 			}
 			if init == true{
@@ -108,6 +108,7 @@ func main() {
 			init = false
 
 		case statusMsgFromNetwork := <- statusMsgRx:
+			fmt.Printf("jeg får statusmelding\n")
 			if statusMsgFromNetwork.ID != config.My_ID {
 				elevStateMap.UpdateElevStatusFromNetwork(statusMsgFromNetwork)
 			}

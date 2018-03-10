@@ -145,12 +145,12 @@ func Transmitter(port int, messageTx chan config.Message, ackChan chan config.Ac
 							
 							WAIT_FOR_ACK:
 								for i := 0; i < 5; i++{
-									//fmt.Printf("Sender melding\n")
+									fmt.Printf("Sender melding\n")
 									conn.Write(buf)
 									select {
 										case ackMsg := <- ackChan:
 											if ackMsg.ID == e {
-												//fmt.Printf("Recieved ack from %v\n", ackMsg.ID)
+												fmt.Printf("Recieved ack from %v\n", ackMsg.ID)
 												break WAIT_FOR_ACK
 											}
 										default:
@@ -183,18 +183,25 @@ func Receiver(port int, orderMsgRx chan config.OrderMsg, statusMsgRx chan config
 			fmt.Printf("Feil %s", err. Error())
 		}
 		if integer > 0 {
+			fmt.Printf("MELDINGSTYPE %v fra %v\n", receivedMsg.MsgType, receivedMsg.ID)
 
 			json.Unmarshal(b[:integer], &receivedMsg)
-			if receivedMsg.MsgType == config.ElevStatus{	
+
+			if receivedMsg.MsgType == config.ElevStatus{
+				fmt.Printf("statusmedling i receive")	
 				statusMsgRx <- config.StatusMsg{receivedMsg.ID, receivedMsg.ElevMap[receivedMsg.ID].CurrentFloor, receivedMsg.ElevMap[receivedMsg.ID].CurrentDir, receivedMsg.ElevMap[receivedMsg.ID].Door, receivedMsg.ElevMap[receivedMsg.ID].OutOfOrder}
 				fmt.Printf("Sender Ack\n")
 				SendAck(messageTx, receivedMsg.ElevMap)
 			} else if receivedMsg.MsgType == config.Orders {
+				fmt.Printf("ordre medling i Recieved")
 				orderMsgRx <- config.OrderMsg{receivedMsg.ID, receivedMsg.ElevMap}
 				SendAck(messageTx, receivedMsg.ElevMap)
 				fmt.Printf("Sender Ack\n")
 			} else if receivedMsg.MsgType == config.Ack{
-				ackChan <- config.AckMsg{receivedMsg.ID}
+				fmt.Printf("Ackkkkkk\n")
+				if receivedMsg.ID != config.My_ID{
+					ackChan <- config.AckMsg{receivedMsg.ID}
+				}
 			}
 			
 		} else {
