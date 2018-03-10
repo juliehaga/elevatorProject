@@ -57,8 +57,8 @@ func main() {
 
  
 	messageTx := make(chan config.Message, 100)
-	orderMsgRx := make(chan config.OrderMsg)
-	statusMsgRx := make(chan config.StatusMsg)
+	orderMsgRx := make(chan config.OrderMsg, 100)
+	statusMsgRx := make(chan config.StatusMsg, 100)
 	ackChan := make(chan config.AckMsg, 100)
 
 	config.Init(id, port)
