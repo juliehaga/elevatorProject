@@ -77,18 +77,27 @@ func PeerReceiver(port int, peerUpdateCh chan<- config.PeerUpdate) {
 		if id != "" {
 			if _, idExists := lastSeen[id]; !idExists {
 				p.New = id
+
+				newID, _ := strconv.Atoi(p.New)
+				fmt.Printf("Setter heis %v til connected ", newID)
+				elevStateMap.SetConnectedElevator(newID, true)
+
+
 				updated = true
 			}
 
 			lastSeen[id] = time.Now()
 		}
-		//Kan her sette connected lik false?
 		// Removing dead connection
 		p.Lost = make([]string, 0)
 		for k, v := range lastSeen {
 			if time.Now().Sub(v) > timeout {
 				updated = true
 				p.Lost = append(p.Lost, k)
+
+				lostID, _ := strconv.Atoi(k)
+				elevStateMap.SetConnectedElevator(lostID, false)
+				fmt.Printf("Setter heis %v til disconnected \n", lostID)
 				delete(lastSeen, k)
 			}
 		}
@@ -104,18 +113,9 @@ func PeerReceiver(port int, peerUpdateCh chan<- config.PeerUpdate) {
 			sort.Strings(p.Peers)
 			sort.Strings(p.Lost)
 
-			for i:= 0; i < len(p.Lost); i ++{
-				lostID, _ := strconv.Atoi(p.Lost[i])
-				elevStateMap.SetConnectedElevator(lostID, false)
-				fmt.Printf("Setter heis %v til disconnected \n", lostID)
-
-			}
-			newID, _ := strconv.Atoi(p.New)
-			fmt.Printf("Setter heis %v til connected ", newID)
-		
-
-			elevStateMap.SetConnectedElevator(newID, true)
-
+			
+			
+			
 			peerUpdateCh <- p
 		}
 	}

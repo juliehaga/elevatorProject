@@ -181,7 +181,7 @@ func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan conf
 				
 			}
 		case DOOR_OPEN:
-			fmt.Printf("Oppdaterer map i door open ")
+			fmt.Printf("Oppdaterer map i door open \n")
 
 			if orderInThisFloor(currentMap[config.My_ID].CurrentFloor, currentMap){
 				fmt.Printf("door open order, in this floor\n")
@@ -195,7 +195,7 @@ func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan conf
 			orderChangesChan <- currentMap
 		
 		case MOVING:
-			fmt.Printf("Oppdaterer map i moving ")
+			fmt.Printf("Oppdaterer map i moving \n")
 			orderChangesChan <- currentMap
 
 	}
@@ -271,7 +271,7 @@ func ordersBelow(elevMap config.ElevStateMap) bool{
 
 
 func orderCompleted(elevMap *config.ElevStateMap, buttonLampChan chan config.ButtonLamp){
-	fmt.Printf("ordercompleted")
+	fmt.Printf("ordercompleted\n")
 	if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_Cab] == config.OT_OrderPlaced{
 		elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_Cab] = config.OT_NoOrder
 		fmt.Printf("Completed CAB order\n")
