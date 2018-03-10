@@ -185,19 +185,21 @@ func Receiver(port int, orderMsgRx chan config.OrderMsg, statusMsgRx chan config
 			fmt.Printf("MELDINGSTYPE %v fra %v\n", receivedMsg.MsgType, receivedMsg.ID)
 
 			json.Unmarshal(b[:integer], &receivedMsg)
+			if receivedMsg.ID != config.My_ID{
+				if receivedMsg.MsgType == config.ElevStatus{
+					fmt.Printf("statusmedling i receive")	
+					statusMsgRx <- config.StatusMsg{receivedMsg.ID, receivedMsg.ElevMap[receivedMsg.ID].CurrentFloor, receivedMsg.ElevMap[receivedMsg.ID].CurrentDir, receivedMsg.ElevMap[receivedMsg.ID].Door, receivedMsg.ElevMap[receivedMsg.ID].OutOfOrder}
+					fmt.Printf("Sender Ack\n")
+					SendAck(messageTx, receivedMsg.ElevMap, receivedMsg.ID)
+				} else if receivedMsg.MsgType == config.Orders {
+					fmt.Printf("ordre medling i Recieved")
+					orderMsgRx <- config.OrderMsg{receivedMsg.ID, receivedMsg.ElevMap}
+					SendAck(messageTx, receivedMsg.ElevMap, receivedMsg.ID)
+					fmt.Printf("Sender Ack\n")
+				}
+			}
 
-			if receivedMsg.MsgType == config.ElevStatus{
-				fmt.Printf("statusmedling i receive")	
-				statusMsgRx <- config.StatusMsg{receivedMsg.ID, receivedMsg.ElevMap[receivedMsg.ID].CurrentFloor, receivedMsg.ElevMap[receivedMsg.ID].CurrentDir, receivedMsg.ElevMap[receivedMsg.ID].Door, receivedMsg.ElevMap[receivedMsg.ID].OutOfOrder}
-				fmt.Printf("Sender Ack\n")
-				SendAck(messageTx, receivedMsg.ElevMap, receivedMsg.ID)
-			} else if receivedMsg.MsgType == config.Orders {
-				fmt.Printf("ordre medling i Recieved")
-				orderMsgRx <- config.OrderMsg{receivedMsg.ID, receivedMsg.ElevMap}
-				SendAck(messageTx, receivedMsg.ElevMap, receivedMsg.ID)
-				fmt.Printf("Sender Ack\n")
-			} else if receivedMsg.MsgType == config.Ack{
-				
+			if receivedMsg.MsgType == config.Ack{	
 				if receivedMsg.ID == config.My_ID{
 					fmt.Printf("Legger på ack chan fordi jeg senndte melding\n")
 					ackChan <- config.AckMsg{config.My_ID}
