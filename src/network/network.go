@@ -39,8 +39,8 @@ func SendElevStatus(messageTx chan config.Message,  elevMap config.ElevStateMap)
 	messageTx <- elevMapMsg
 }
 
-func SendAck(messageTx chan config.Message,  elevMap config.ElevStateMap){
-	AckMsg := config.Message{config.My_ID, config.Ack, elevMap}
+func SendAck(messageTx chan config.Message,  elevMap config.ElevStateMap, ID int){
+	AckMsg := config.Message{ID, config.Ack, elevMap}
 	messageTx <- AckMsg
 
 }
@@ -145,12 +145,11 @@ func Transmitter(port int, messageTx chan config.Message, ackChan chan config.Ac
 							
 							WAIT_FOR_ACK:
 								for i := 0; i < 5; i++{
-									fmt.Printf("Sender melding\n")
 									conn.Write(buf)
 									select {
 										case ackMsg := <- ackChan:
-											if ackMsg.ID == e {
-												fmt.Printf("Recieved ack from %v\n", ackMsg.ID)
+											if ackMsg.ID == config.My_ID {
+												fmt.Printf("Noen har sett meldingen min!!\n")
 												break WAIT_FOR_ACK
 											}
 										default:
@@ -191,16 +190,16 @@ func Receiver(port int, orderMsgRx chan config.OrderMsg, statusMsgRx chan config
 				fmt.Printf("statusmedling i receive")	
 				statusMsgRx <- config.StatusMsg{receivedMsg.ID, receivedMsg.ElevMap[receivedMsg.ID].CurrentFloor, receivedMsg.ElevMap[receivedMsg.ID].CurrentDir, receivedMsg.ElevMap[receivedMsg.ID].Door, receivedMsg.ElevMap[receivedMsg.ID].OutOfOrder}
 				fmt.Printf("Sender Ack\n")
-				SendAck(messageTx, receivedMsg.ElevMap)
+				SendAck(messageTx, receivedMsg.ElevMap, receivedMsg.ID)
 			} else if receivedMsg.MsgType == config.Orders {
 				fmt.Printf("ordre medling i Recieved")
 				orderMsgRx <- config.OrderMsg{receivedMsg.ID, receivedMsg.ElevMap}
-				SendAck(messageTx, receivedMsg.ElevMap)
+				SendAck(messageTx, receivedMsg.ElevMap, receivedMsg.ID)
 				fmt.Printf("Sender Ack\n")
 			} else if receivedMsg.MsgType == config.Ack{
 				fmt.Printf("Ackkkkkk\n")
 				if receivedMsg.ID != config.My_ID{
-					ackChan <- config.AckMsg{receivedMsg.ID}
+					ackChan <- config.AckMsg{config.My_ID}
 				}
 			}
 			
