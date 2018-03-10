@@ -190,7 +190,7 @@ func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan conf
 					state = MOVING
 				}
 				//så fremt det ikke va din knapp ønsker du ikke sende.
-				if buttonPushed.Local{
+				if buttonPushed.Order == config.LocalOrder{
 					orderChangesChan <- currentMap
 				} else {
 					statusChangesChan <- currentMap

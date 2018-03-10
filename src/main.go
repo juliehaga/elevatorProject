@@ -12,6 +12,13 @@ import (
 
 
 
+//PACKET LOSS:
+
+//sudo iptables -A INPUT -p udp -m statistic --mode random --probability 0.25 -j DROP
+//
+
+
+
 func main() {
 
 //command line arguments for port and id

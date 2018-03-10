@@ -186,8 +186,7 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, newOrderChan chan con
 						if buttonEvent == false{
 							fmt.Printf("-------------order from network--------\n")
 							fmt.Printf("Floor %v, knappp %v\n", f, b)
-
-							newOrderChan <- config.ButtonEvent{f, b, false}
+							newOrderChan <- config.ButtonEvent{f, b, config.NetworkOrder}
 							
 							buttonEvent = true
 						}

@@ -131,6 +131,7 @@ func Transmitter(port int, messageTx chan config.Message, ackChan chan config.Ac
 				buf, _ := json.Marshal(message)
 
 				for e:= 0; e < config.NUM_ELEVS; e++{
+
 					if e != config.My_ID{
 						//fmt.Printf("heis %v er connected %v\n", e, message.ElevMap[e].Connected)
 						if message.ElevMap[e].Connected == true{
@@ -140,7 +141,7 @@ func Transmitter(port int, messageTx chan config.Message, ackChan chan config.Ac
 									conn.Write(buf)
 									select {
 										case ackMsg := <- ackChan:
-											if ackMsg.ID == config.My_ID {
+											if ackMsg.Reciever_ID == config.My_ID && ackMsg.Transmitter_ID == e{
 												break WAIT_FOR_ACK
 											}
 										default:
@@ -188,7 +189,7 @@ func Receiver(port int, orderMsgRx chan config.OrderMsg, statusMsgRx chan config
 
 			if receivedMsg.MsgType == config.Ack{	
 				if receivedMsg.ID == config.My_ID{
-					ackChan <- config.AckMsg{config.My_ID}
+					ackChan <- config.AckMsg{config.My_ID, receivedMsg.ID}
 				}
 			}
 			
