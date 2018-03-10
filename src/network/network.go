@@ -39,7 +39,9 @@ func SendElevStatus(messageTx chan config.Message,  elevMap config.ElevStateMap)
 	messageTx <- elevMapMsg
 }
 
-func SendAck(messageTx chan config.Message,  elevMap config.ElevStateMap){
+func SendAck(messageTx chan config.Message){
+	AckMsg := config.Message{config.My_ID}
+	messageTx <- AckMsg
 
 }
 
@@ -143,9 +145,11 @@ func Transmitter(port int, messageTx chan config.Message, ackChan chan config.Ac
 								select {
 									case ackMsg := <- ackChan:
 										if ackMsg.ID == e {
+											fmt.Printf("Recieved ack from %v\n", ackMsg.ID)
 											break
 										}
 								}
+								//antar at peer vil fiksa å sette til dead dersom en faller ut.
 							}
 						}
 					}
@@ -156,7 +160,7 @@ func Transmitter(port int, messageTx chan config.Message, ackChan chan config.Ac
 
 // Matches type-tagged JSON received on `port` to element types of `chans`, then
 // sends the decoded value on the corresponding channel
-func Receiver(port int, orderMsgRx chan config.OrderMsg, statusMsgRx chan config.StatusMsg, ackChan chan config.AckMsg) {
+func Receiver(port int, orderMsgRx chan config.OrderMsg, statusMsgRx chan config.StatusMsg, ackChan chan config.AckMsg, messageTx chan config.Message) {
 	//var receivedMap elevStateMap.ElevStateMap
 	var receivedMsg config.Message
 	addr, _ := net.ResolveUDPAddr("udp", fmt.Sprintf("255.255.255.255:%d", port))
@@ -169,15 +173,15 @@ func Receiver(port int, orderMsgRx chan config.OrderMsg, statusMsgRx chan config
 		if err != nil {
 			fmt.Printf("Feil %s", err. Error())
 		}
-
-	
 		if integer > 0 {
 
 			json.Unmarshal(b[:integer], &receivedMsg)
-			if receivedMsg.MsgType == config.ElevStatus{
+			if receivedMsg.MsgType == config.ElevStatus{	
 				statusMsgRx <- config.StatusMsg{receivedMsg.ID, receivedMsg.ElevMap[receivedMsg.ID].CurrentFloor, receivedMsg.ElevMap[receivedMsg.ID].CurrentDir, receivedMsg.ElevMap[receivedMsg.ID].Door, receivedMsg.ElevMap[receivedMsg.ID].OutOfOrder}
+				SendAck(messageTx)
 			} else if receivedMsg.MsgType == config.Orders {
 				orderMsgRx <- config.OrderMsg{receivedMsg.ID, receivedMsg.ElevMap}
+				SendAck(messageTx)
 			} else if receivedMsg.MsgType == config.Ack{
 				ackChan <- config.AckMsg{receivedMsg.ID}
 			}

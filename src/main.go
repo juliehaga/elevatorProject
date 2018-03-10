@@ -75,7 +75,7 @@ func main() {
     go fsm.Fsm(motorChan, doorLampChan, floorChan, buttonLampChan, orderChangesChan, newOrderChan, statusChangesChan)
     go elevio.Elevio(motorChan, doorLampChan, newOrderChan, floorChan, buttonLampChan)
 	go network.Transmitter(16502, messageTx, ackChan)
-	go network.Receiver(16502, orderMsgRx, statusMsgRx, ackChan)
+	go network.Receiver(16502, orderMsgRx, statusMsgRx, ackChan, messageTx)
     go network.PeerTransmitter(15600, id, peerTxEnable)
 	go network.PeerReceiver(15600, peerUpdateCh)
 
