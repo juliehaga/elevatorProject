@@ -63,16 +63,16 @@ func Fsm(motorChan chan config.MotorDirection, doorLampChan chan bool, floorChan
 			fmt.Printf("IDLE = %v", currentMap[config.My_ID].IDLE)
 			if (currentMap[config.My_ID].IDLE == false){
 				currentMap[config.My_ID].OutOfOrder = true
-				statusChangesChan <- currentMap
-				eventOutOfOrder(motorChan)
+				eventOutOfOrder(motorChan, statusChangesChan)
 				motorTimer.Reset(time.Second * MOTOR_DEAD_TIME)
 				state = OUT_OF_ORDER
+				statusChangesChan <- currentMap
 			}
 		}
 	}
 }
 
-func eventOutOfOrder(motorChan chan config.MotorDirection){
+func eventOutOfOrder(motorChan chan config.MotorDirection, statusChangesChan chan config.ElevStateMap){
 	currentMap := elevStateMap.GetLocalMap()
 	fmt.Printf("Out of order")
 	if currentMap[config.My_ID].CurrentFloor != config.NUM_FLOORS -1{
@@ -82,6 +82,7 @@ func eventOutOfOrder(motorChan chan config.MotorDirection){
 		motorChan <- config.MD_Down
 		currentMap[config.My_ID].CurrentDir = config.ED_Down
 	}
+	statusChangesChan <- currentMap
 }
 
 
