@@ -41,8 +41,11 @@ func SendElevStatus(messageTx chan config.Message,  elevMap config.ElevStateMap)
 
 func SendAck(messageTx chan config.Message,  elevMap config.ElevStateMap, ID int){
 	AckMsg := config.Message{ID, config.Ack, elevMap}
-	messageTx <- AckMsg
-
+	
+	addr, _ := net.ResolveUDPAddr("udp", fmt.Sprintf("255.255.255.255:%d", port))
+	conn, _ := net.DialUDP("udp", nil, addr)
+	buf, _ := json.Marshal(message)		
+	conn.Write(buf)
 }
 
 func PeerTransmitter(port int, id string, transmitEnable <-chan bool) {
@@ -144,11 +147,12 @@ func Transmitter(port int, messageTx chan config.Message, ackChan chan config.Ac
 							
 							WAIT_FOR_ACK:
 								for i := 0; i < 5; i++{
+									fmt.Printf("Sender på nytt\n")
 									conn.Write(buf)
 									select {
 										case ackMsg := <- ackChan:
 											if ackMsg.ID == config.My_ID {
-												fmt.Printf("Noen har sett meldingen min!!\n")
+												fmt.Printf("Jeg har fått et ACK signal\n")
 												break WAIT_FOR_ACK
 											}
 										default:
@@ -202,7 +206,7 @@ func Receiver(port int, orderMsgRx chan config.OrderMsg, statusMsgRx chan config
 
 			if receivedMsg.MsgType == config.Ack{	
 				if receivedMsg.ID == config.My_ID{
-					fmt.Printf("Legger på ack chan fordi jeg senndte melding\n")
+					fmt.Printf("LEst en ACK til meg\n")
 					ackChan <- config.AckMsg{config.My_ID}
 				}
 			}
