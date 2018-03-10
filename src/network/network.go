@@ -107,6 +107,7 @@ func PeerReceiver(port int, peerUpdateCh chan<- config.PeerUpdate) {
 			for i:= 0; i < len(p.Lost); i ++{
 				lostID, _ := strconv.Atoi(p.Lost[i])
 				elevStateMap.SetConnectedElevator(lostID, false)
+				fmt.Printf("Setter heis %v til disconnected \n", lostID)
 
 			}
 			newID, _ := strconv.Atoi(p.New)

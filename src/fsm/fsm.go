@@ -184,7 +184,7 @@ func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan conf
 			fmt.Printf("Oppdaterer map i door open ")
 
 			if orderInThisFloor(currentMap[config.My_ID].CurrentFloor, currentMap){
-				fmt.Printf("order, in this floor\n")
+				fmt.Printf("door open order, in this floor\n")
 				doorLampChan <- true	
 				currentMap[config.My_ID].Door = true
 				orderCompleted(&currentMap, buttonLampChan)
@@ -311,7 +311,7 @@ func orderCompleted(elevMap *config.ElevStateMap, buttonLampChan chan config.But
 				for elev := 0; elev < config.NUM_ELEVS; elev++{					
 					elevMap[elev].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallUp] = config.OT_NoOrder
 				}	
-				fmt.Printf("completed Hall_IP %v\n", elevMap[config.My_ID].CurrentFloor)				
+				fmt.Printf("completed Hall_UP %v\n", elevMap[config.My_ID].CurrentFloor)				
 				buttonLampChan <-  config.ButtonLamp{elevMap[config.My_ID].CurrentFloor, config.BT_HallUp, false}
 
 
@@ -397,7 +397,8 @@ func nearestElevator(elevMap config.ElevStateMap, floor int) bool{
 
  	if elevMap[config.My_ID].CurrentFloor < floor { 
 	 	for e := 0; e<config.NUM_ELEVS; e++ {
-	 		if elevMap[e].Connected == true{	
+	 		if elevMap[e].Connected == true{
+	 			fmt.Printf("heis %v er regnet med i nearest elev\n", e)	
 			 	if e != config.My_ID{	
 			 		distElev := int(math.Abs(float64(elevMap[e].CurrentFloor - floor)))
 			 		if distElev < myDist{
