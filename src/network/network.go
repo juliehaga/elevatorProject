@@ -136,7 +136,6 @@ func Transmitter(port int, messageTx chan config.Message, ackChan chan config.Ac
 				addr, _ := net.ResolveUDPAddr("udp", fmt.Sprintf("255.255.255.255:%d", port))
 				conn, _ := net.DialUDP("udp", nil, addr)
 				buf, _ := json.Marshal(message)
-				elevStateMap.PrintMap(message.ElevMap)
 
 				for e:= 0; e < config.NUM_ELEVS; e++{
 					if e != config.My_ID{
@@ -155,12 +154,15 @@ func Transmitter(port int, messageTx chan config.Message, ackChan chan config.Ac
 										default:
 
 									}
+									time.Sleep(200* time*Millisecond)
 									//antar at peer vil fiksa å sette til dead dersom en faller ut.
 								}
 						}
 					}
 				}
+
 		}
+		time.Sleep(2* time*Millisecond)
 	}
 }
 
@@ -208,7 +210,7 @@ func Receiver(port int, orderMsgRx chan config.OrderMsg, statusMsgRx chan config
 		} else {
 			conn.Close()
 		}
-	}
+	}time.Sleep(2* time*Millisecond)
 	
 }
 
