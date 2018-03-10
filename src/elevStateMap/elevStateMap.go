@@ -139,6 +139,7 @@ func UpdateLocalMap(changedMap config.ElevStateMap){
 	currentMap[config.My_ID].CurrentFloor = changedMap[config.My_ID].CurrentFloor
 	currentMap[config.My_ID].CurrentDir = changedMap[config.My_ID].CurrentDir
 	currentMap[config.My_ID].Door = changedMap[config.My_ID].Door
+	currentMap[config.My_ID].IDLE = changedMap[config.My_ID].IDLE
 
 
 

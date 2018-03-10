@@ -14,7 +14,7 @@ import (
 
 //PACKET LOSS:
 
-//sudo iptables -A INPUT -p udp -m statistic --mode random --probability 0.25 -j DROP
+//sudo iptables -A INPUT -p udp -m statistic --mode random --probability 0.15 -j DROP
 //
 
 

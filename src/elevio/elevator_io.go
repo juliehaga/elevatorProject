@@ -62,11 +62,12 @@ func InitDriver(addr string, numFloors int) {
 		panic(err.Error())
 	}
 	_initialized = true
-	SetMotorDirection(config.MD_Down)
-	for getFloor() == -1{}
-	SetMotorDirection(config.MD_Stop)
 	SetDoorOpenLamp(false)
 	currentMap := elevStateMap.GetLocalMap()
+	SetMotorDirection(config.MD_Down)
+	currentMap[config.My_ID].CurrentDir = config.ED_Down
+	for getFloor() == -1{}
+	SetMotorDirection(config.MD_Stop)
 	currentMap[config.My_ID].CurrentFloor = getFloor()
 	elevStateMap.SetLocalMap(currentMap)
 	InitOrders()
@@ -74,6 +75,8 @@ func InitDriver(addr string, numFloors int) {
 
 
 }
+
+
 
 func InitOrders(){
 	fmt.Printf("INITIALISERER ORDRE FRA NETTET NÅR DU LOOGER PÅ\n")
