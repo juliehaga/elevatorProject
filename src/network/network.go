@@ -197,8 +197,9 @@ func Receiver(port int, orderMsgRx chan config.OrderMsg, statusMsgRx chan config
 				SendAck(messageTx, receivedMsg.ElevMap, receivedMsg.ID)
 				fmt.Printf("Sender Ack\n")
 			} else if receivedMsg.MsgType == config.Ack{
-				fmt.Printf("Ackkkkkk\n")
-				if receivedMsg.ID != config.My_ID{
+				
+				if receivedMsg.ID == config.My_ID{
+					fmt.Printf("Legger på ack chan fordi jeg senndte melding\n")
 					ackChan <- config.AckMsg{config.My_ID}
 				}
 			}
