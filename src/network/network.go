@@ -182,7 +182,6 @@ func Receiver(port int, orderMsgRx chan config.OrderMsg, statusMsgRx chan config
 			fmt.Printf("Feil %s", err. Error())
 		}
 		if integer > 0 {
-			fmt.Printf("MELDINGSTYPE %v fra %v\n", receivedMsg.MsgType, receivedMsg.ID)
 
 			json.Unmarshal(b[:integer], &receivedMsg)
 			if receivedMsg.ID != config.My_ID{

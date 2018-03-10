@@ -98,10 +98,8 @@ func main() {
 		case orderMsgFromNetwork := <- orderMsgRx:
 			fmt.Printf("FÅR MELDING FRA %v\n", orderMsgFromNetwork.ID)
 			//Når vi mottar melding bør vi sjekke at hardware er oppdatert
-			if orderMsgFromNetwork.ID != config.My_ID {
 				
-				elevStateMap.UpdateMapFromNetwork(orderMsgFromNetwork.ElevMap, newOrderChan, buttonLampChan)
-			}
+			elevStateMap.UpdateMapFromNetwork(orderMsgFromNetwork.ElevMap, newOrderChan, buttonLampChan)
 			if init == true{
 				elevio.InitOrders()
 			}
@@ -109,9 +107,7 @@ func main() {
 
 		case statusMsgFromNetwork := <- statusMsgRx:
 			fmt.Printf("jeg får statusmelding\n")
-			if statusMsgFromNetwork.ID != config.My_ID {
-				elevStateMap.UpdateElevStatusFromNetwork(statusMsgFromNetwork)
-			}
+			elevStateMap.UpdateElevStatusFromNetwork(statusMsgFromNetwork)
 
 		case elevMap:= <-orderChangesChan:
 			fmt.Printf("Sender ordremelding\n")
