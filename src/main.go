@@ -56,7 +56,7 @@ func main() {
     peerTxEnable := make(chan bool)
 
  
-	messageTx := make(chan config.Message)
+	messageTx := make(chan config.Message, 10)
 	orderMsgRx := make(chan config.OrderMsg)
 	statusMsgRx := make(chan config.StatusMsg)
 	ackChan := make(chan config.AckMsg)

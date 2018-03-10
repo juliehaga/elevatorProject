@@ -131,6 +131,7 @@ func Transmitter(port int, messageTx chan config.Message, ackChan chan config.Ac
 	for {
 		select {
 			case message := <- messageTx:
+				fmt.Printf("nessageTx\n")
 
 				addr, _ := net.ResolveUDPAddr("udp", fmt.Sprintf("255.255.255.255:%d", port))
 				conn, _ := net.DialUDP("udp", nil, addr)
@@ -139,18 +140,24 @@ func Transmitter(port int, messageTx chan config.Message, ackChan chan config.Ac
 
 				for e:= 0; e < config.NUM_ELEVS; e++{
 					if e != config.My_ID{
+						fmt.Printf("heis %v er connected %v\n", e, message.ElevMap[e].Connected)
 						if message.ElevMap[e].Connected == true{
-							for i := 0; i < 5; i++{
-								conn.Write(buf)
-								select {
-									case ackMsg := <- ackChan:
-										if ackMsg.ID == e {
-											fmt.Printf("Recieved ack from %v\n", ackMsg.ID)
-											break
-										}
+							
+							//WAIT_FOR_ACK:
+								for i := 0; i < 5; i++{
+									fmt.Printf("Sender melding\n")
+									conn.Write(buf)
+									select {
+										case ackMsg := <- ackChan:
+											if ackMsg.ID == e {
+												fmt.Printf("Recieved ack from %v\n", ackMsg.ID)
+												//break WAIT_FOR_ACK
+											}
+										default:
+
+									}
+									//antar at peer vil fiksa å sette til dead dersom en faller ut.
 								}
-								//antar at peer vil fiksa å sette til dead dersom en faller ut.
-							}
 						}
 					}
 				}
@@ -178,10 +185,12 @@ func Receiver(port int, orderMsgRx chan config.OrderMsg, statusMsgRx chan config
 			json.Unmarshal(b[:integer], &receivedMsg)
 			if receivedMsg.MsgType == config.ElevStatus{	
 				statusMsgRx <- config.StatusMsg{receivedMsg.ID, receivedMsg.ElevMap[receivedMsg.ID].CurrentFloor, receivedMsg.ElevMap[receivedMsg.ID].CurrentDir, receivedMsg.ElevMap[receivedMsg.ID].Door, receivedMsg.ElevMap[receivedMsg.ID].OutOfOrder}
+				fmt.Printf("Sender Ack\n")
 				SendAck(messageTx, elevMap)
 			} else if receivedMsg.MsgType == config.Orders {
 				orderMsgRx <- config.OrderMsg{receivedMsg.ID, receivedMsg.ElevMap}
 				SendAck(messageTx, elevMap)
+				fmt.Printf("Sender Ack\n")
 			} else if receivedMsg.MsgType == config.Ack{
 				ackChan <- config.AckMsg{receivedMsg.ID}
 			}
