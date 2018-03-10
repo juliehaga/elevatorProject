@@ -39,8 +39,8 @@ func SendElevStatus(messageTx chan config.Message,  elevMap config.ElevStateMap)
 	messageTx <- elevMapMsg
 }
 
-func SendAck(messageTx chan config.Message){
-	AckMsg := config.Message{config.My_ID}
+func SendAck(messageTx chan config.Message,  elevMap config.ElevStateMap){
+	AckMsg := config.Message{config.My_ID, config.Ack, elevMap}
 	messageTx <- AckMsg
 
 }
@@ -167,7 +167,7 @@ func Receiver(port int, orderMsgRx chan config.OrderMsg, statusMsgRx chan config
 	conn, _ := net.ListenUDP("udp", addr)
 
 	var b[1048576] byte	
-
+	elevMap := elevStateMap.GetLocalMap()
 	for {
 		integer, _, err := conn.ReadFromUDP(b[:])
 		if err != nil {
@@ -178,10 +178,10 @@ func Receiver(port int, orderMsgRx chan config.OrderMsg, statusMsgRx chan config
 			json.Unmarshal(b[:integer], &receivedMsg)
 			if receivedMsg.MsgType == config.ElevStatus{	
 				statusMsgRx <- config.StatusMsg{receivedMsg.ID, receivedMsg.ElevMap[receivedMsg.ID].CurrentFloor, receivedMsg.ElevMap[receivedMsg.ID].CurrentDir, receivedMsg.ElevMap[receivedMsg.ID].Door, receivedMsg.ElevMap[receivedMsg.ID].OutOfOrder}
-				SendAck(messageTx)
+				SendAck(messageTx, elevMap)
 			} else if receivedMsg.MsgType == config.Orders {
 				orderMsgRx <- config.OrderMsg{receivedMsg.ID, receivedMsg.ElevMap}
-				SendAck(messageTx)
+				SendAck(messageTx, elevMap)
 			} else if receivedMsg.MsgType == config.Ack{
 				ackChan <- config.AckMsg{receivedMsg.ID}
 			}
