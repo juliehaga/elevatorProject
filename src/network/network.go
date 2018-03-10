@@ -39,12 +39,12 @@ func SendElevStatus(messageTx chan config.Message,  elevMap config.ElevStateMap)
 	messageTx <- elevMapMsg
 }
 
-func SendAck(messageTx chan config.Message,  elevMap config.ElevStateMap, ID int){
+func SendAck(messageTx chan config.Message,  elevMap config.ElevStateMap, ID int, port int){
 	AckMsg := config.Message{ID, config.Ack, elevMap}
 	
 	addr, _ := net.ResolveUDPAddr("udp", fmt.Sprintf("255.255.255.255:%d", port))
 	conn, _ := net.DialUDP("udp", nil, addr)
-	buf, _ := json.Marshal(message)		
+	buf, _ := json.Marshal(AckMsg)		
 	conn.Write(buf)
 }
 
@@ -195,11 +195,11 @@ func Receiver(port int, orderMsgRx chan config.OrderMsg, statusMsgRx chan config
 					fmt.Printf("statusmedling i receive")	
 					statusMsgRx <- config.StatusMsg{receivedMsg.ID, receivedMsg.ElevMap[receivedMsg.ID].CurrentFloor, receivedMsg.ElevMap[receivedMsg.ID].CurrentDir, receivedMsg.ElevMap[receivedMsg.ID].Door, receivedMsg.ElevMap[receivedMsg.ID].OutOfOrder}
 					fmt.Printf("Sender Ack\n")
-					SendAck(messageTx, receivedMsg.ElevMap, receivedMsg.ID)
+					SendAck(messageTx, receivedMsg.ElevMap, receivedMsg.ID, port)
 				} else if receivedMsg.MsgType == config.Orders {
 					fmt.Printf("ordre medling i Recieved")
 					orderMsgRx <- config.OrderMsg{receivedMsg.ID, receivedMsg.ElevMap}
-					SendAck(messageTx, receivedMsg.ElevMap, receivedMsg.ID)
+					SendAck(messageTx, receivedMsg.ElevMap, receivedMsg.ID, port)
 					fmt.Printf("Sender Ack\n")
 				}
 			}

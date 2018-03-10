@@ -56,10 +56,10 @@ func main() {
     peerTxEnable := make(chan bool)
 
  
-	messageTx := make(chan config.Message, 10)
+	messageTx := make(chan config.Message, 100)
 	orderMsgRx := make(chan config.OrderMsg)
 	statusMsgRx := make(chan config.StatusMsg)
-	ackChan := make(chan config.AckMsg)
+	ackChan := make(chan config.AckMsg, 100)
 
 	config.Init(id, port)
 	elevStateMap.InitElevStateMap(newOrderChan)
