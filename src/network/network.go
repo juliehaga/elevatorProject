@@ -154,7 +154,7 @@ func Transmitter(port int, messageTx chan config.Message, ackChan chan config.Ac
 										default:
 
 									}
-									time.Sleep(200* time*Millisecond)
+									time.Sleep(200* time.Millisecond)
 									//antar at peer vil fiksa å sette til dead dersom en faller ut.
 								}
 						}
@@ -162,7 +162,7 @@ func Transmitter(port int, messageTx chan config.Message, ackChan chan config.Ac
 				}
 
 		}
-		time.Sleep(2* time*Millisecond)
+		time.Sleep(2* time.Millisecond)
 	}
 }
 
@@ -210,7 +210,8 @@ func Receiver(port int, orderMsgRx chan config.OrderMsg, statusMsgRx chan config
 		} else {
 			conn.Close()
 		}
-	}time.Sleep(2* time*Millisecond)
+		time.Sleep(2* time.Millisecond)
+	}
 	
 }
 
