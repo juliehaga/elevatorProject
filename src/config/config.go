@@ -93,10 +93,15 @@ type OrderMsg struct{
 	ElevMap ElevStateMap
 }
 
+type AckMsg struct{
+	ID int
+}
+
 
 const (
 	ElevStatus = 0
 	Orders     = 1
+	Ack 	   = 2
 )
 
 

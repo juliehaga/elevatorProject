@@ -39,7 +39,9 @@ func SendElevStatus(messageTx chan config.Message,  elevMap config.ElevStateMap)
 	messageTx <- elevMapMsg
 }
 
+func SendAck(messageTx chan config.Message,  elevMap config.ElevStateMap){
 
+}
 
 func PeerTransmitter(port int, id string, transmitEnable <-chan bool) {
 
@@ -123,23 +125,38 @@ func PeerReceiver(port int, peerUpdateCh chan<- config.PeerUpdate) {
 }
 
 
-func Transmitter(port int, messageTx chan config.Message){
+func Transmitter(port int, messageTx chan config.Message, ackChan chan config.AckMsg){
 	for {
 		select {
-		case message := <- messageTx:
+			case message := <- messageTx:
 
-			addr, _ := net.ResolveUDPAddr("udp", fmt.Sprintf("255.255.255.255:%d", port))
-			conn, _ := net.DialUDP("udp", nil, addr)
-			buf, _ := json.Marshal(message)
-			conn.Write(buf)
+				addr, _ := net.ResolveUDPAddr("udp", fmt.Sprintf("255.255.255.255:%d", port))
+				conn, _ := net.DialUDP("udp", nil, addr)
+				buf, _ := json.Marshal(message)
 
+
+				for e:= 0; e < config.NUM_ELEVS; e++{
+					if e != config.My_ID{
+						if message.ElevMap[e].Connected == true{
+							for i := 0; i < 5; i++{
+								conn.Write(buf)
+								select {
+									case ackMsg := <- ackChan:
+										if ackMsg.ID == e {
+											break
+										}
+								}
+							}
+						}
+					}
+				}
 		}
 	}
 }
 
 // Matches type-tagged JSON received on `port` to element types of `chans`, then
 // sends the decoded value on the corresponding channel
-func Receiver(port int, orderMsgRx chan config.OrderMsg, statusMsgRx chan config.StatusMsg) {
+func Receiver(port int, orderMsgRx chan config.OrderMsg, statusMsgRx chan config.StatusMsg, ackChan chan config.AckMsg) {
 	//var receivedMap elevStateMap.ElevStateMap
 	var receivedMsg config.Message
 	addr, _ := net.ResolveUDPAddr("udp", fmt.Sprintf("255.255.255.255:%d", port))
@@ -151,8 +168,8 @@ func Receiver(port int, orderMsgRx chan config.OrderMsg, statusMsgRx chan config
 		integer, _, err := conn.ReadFromUDP(b[:])
 		if err != nil {
 			fmt.Printf("Feil %s", err. Error())
-
 		}
+
 	
 		if integer > 0 {
 
@@ -161,6 +178,8 @@ func Receiver(port int, orderMsgRx chan config.OrderMsg, statusMsgRx chan config
 				statusMsgRx <- config.StatusMsg{receivedMsg.ID, receivedMsg.ElevMap[receivedMsg.ID].CurrentFloor, receivedMsg.ElevMap[receivedMsg.ID].CurrentDir, receivedMsg.ElevMap[receivedMsg.ID].Door, receivedMsg.ElevMap[receivedMsg.ID].OutOfOrder}
 			} else if receivedMsg.MsgType == config.Orders {
 				orderMsgRx <- config.OrderMsg{receivedMsg.ID, receivedMsg.ElevMap}
+			} else if receivedMsg.MsgType == config.Ack{
+				ackChan <- config.AckMsg{receivedMsg.ID}
 			}
 			
 		} else {
