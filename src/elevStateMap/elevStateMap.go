@@ -185,6 +185,7 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, newOrderChan chan con
 					if recievedMap[config.My_ID].Orders[f][b] == config.OT_OrderPlaced && currentMap[config.My_ID].Orders[f][b] == config.OT_NoOrder{
 						if buttonEvent == false{
 							fmt.Printf("-------------order from network--------\n")
+							fmt.Printf("Floor %v, knappp %v\n", f, b)
 
 							newOrderChan <- config.ButtonEvent{f, b, false}
 							

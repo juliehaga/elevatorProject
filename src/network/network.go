@@ -16,17 +16,8 @@ import (
 )
 
 
-
-
-
-
-
 const interval = 15 * time.Millisecond
 const timeout = 1500 * time.Millisecond
-
-
-
-
 
 
 func SendOrders(messageTx chan config.Message, elevMap config.ElevStateMap) {
@@ -119,8 +110,8 @@ func PeerReceiver(port int, peerUpdateCh chan<- config.PeerUpdate) {
 
 			}
 			newID, _ := strconv.Atoi(p.New)
-			fmt.Printf("Setter til connected %v", newID)
-			
+			fmt.Printf("Setter heis %v til connected ", newID)
+		
 
 			elevStateMap.SetConnectedElevator(newID, true)
 
@@ -134,8 +125,6 @@ func Transmitter(port int, messageTx chan config.Message, ackChan chan config.Ac
 	for {
 		select {
 			case message := <- messageTx:
-				fmt.Printf("messageTx\n")
-
 				addr, _ := net.ResolveUDPAddr("udp", fmt.Sprintf("255.255.255.255:%d", port))
 				conn, _ := net.DialUDP("udp", nil, addr)
 				buf, _ := json.Marshal(message)
@@ -147,12 +136,10 @@ func Transmitter(port int, messageTx chan config.Message, ackChan chan config.Ac
 							
 							WAIT_FOR_ACK:
 								for i := 0; i < 5; i++{
-									fmt.Printf("Sender på nytt\n")
 									conn.Write(buf)
 									select {
 										case ackMsg := <- ackChan:
 											if ackMsg.ID == config.My_ID {
-												fmt.Printf("Jeg har fått et ACK signal\n")
 												break WAIT_FOR_ACK
 											}
 										default:
@@ -177,10 +164,8 @@ func Receiver(port int, orderMsgRx chan config.OrderMsg, statusMsgRx chan config
 	var receivedMsg config.Message
 	addr, _ := net.ResolveUDPAddr("udp", fmt.Sprintf("255.255.255.255:%d", port))
 	conn, _ := net.ListenUDP("udp", addr)
-
 	var b[1048576] byte	
 	
-
 
 	for {
 		integer, _, err := conn.ReadFromUDP(b[:])
@@ -192,21 +177,16 @@ func Receiver(port int, orderMsgRx chan config.OrderMsg, statusMsgRx chan config
 			json.Unmarshal(b[:integer], &receivedMsg)
 			if receivedMsg.ID != config.My_ID{
 				if receivedMsg.MsgType == config.ElevStatus{
-					fmt.Printf("statusmedling i receive")	
 					statusMsgRx <- config.StatusMsg{receivedMsg.ID, receivedMsg.ElevMap[receivedMsg.ID].CurrentFloor, receivedMsg.ElevMap[receivedMsg.ID].CurrentDir, receivedMsg.ElevMap[receivedMsg.ID].Door, receivedMsg.ElevMap[receivedMsg.ID].OutOfOrder}
-					fmt.Printf("Sender Ack\n")
 					SendAck(messageTx, receivedMsg.ElevMap, receivedMsg.ID, port)
 				} else if receivedMsg.MsgType == config.Orders {
-					fmt.Printf("ordre medling i Recieved")
 					orderMsgRx <- config.OrderMsg{receivedMsg.ID, receivedMsg.ElevMap}
 					SendAck(messageTx, receivedMsg.ElevMap, receivedMsg.ID, port)
-					fmt.Printf("Sender Ack\n")
 				}
 			}
 
 			if receivedMsg.MsgType == config.Ack{	
 				if receivedMsg.ID == config.My_ID{
-					fmt.Printf("LEst en ACK til meg\n")
 					ackChan <- config.AckMsg{config.My_ID}
 				}
 			}

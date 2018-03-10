@@ -44,7 +44,7 @@ func main() {
 	doorLampChan := make(chan bool)
 
     floorChan  := make(chan int)  
-    buttonLampChan  := make(chan config.ButtonLamp)
+    buttonLampChan  := make(chan config.ButtonLamp, 20)
     statusChangesChan := make(chan config.ElevStateMap)
     orderChangesChan := make(chan config.ElevStateMap)
     newOrderChan := make(chan config.ButtonEvent)
@@ -96,9 +96,7 @@ func main() {
 			}
 
 		case orderMsgFromNetwork := <- orderMsgRx:
-			fmt.Printf("FÅR MELDING FRA %v\n", orderMsgFromNetwork.ID)
-			//Når vi mottar melding bør vi sjekke at hardware er oppdatert
-				
+			//Når vi mottar melding bør vi sjekke at hardware er oppdatert			
 			elevStateMap.UpdateMapFromNetwork(orderMsgFromNetwork.ElevMap, newOrderChan, buttonLampChan)
 			if init == true{
 				elevio.InitOrders()
@@ -106,7 +104,6 @@ func main() {
 			init = false
 
 		case statusMsgFromNetwork := <- statusMsgRx:
-			fmt.Printf("jeg får statusmelding\n")
 			elevStateMap.UpdateElevStatusFromNetwork(statusMsgFromNetwork)
 
 		case elevMap:= <-orderChangesChan:
@@ -117,7 +114,6 @@ func main() {
 			init = false
 
 		case elevMap:= <-statusChangesChan:
-			fmt.Printf("Sender statusmelding\n")
 			elevStateMap.UpdateLocalMap(elevMap)
 			network.SendElevStatus(messageTx, elevMap)
 			init = false

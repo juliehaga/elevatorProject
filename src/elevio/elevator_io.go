@@ -62,7 +62,7 @@ func InitDriver(addr string, numFloors int) {
 		panic(err.Error())
 	}
 	_initialized = true
-	SetMotorDirection(config.MD_Up)
+	SetMotorDirection(config.MD_Down)
 	for getFloor() == -1{}
 	SetMotorDirection(config.MD_Stop)
 	SetDoorOpenLamp(false)
