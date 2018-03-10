@@ -21,17 +21,17 @@ const timeout = 1500 * time.Millisecond
 
 
 func SendOrders(messageTx chan config.Message, elevMap config.ElevStateMap) {
-	elevMapMsg := config.Message{config.My_ID, config.Orders, elevMap}
+	elevMapMsg := config.Message{config.My_ID, config.Orders, elevMap, -1}
 	messageTx <- elevMapMsg
 }
 
 func SendElevStatus(messageTx chan config.Message,  elevMap config.ElevStateMap){
-	elevMapMsg := config.Message{config.My_ID, config.ElevStatus, elevMap}
+	elevMapMsg := config.Message{config.My_ID, config.ElevStatus, elevMap, -1}
 	messageTx <- elevMapMsg
 }
 
-func SendAck(messageTx chan config.Message,  elevMap config.ElevStateMap, ID int, port int){
-	AckMsg := config.Message{ID, config.Ack, elevMap}
+func SendAck(messageTx chan config.Message,  elevMap config.ElevStateMap, recieverID int, port int){
+	AckMsg := config.Message{config.My_ID, config.Ack, elevMap, recieverID}
 	
 	addr, _ := net.ResolveUDPAddr("udp", fmt.Sprintf("255.255.255.255:%d", port))
 	conn, _ := net.DialUDP("udp", nil, addr)
@@ -141,7 +141,9 @@ func Transmitter(port int, messageTx chan config.Message, ackChan chan config.Ac
 									conn.Write(buf)
 									select {
 										case ackMsg := <- ackChan:
+											fmt.Printf("leser Ack melding %v\n", ackMsg)
 											if ackMsg.Reciever_ID == config.My_ID && ackMsg.Transmitter_ID == e{
+												fmt.Printf("ack from %v\n", e)
 												break WAIT_FOR_ACK
 											}
 										default:
@@ -187,9 +189,10 @@ func Receiver(port int, orderMsgRx chan config.OrderMsg, statusMsgRx chan config
 				}
 			}
 
-			if receivedMsg.MsgType == config.Ack{	
-				if receivedMsg.ID == config.My_ID{
-					ackChan <- config.AckMsg{config.My_ID, receivedMsg.ID}
+			if receivedMsg.MsgType == config.Ack{
+
+				if receivedMsg.ID != config.My_ID && receivedMsg.Reciever_ID == config.My_ID{
+					ackChan <- config.AckMsg{receivedMsg.ID, receivedMsg.Reciever_ID}
 				}
 			}
 			

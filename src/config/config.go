@@ -82,6 +82,8 @@ type Message struct {
 	ID int
 	MsgType int
 	ElevMap   ElevStateMap
+	Reciever_ID int 
+
 }
 
 
@@ -99,8 +101,8 @@ type OrderMsg struct{
 }
 
 type AckMsg struct{
-	Reciever_ID int
 	Transmitter_ID int
+	Reciever_ID int
 }
 
 
