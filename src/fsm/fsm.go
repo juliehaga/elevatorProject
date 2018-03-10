@@ -219,7 +219,7 @@ func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan conf
 				fmt.Printf("order, in this floor\n")
 				doorLampChan <- true	
 				currentMap[config.My_ID].Door = true
-				if currentMap[config.My_ID].OutOfOrder == true{
+				if currentMap[config.My_ID].OutOfOrder == false{
 					orderCompleted(&currentMap, buttonLampChan)
 				}
 				doorTimer.Reset(time.Second * DOOR_TIME)
@@ -251,7 +251,7 @@ func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan conf
 				fmt.Printf("door open order, in this floor\n")
 				doorLampChan <- true	
 				currentMap[config.My_ID].Door = true
-				if currentMap[config.My_ID].OutOfOrder == true{
+				if currentMap[config.My_ID].OutOfOrder == false{
 					orderCompleted(&currentMap, buttonLampChan)
 				}
 				doorTimer.Reset(time.Second * DOOR_TIME)
