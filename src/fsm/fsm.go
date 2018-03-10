@@ -141,15 +141,32 @@ func eventDoorTimeout(doorLampChan chan bool, statusChangesChan chan config.Elev
 
 func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan config.MotorDirection, doorLampChan chan bool, doorTimer *time.Timer, orderChangesChan chan config.ElevStateMap, buttonPushed config.ButtonEvent, idleTimer *time.Timer, motorTimer *time.Timer, statusChangesChan chan config.ElevStateMap){
 	currentMap := elevStateMap.GetLocalMap()
-	buttonLampChan <- config.ButtonLamp{buttonPushed.Floor, buttonPushed.Button, true}
-	//elevStateMap.PrintMap(currentMap)
+	accept := false
+
+
+	//accept CAB order
 	if buttonPushed.Button == config.BT_Cab{
-		currentMap[config.My_ID].Orders[buttonPushed.Floor][buttonPushed.Button] = config.OT_OrderPlaced
-	}else{
-		for elev := 0; elev < config.NUM_ELEVS; elev++{
-			currentMap[elev].Orders[buttonPushed.Floor][buttonPushed.Button] = config.OT_OrderPlaced
+			currentMap[config.My_ID].Orders[buttonPushed.Floor][buttonPushed.Button] = config.OT_OrderPlaced
+			buttonLampChan <- config.ButtonLamp{buttonPushed.Floor, buttonPushed.Button, true}
+	} else {
+	//check connection before accepting hall-order
+		for e:= 0; e < config.NUM_ELEVS; e++{
+			if currentMap[e].Connected && e != config.My_ID{
+				accept = true
+			}
+		}
+
+		if accept == true{
+			buttonLampChan <- config.ButtonLamp{buttonPushed.Floor, buttonPushed.Button, true}
+			for elev := 0; elev < config.NUM_ELEVS; elev++{
+				currentMap[elev].Orders[buttonPushed.Floor][buttonPushed.Button] = config.OT_OrderPlaced
+			}
+		} else {
+			fmt.Printf("------------- No way to azzure redundancy --------------")
 		}
 	}
+
+	
 
 	switch(state){
 		case IDLE:
