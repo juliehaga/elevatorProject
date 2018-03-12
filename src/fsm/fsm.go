@@ -203,7 +203,7 @@ func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan conf
 
 
 	//accept CAB order
-	if buttonPushed.Button == config.BT_Cab && currentMap[config.My_ID].OutOfOrder == false{
+	if buttonPushed.Button == config.BT_Cab{ //&& currentMap[config.My_ID].OutOfOrder == false{
 		currentMap[config.My_ID].Orders[buttonPushed.Floor][buttonPushed.Button] = config.OT_OrderPlaced
 		buttonLampChan <- config.ButtonLamp{buttonPushed.Floor, buttonPushed.Button, true}
 	} else {
@@ -228,7 +228,7 @@ func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan conf
 
 	switch(state){
 		case IDLE:
-			if orderInThisFloor(currentMap[config.My_ID].CurrentFloor, currentMap) && currentMap[config.My_ID].OutOfOrder == false{
+			if orderInThisFloor(currentMap[config.My_ID].CurrentFloor, currentMap){// && currentMap[config.My_ID].OutOfOrder == false{
 				fmt.Printf("order, in this floor\n")
 				doorLampChan <- true	
 				currentMap[config.My_ID].Door = true
@@ -481,7 +481,7 @@ func nearestElevator(elevMap config.ElevStateMap, floor int) bool{
 
  	if elevMap[config.My_ID].CurrentFloor < floor { 
 	 	for e := 0; e<config.NUM_ELEVS; e++ {
-	 		if elevMap[e].Connected == true && elevMap[e].OutOfOrder == false{	
+	 		if elevMap[e].Connected == true{ //&& elevMap[e].OutOfOrder == false{	
 			 	if e != config.My_ID{	
 			 		distElev := int(math.Abs(float64(elevMap[e].CurrentFloor - floor)))
 			 		if distElev < myDist{
@@ -500,7 +500,7 @@ func nearestElevator(elevMap config.ElevStateMap, floor int) bool{
 		 }
  	} else if elevMap[config.My_ID].CurrentFloor > floor {
 		 	for e := 0; e<config.NUM_ELEVS; e++ {
-		 		if elevMap[e].Connected == true && elevMap[e].OutOfOrder == false{	
+		 		if elevMap[e].Connected == true{ //&& elevMap[e].OutOfOrder == false{	
 				 	if e != config.My_ID{	
 				 		distElev := int(math.Abs(float64(elevMap[e].CurrentFloor - floor)))
 				 		if distElev < myDist{
