@@ -182,7 +182,7 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, newOrderChan chan con
 			currentMap[e].OutOfOrder = recievedMap[e].OutOfOrder
 			currentMap[e].IDLE = recievedMap[e].IDLE
 
-			if recievedMap[e].OutOfOrder == true{
+			if recievedMap[e].OutOfOrder == true && currentMap[e].OutOfOrder == false{
 				fmt.Printf("Heis %v er out of order\n", e)
 				FIND_ORDER:
 					for f:= 0; f < config.NUM_FLOORS; f++{
