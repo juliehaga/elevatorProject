@@ -264,8 +264,15 @@ func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan conf
 				orderCompleted(&currentMap, buttonLampChan)
 				doorTimer.Reset(time.Second * DOOR_TIME)
 				currentMap[config.My_ID].IDLE = false
+				orderChangesChan <- currentMap
+			} else{
+				if buttonPushed.Order == config.LocalOrder{
+					orderChangesChan <- currentMap
+				} else {
+					statusChangesChan <- currentMap
+				}
 			}
-			orderChangesChan <- currentMap
+			
 		
 		case MOVING:
 			fmt.Printf("Button i moving")
@@ -484,7 +491,7 @@ func nearestElevator(elevMap config.ElevStateMap, floor int) bool{
 			 				return false
 			 			} else if elevMap[e].CurrentFloor > floor && (elevMap[e].CurrentDir == config.ED_Down || elevMap[e].IDLE ) {
 			 				return false
-			 			} else if  elevMap[e].CurrentFloor = floor && elevMap[e].IDLE {
+			 			} else if  elevMap[e].CurrentFloor == floor && elevMap[e].IDLE {
 			 				return false
 			 			}
 			 		} else if myDist == distElev && (elevMap[e].CurrentDir == config.ED_Up || elevMap[e].IDLE){
@@ -505,7 +512,7 @@ func nearestElevator(elevMap config.ElevStateMap, floor int) bool{
 				 				return false
 				 			} else if elevMap[e].CurrentFloor <= floor && (elevMap[e].CurrentDir == config.ED_Up || elevMap[e].IDLE ) {
 			 					return false
-			 				} else if  elevMap[e].CurrentFloor = floor && elevMap[e].IDLE {
+			 				} else if  elevMap[e].CurrentFloor == floor && elevMap[e].IDLE {
 			 					return false
 				 			} 
 
