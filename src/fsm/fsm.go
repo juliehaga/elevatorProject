@@ -54,8 +54,6 @@ func Fsm(motorChan chan config.MotorDirection, doorLampChan chan bool, floorChan
 			fmt.Printf("door timeout\n")
 			eventDoorTimeout(doorLampChan, statusChangesChan, idleTimer, motorChan, motorTimer)
 			idleTimer.Reset(time.Second * IDLE_TIME)
-			bool := motorTimer.Reset(time.Second * MOTOR_DEAD_TIME)
-			fmt.Printf("motor reset %v\n", bool)
 			
 		case <- idleTimer.C:
 			eventIdleTimeout(motorChan, statusChangesChan, orderChangesChan, doorLampChan, doorTimer, buttonLampChan, motorTimer)
@@ -117,9 +115,6 @@ func eventIdleTimeout(motorChan chan config.MotorDirection, statusChangesChan ch
 func eventNewFloor(motorChan chan config.MotorDirection, doorLampChan chan bool, doorTimer *time.Timer, orderChangesChan chan config.ElevStateMap, buttonLampChan chan config.ButtonLamp, floor int, idleTimer *time.Timer, statusChangesChan chan config.ElevStateMap, motorTimer *time.Timer){
 	currentMap := elevStateMap.GetLocalMap()
 
-
-
-
 	if floor != -1 {
 		currentMap[config.My_ID].CurrentFloor = floor
 		statusChangesChan <- currentMap
@@ -144,13 +139,14 @@ func eventNewFloor(motorChan chan config.MotorDirection, doorLampChan chan bool,
 			}
 		case OUT_OF_ORDER:
 			if  orderInThisFloor(currentMap[config.My_ID].CurrentFloor, currentMap){
-					doorLampChan <- true
-					doorTimer.Reset(time.Second * DOOR_TIME)
-					currentMap[config.My_ID].Door = true
-					orderCompleted(&currentMap, buttonLampChan)
-					motorChan <- config.MD_Stop
-					state = DOOR_OPEN
-					orderChangesChan <- currentMap
+				doorLampChan <- true
+				doorTimer.Reset(time.Second * DOOR_TIME)
+				currentMap[config.My_ID].Door = true
+				orderCompleted(&currentMap, buttonLampChan)
+				motorChan <- config.MD_Stop
+				currentMap[config.My_ID].IDLE = false
+				state = DOOR_OPEN
+				orderChangesChan <- currentMap
 			}else if currentMap[config.My_ID].CurrentDir == config.ED_Up && !ordersAbove(currentMap){
 				motorChan <- config.MD_Stop
 				state = IDLE
@@ -190,10 +186,10 @@ func eventDoorTimeout(doorLampChan chan bool, statusChangesChan chan config.Elev
 				motorChan <- motorDir
 				currentMap[config.My_ID].IDLE = false
 				state = MOVING
-			
 			} else {
 				currentMap[config.My_ID].IDLE = true
 				state = IDLE
+				motorTimer.Stop()
 			}
 			statusChangesChan <- currentMap	
 	}
@@ -207,8 +203,8 @@ func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan conf
 
 	//accept CAB order
 	if buttonPushed.Button == config.BT_Cab && currentMap[config.My_ID].OutOfOrder == false{
-			currentMap[config.My_ID].Orders[buttonPushed.Floor][buttonPushed.Button] = config.OT_OrderPlaced
-			buttonLampChan <- config.ButtonLamp{buttonPushed.Floor, buttonPushed.Button, true}
+		currentMap[config.My_ID].Orders[buttonPushed.Floor][buttonPushed.Button] = config.OT_OrderPlaced
+		buttonLampChan <- config.ButtonLamp{buttonPushed.Floor, buttonPushed.Button, true}
 	} else {
 	//check connection before accepting hall-order
 		for e:= 0; e < config.NUM_ELEVS; e++{
@@ -248,8 +244,9 @@ func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan conf
 				if motorDir != config.MD_Stop {
 					motorChan <- motorDir
 					state = MOVING
-					motorTimer.Reset(time.Second * MOTOR_DEAD_TIME)
 					currentMap[config.My_ID].IDLE = false
+				} else{
+					motorTimer.Stop()
 				}
 				//så fremt det ikke va din knapp ønsker du ikke sende.
 				if buttonPushed.Order == config.LocalOrder{
@@ -272,10 +269,18 @@ func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan conf
 		
 		case MOVING:
 			fmt.Printf("Button i moving")
-			orderChangesChan <- currentMap
+			if buttonPushed.Order == config.LocalOrder{
+				orderChangesChan <- currentMap
+			} else {
+				statusChangesChan <- currentMap
+			}
 		case OUT_OF_ORDER:
 			fmt.Printf("Button i out of order")
-			orderChangesChan <- currentMap
+			if buttonPushed.Order == config.LocalOrder{
+				orderChangesChan <- currentMap
+			} else {
+				statusChangesChan <- currentMap
+			}
 	}
 }
 
