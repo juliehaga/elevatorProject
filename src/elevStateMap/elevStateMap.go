@@ -140,6 +140,7 @@ func UpdateLocalMap(changedMap config.ElevStateMap){
 	currentMap[config.My_ID].CurrentDir = changedMap[config.My_ID].CurrentDir
 	currentMap[config.My_ID].Door = changedMap[config.My_ID].Door
 	currentMap[config.My_ID].IDLE = changedMap[config.My_ID].IDLE
+	currentMap[config.My_ID].OutOfOrder = changedMap[config.My_ID].OutOfOrder
 
 
 
@@ -176,6 +177,7 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, newOrderChan chan con
 			currentMap[e].CurrentFloor = recievedMap[e].CurrentFloor
 			currentMap[e].CurrentDir = recievedMap[e].CurrentDir
 			currentMap[e].Door = recievedMap[e].Door
+			currentMap[config.My_ID].OutOfOrder = recievedMap[config.My_ID].OutOfOrder
 		}
 				
 	}
