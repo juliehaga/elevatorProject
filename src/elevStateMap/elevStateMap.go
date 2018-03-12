@@ -179,17 +179,17 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, newOrderChan chan con
 			currentMap[e].Door = recievedMap[e].Door
 			currentMap[e].OutOfOrder = recievedMap[e].OutOfOrder
 			if recievedMap[e].OutOfOrder == true{
-				fmt.Printf("EN heis er out of order\n")
-				FIND_ORDER:
-					for f:= 0; f < config.NUM_FLOORS; f++{
-						for b:= config.BT_HallUp; b < config.BT_Cab; b++{
-							if recievedMap[config.My_ID].Orders[f][b] == config.OT_OrderPlaced{
-								fmt.Printf("Fant en bestilling som lå inne fra før\n")
-								newOrderChan <- config.ButtonEvent{f, b, config.NetworkOrder}
-								break FIND_ORDER
-							}
+			fmt.Printf("EN heis er out of order\n")
+			FIND_ORDER:
+				for f:= 0; f < config.NUM_FLOORS; f++{
+					for b:= config.BT_HallUp; b < config.BT_Cab; b++{
+						if recievedMap[config.My_ID].Orders[f][b] == config.OT_OrderPlaced{
+							fmt.Printf("Fant en bestilling som lå inne fra før\n")
+							newOrderChan <- config.ButtonEvent{f, b, config.NetworkOrder}
+							break FIND_ORDER
 						}
-					}	
+					}
+				}	
 			}
 		}
 
@@ -229,6 +229,8 @@ func UpdateElevStatusFromNetwork(newStatus config.StatusMsg){
 	currentMap[newStatus.ID].CurrentDir = newStatus.CurrentDir
 	currentMap[newStatus.ID].Door = newStatus.Door
 	currentMap[newStatus.ID].OutOfOrder = newStatus.OutOfOrder
+
+
 	SetLocalMap(currentMap)
 
 }

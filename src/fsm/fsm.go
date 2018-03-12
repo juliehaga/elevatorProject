@@ -66,7 +66,7 @@ func Fsm(motorChan chan config.MotorDirection, doorLampChan chan bool, floorChan
 				eventOutOfOrder(motorChan, statusChangesChan)
 				motorTimer.Reset(time.Second * MOTOR_DEAD_TIME)
 				state = OUT_OF_ORDER
-				statusChangesChan <- currentMap
+				orderChangesChan <- currentMap
 			}
 		}
 	}
@@ -82,7 +82,6 @@ func eventOutOfOrder(motorChan chan config.MotorDirection, statusChangesChan cha
 		motorChan <- config.MD_Down
 		currentMap[config.My_ID].CurrentDir = config.ED_Down
 	}
-	statusChangesChan <- currentMap
 }
 
 
