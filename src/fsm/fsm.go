@@ -42,8 +42,8 @@ func Fsm(motorChan chan config.MotorDirection, doorLampChan chan bool, floorChan
 			fmt.Printf("floor event\n")
 			eventNewFloor(motorChan, doorLampChan, doorTimer,orderChangesChan, buttonLampChan, floor, idleTimer, statusChangesChan, motorTimer)
 			idleTimer.Reset(time.Second * IDLE_TIME)
-			bool := motorTimer.Reset(time.Second * MOTOR_DEAD_TIME)
-			fmt.Printf("motor reset %v\n", bool)
+			//bool := motorTimer.Reset(time.Second * MOTOR_DEAD_TIME)
+			//fmt.Printf("motor reset %v\n", bool)
 
 		case buttonPushed := <- newOrderChan:
 			fmt.Printf("buttonpushed\n")
@@ -427,8 +427,8 @@ func orderInThisFloor( floor int, elevMap config.ElevStateMap) bool{
 
 func chooseDirection(elevMap *config.ElevStateMap, motorTimer *time.Timer) config.MotorDirection{
 	fmt.Printf("choose dir\n")
-	bool := motorTimer.Reset(time.Second * MOTOR_DEAD_TIME)
-	fmt.Printf("motor reset %v\n", bool)
+	//bool := motorTimer.Reset(time.Second * MOTOR_DEAD_TIME)
+	//fmt.Printf("motor reset %v\n", bool)
 	switch elevMap[config.My_ID].CurrentDir{
 		case config.ED_Up: 
 			if ordersAbove(*elevMap){
@@ -532,8 +532,8 @@ func nearestElevator(elevMap config.ElevStateMap, floor int) bool{
 
 
 func forceChooseDirection(elevMap *config.ElevStateMap, motorTimer *time.Timer) config.MotorDirection{
-	bool := motorTimer.Reset(time.Second * MOTOR_DEAD_TIME)
-	fmt.Printf("motor reset %v\n", bool)
+	//bool := motorTimer.Reset(time.Second * MOTOR_DEAD_TIME)
+	//fmt.Printf("motor reset %v\n", bool)
 	elevsInIdle := 0
 	for e := 0; e < config.NUM_ELEVS; e++{
 		if e != config.My_ID{
