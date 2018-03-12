@@ -117,7 +117,6 @@ func eventNewFloor(motorChan chan config.MotorDirection, doorLampChan chan bool,
 
 	if floor != -1 {
 		currentMap[config.My_ID].CurrentFloor = floor
-		statusChangesChan <- currentMap
 	}
 	//fmt.Printf("New floor %v\n", currentMap[config.My_ID].CurrentFloor)
 
@@ -263,7 +262,6 @@ func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan conf
 				orderCompleted(&currentMap, buttonLampChan)
 				doorTimer.Reset(time.Second * DOOR_TIME)
 				currentMap[config.My_ID].IDLE = false
-				orderChangesChan <- currentMap
 			}
 			orderChangesChan <- currentMap
 		

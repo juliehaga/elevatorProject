@@ -208,7 +208,6 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, newOrderChan chan con
 							fmt.Printf("-------------order from network--------\n")
 							fmt.Printf("Floor %v, knappp %v\n", f, b)
 							newOrderChan <- config.ButtonEvent{f, b, config.NetworkOrder}
-							
 							buttonEvent = true
 						}
 						for elev := 0; elev < config.NUM_ELEVS; elev++{
@@ -234,7 +233,6 @@ func UpdateElevStatusFromNetwork(newStatus config.StatusMsg){
 	currentMap[newStatus.ID].Door = newStatus.Door
 	currentMap[newStatus.ID].OutOfOrder = newStatus.OutOfOrder
 	currentMap[newStatus.ID].IDLE = newStatus.IDLE
-
 
 	SetLocalMap(currentMap)
 
