@@ -519,6 +519,14 @@ func nearestElevator(elevMap config.ElevStateMap, floor int) bool{
 
 func forceChooseDirection(elevMap *config.ElevStateMap, motorTimer *time.Timer) config.MotorDirection{
 	motorTimer.Reset(time.Second * MOTOR_DEAD_TIME)
+	elevsInIdle := 0
+	for e := 0; e < config.NUM_ELEVS; e++{
+		if e != config.My_ID{
+			if elevMap[e].IDLE == true{
+				elevsInIdle ++
+			}
+		}
+	}
 	if orderInThisFloor(elevMap[config.My_ID].CurrentFloor, *elevMap){
 		return config.MD_Stop
 	

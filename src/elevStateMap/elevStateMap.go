@@ -180,6 +180,8 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, newOrderChan chan con
 			currentMap[e].CurrentDir = recievedMap[e].CurrentDir
 			currentMap[e].Door = recievedMap[e].Door
 			currentMap[e].OutOfOrder = recievedMap[e].OutOfOrder
+			currentMap[e].IDLE = recievedMap[e].IDLE
+
 			if recievedMap[e].OutOfOrder == true{
 			fmt.Printf("EN heis er out of order\n")
 			FIND_ORDER:
@@ -231,6 +233,7 @@ func UpdateElevStatusFromNetwork(newStatus config.StatusMsg){
 	currentMap[newStatus.ID].CurrentDir = newStatus.CurrentDir
 	currentMap[newStatus.ID].Door = newStatus.Door
 	currentMap[newStatus.ID].OutOfOrder = newStatus.OutOfOrder
+	currentMap[newStatus.ID].IDLE = newStatus.IDLE
 
 
 	SetLocalMap(currentMap)
