@@ -202,7 +202,7 @@ func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan conf
 
 
 	//accept CAB order
-	if buttonPushed.Button == config.BT_Cab{
+	if buttonPushed.Button == config.BT_Cab && currentMap[config.My_ID].OutOfOrder == false{
 			currentMap[config.My_ID].Orders[buttonPushed.Floor][buttonPushed.Button] = config.OT_OrderPlaced
 			buttonLampChan <- config.ButtonLamp{buttonPushed.Floor, buttonPushed.Button, true}
 	} else {

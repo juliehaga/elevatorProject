@@ -69,6 +69,9 @@ func readFromBackup(newOrderChan chan config.ButtonEvent){
 	for floor := 0; floor<config.NUM_FLOORS; floor++{
 		order, _ :=strconv.Atoi(string(buf[floor]))
 		currentMap[config.My_ID].Orders[floor][config.BT_Cab] = config.OrderType(order)
+		if currentMap[config.My_ID].Orders[floor][config.BT_Cab] == config.OT_OrderPlaced{
+			newOrderChan <- config.ButtonEvent{floor, config.BT_Cab, config.LocalOrder}
+		}
 	}
 
 	SetLocalMap(currentMap)
@@ -90,6 +93,7 @@ func InitElevStateMap(newOrderChan chan config.ButtonEvent){
 		defer file.Close()
 	}else{
 		readFromBackup(newOrderChan)
+
 	}
 
 
