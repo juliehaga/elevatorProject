@@ -12,7 +12,7 @@ import(
 
 
 
-const _pollRate = 200 * time.Millisecond
+const _pollRate = 100 * time.Millisecond
 
 var _initialized bool = false
 var _numFloors int = 4
