@@ -147,7 +147,7 @@ func Transmitter(port int, messageTx chan config.Message, ackChan chan config.Ac
 										default:
 
 									}
-									time.Sleep(200* time.Millisecond)
+									time.Sleep(20* time.Millisecond)
 									//antar at peer vil fiksa å sette til dead dersom en faller ut.
 								}
 						}
