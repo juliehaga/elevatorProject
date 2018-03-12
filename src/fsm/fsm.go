@@ -74,7 +74,7 @@ func Fsm(motorChan chan config.MotorDirection, doorLampChan chan bool, floorChan
 
 func eventOutOfOrder(motorChan chan config.MotorDirection, statusChangesChan chan config.ElevStateMap){
 	currentMap := elevStateMap.GetLocalMap()
-	fmt.Printf("Out of order")
+	fmt.Printf("Out of order\n")
 	if currentMap[config.My_ID].CurrentFloor != config.NUM_FLOORS -1{
 		motorChan <- config.MD_Up
 		currentMap[config.My_ID].CurrentDir = config.ED_Up
@@ -115,10 +115,12 @@ func eventNewFloor(motorChan chan config.MotorDirection, doorLampChan chan bool,
 
 
 
+
 	if floor != -1 {
 		currentMap[config.My_ID].CurrentFloor = floor
 		statusChangesChan <- currentMap
 	}
+	fmt.Printf("New floor %v\n", currentMap[config.My_ID].CurrentFloor)
 
 	switch(state){
 		case MOVING:
@@ -137,27 +139,38 @@ func eventNewFloor(motorChan chan config.MotorDirection, doorLampChan chan bool,
 					}	
 			}
 		case OUT_OF_ORDER:
-
-			if currentMap[config.My_ID].OutOfOrder == true{
-				if currentMap[config.My_ID].CurrentDir == config.ED_Up && !ordersAbove(currentMap){
+			if  orderInThisFloor(currentMap[config.My_ID].CurrentFloor, currentMap){
+					doorLampChan <- true
+					doorTimer.Reset(time.Second * DOOR_TIME)
+					currentMap[config.My_ID].Door = true
+					orderCompleted(&currentMap, buttonLampChan)
 					motorChan <- config.MD_Stop
-					state = IDLE
-					currentMap[config.My_ID].IDLE = true
-				} else if currentMap[config.My_ID].CurrentDir == config.ED_Down && !ordersBelow(currentMap){
-					motorChan <- config.MD_Stop
+					state = DOOR_OPEN
+					orderChangesChan <- currentMap
+			}else if currentMap[config.My_ID].CurrentDir == config.ED_Up && !ordersAbove(currentMap){
+				motorChan <- config.MD_Stop
+				state = IDLE
+				currentMap[config.My_ID].IDLE = true
+			} else if currentMap[config.My_ID].CurrentDir == config.ED_Down && !ordersBelow(currentMap){
+				motorChan <- config.MD_Stop
+				state = IDLE
+				currentMap[config.My_ID].IDLE = true
+			}else{
+				motorDir := chooseDirection(&currentMap, motorTimer)
+				if motorDir != config.MD_Stop {
+					motorChan <- motorDir
+					currentMap[config.My_ID].IDLE = false
+					state = MOVING
+				} else{
 					state = IDLE
 					currentMap[config.My_ID].IDLE = true
 				}
-			}
 			currentMap[config.My_ID].OutOfOrder = false
 
-			motorDir := chooseDirection(&currentMap, motorTimer)
-			if motorDir != config.MD_Stop {
-				motorChan <- motorDir
-				currentMap[config.My_ID].IDLE = false
-				state = MOVING
-				motorTimer.Reset(time.Second * MOTOR_DEAD_TIME)
 			}
+			statusChangesChan <- currentMap
+
+	
 		}
 	motorTimer.Reset(time.Second * MOTOR_DEAD_TIME)
 }
