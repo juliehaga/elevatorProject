@@ -121,6 +121,10 @@ func eventNewFloor(motorChan chan config.MotorDirection, doorLampChan chan bool,
 	//fmt.Printf("New floor %v\n", currentMap[config.My_ID].CurrentFloor)
 
 	switch(state){
+		case IDLE:
+			//Init
+			statusChangesChan <- currentMap
+
 		case MOVING:
 			//motorTimer.Reset(time.Second * MOTOR_DEAD_TIME)
 			if shouldStop(currentMap) {
