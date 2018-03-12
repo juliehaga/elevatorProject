@@ -302,17 +302,16 @@ func shouldStop(elevMap config.ElevStateMap) bool{
 		return true
 	}
 
-	if !orderInThisFloor(elevMap[config.My_ID].CurrentFloor, elevMap){
-		return false
-	}
-
 	switch elevMap[config.My_ID].CurrentDir{
 		case config.ED_Up:
 			//order on current floor and no orders above
 			if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallUp]==config.OT_OrderPlaced{
 				return true
 			} else if !ordersAbove(elevMap) && elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallDown]==config.OT_OrderPlaced{
-				return true }
+				return true 
+			} else if !ordersAbove(elevMap){
+				return true
+			}
 
 		case config.ED_Down:
 			//order on current floor and no orders below
@@ -320,6 +319,8 @@ func shouldStop(elevMap config.ElevStateMap) bool{
 		 		return true
 		 	} else if !ordersBelow(elevMap) && elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallUp]==config.OT_OrderPlaced {
 			 	return true 
+			} else if !ordersBelow(elevMap){
+				return true
 			}
 	}
 	return false
@@ -368,7 +369,7 @@ func orderCompleted(elevMap *config.ElevStateMap, buttonLampChan chan config.But
 				for elev := 0; elev < config.NUM_ELEVS; elev++{				
 					elevMap[elev].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallUp] = config.OT_NoOrder
 				}	
-				//fmt.Printf("completed HALLUP %v\n", elevMap[config.My_ID].CurrentFloor)
+				fmt.Printf("completed HALLUP %v\n", elevMap[config.My_ID].CurrentFloor)
 				buttonLampChan <-  config.ButtonLamp{elevMap[config.My_ID].CurrentFloor, config.BT_HallUp, false}
 
 			} else if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallDown] == config.OT_OrderPlaced{
@@ -376,25 +377,25 @@ func orderCompleted(elevMap *config.ElevStateMap, buttonLampChan chan config.But
 				for elev := 0; elev < config.NUM_ELEVS; elev++{				
 					elevMap[elev].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallDown] = config.OT_NoOrder
 				}
-				//fmt.Printf("completed HALL-DOWN %v\n", elevMap[config.My_ID].CurrentFloor)
+				fmt.Printf("completed HALL-DOWN %v\n", elevMap[config.My_ID].CurrentFloor)
 				buttonLampChan <-  config.ButtonLamp{elevMap[config.My_ID].CurrentFloor, config.BT_HallDown, false}
 			}
 			
 		case config.ED_Down:
 			if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallDown] == config.OT_OrderPlaced{
-
+				
 				for elev := 0; elev < config.NUM_ELEVS; elev++{			
 
 					elevMap[elev].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallDown] = config.OT_NoOrder
 				}
-				//fmt.Printf("completed Halldown %v\n", elevMap[config.My_ID].CurrentFloor)
+				fmt.Printf("completed Halldown %v\n", elevMap[config.My_ID].CurrentFloor)
 				buttonLampChan <-  config.ButtonLamp{elevMap[config.My_ID].CurrentFloor, config.BT_HallDown, false}
 			} else if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallUp] == config.OT_OrderPlaced{
 
 				for elev := 0; elev < config.NUM_ELEVS; elev++{					
 					elevMap[elev].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallUp] = config.OT_NoOrder
 				}	
-				//fmt.Printf("completed Hall_UP %v\n", elevMap[config.My_ID].CurrentFloor)				
+				fmt.Printf("completed Hall_UP %v\n", elevMap[config.My_ID].CurrentFloor)				
 				buttonLampChan <-  config.ButtonLamp{elevMap[config.My_ID].CurrentFloor, config.BT_HallUp, false}
 
 
@@ -440,10 +441,7 @@ func chooseDirection(elevMap *config.ElevStateMap, motorTimer *time.Timer) confi
 						return config.MD_Down
 					}
 				}
-			} else {
-				fmt.Printf("STOP\n")
-				return config.MD_Stop
-			}
+			}	
 		case config.ED_Down:
 			if ordersBelow(*elevMap){
 				for f:= elevMap[config.My_ID].CurrentFloor - 1; f >= 0; f--{
@@ -462,9 +460,6 @@ func chooseDirection(elevMap *config.ElevStateMap, motorTimer *time.Timer) confi
 						return config.MD_Up
 					}
 				}
-			} else {
-				fmt.Printf("STOP\n")
-				return config.MD_Stop
 			}
 	}
 	fmt.Printf("STOP\n")
@@ -485,9 +480,11 @@ func nearestElevator(elevMap config.ElevStateMap, floor int) bool{
 			 	if e != config.My_ID{	
 			 		distElev := int(math.Abs(float64(elevMap[e].CurrentFloor - floor)))
 			 		if distElev < myDist{
-			 			if elevMap[e].CurrentFloor <= floor && (elevMap[e].CurrentDir == config.ED_Up || elevMap[e].IDLE ){
+			 			if elevMap[e].CurrentFloor < floor && (elevMap[e].CurrentDir == config.ED_Up || elevMap[e].IDLE ){
 			 				return false
-			 			} else if elevMap[e].CurrentFloor >= floor && (elevMap[e].CurrentDir == config.ED_Down || elevMap[e].IDLE ) {
+			 			} else if elevMap[e].CurrentFloor > floor && (elevMap[e].CurrentDir == config.ED_Down || elevMap[e].IDLE ) {
+			 				return false
+			 			} else if  elevMap[e].CurrentFloor = floor && elevMap[e].IDLE {
 			 				return false
 			 			}
 			 		} else if myDist == distElev && (elevMap[e].CurrentDir == config.ED_Up || elevMap[e].IDLE){
@@ -508,8 +505,11 @@ func nearestElevator(elevMap config.ElevStateMap, floor int) bool{
 				 				return false
 				 			} else if elevMap[e].CurrentFloor <= floor && (elevMap[e].CurrentDir == config.ED_Up || elevMap[e].IDLE ) {
 			 					return false
-			 				}
-				 		}  else if myDist == distElev && (elevMap[e].CurrentDir == config.ED_Down || elevMap[e].IDLE){
+			 				} else if  elevMap[e].CurrentFloor = floor && elevMap[e].IDLE {
+			 					return false
+				 			} 
+
+				 		}else if myDist == distElev && (elevMap[e].CurrentDir == config.ED_Down || elevMap[e].IDLE){
 			 			if e > config.My_ID{
 			 				return false
 			 			}
