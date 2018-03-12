@@ -42,6 +42,7 @@ func Fsm(motorChan chan config.MotorDirection, doorLampChan chan bool, floorChan
 			fmt.Printf("floor event\n")
 			eventNewFloor(motorChan, doorLampChan, doorTimer,orderChangesChan, buttonLampChan, floor, idleTimer, statusChangesChan, motorTimer)
 			idleTimer.Reset(time.Second * IDLE_TIME)
+			fmt.Printf("motor reset\n")
 			motorTimer.Reset(time.Second * MOTOR_DEAD_TIME)
 
 		case buttonPushed := <- newOrderChan:
@@ -54,6 +55,7 @@ func Fsm(motorChan chan config.MotorDirection, doorLampChan chan bool, floorChan
 			eventDoorTimeout(doorLampChan, statusChangesChan, idleTimer, motorChan, motorTimer)
 			idleTimer.Reset(time.Second * IDLE_TIME)
 			motorTimer.Reset(time.Second * MOTOR_DEAD_TIME)
+			fmt.Printf("motor reset\n")
 			
 		case <- idleTimer.C:
 			eventIdleTimeout(motorChan, statusChangesChan, orderChangesChan, doorLampChan, doorTimer, buttonLampChan, motorTimer)
@@ -68,6 +70,7 @@ func Fsm(motorChan chan config.MotorDirection, doorLampChan chan bool, floorChan
 				currentMap[config.My_ID].OutOfOrder = true
 				eventOutOfOrder(motorChan, statusChangesChan)
 				motorTimer.Reset(time.Second * MOTOR_DEAD_TIME)
+				fmt.Printf("motor reset\n")
 				state = OUT_OF_ORDER
 				orderChangesChan <- currentMap
 			}
@@ -255,7 +258,6 @@ func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan conf
 				} else {
 					statusChangesChan <- currentMap
 				}
-				
 			}
 		case DOOR_OPEN:
 			if orderInThisFloor(currentMap[config.My_ID].CurrentFloor, currentMap){
@@ -412,6 +414,7 @@ func orderInThisFloor( floor int, elevMap config.ElevStateMap) bool{
 func chooseDirection(elevMap *config.ElevStateMap, motorTimer *time.Timer) config.MotorDirection{
 	fmt.Printf("choose dri\n")
 	motorTimer.Reset(time.Second * MOTOR_DEAD_TIME)
+	fmt.Printf("motor reset\n")
 	switch elevMap[config.My_ID].CurrentDir{
 		case config.ED_Up: 
 			if ordersAbove(*elevMap){
@@ -518,6 +521,7 @@ func nearestElevator(elevMap config.ElevStateMap, floor int) bool{
 
 func forceChooseDirection(elevMap *config.ElevStateMap, motorTimer *time.Timer) config.MotorDirection{
 	motorTimer.Reset(time.Second * MOTOR_DEAD_TIME)
+	fmt.Printf("motor reset\n")
 	elevsInIdle := 0
 	for e := 0; e < config.NUM_ELEVS; e++{
 		if e != config.My_ID{
