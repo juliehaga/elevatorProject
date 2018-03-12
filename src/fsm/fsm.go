@@ -20,7 +20,7 @@ const(
 
 const DOOR_TIME 	    = 2
 const IDLE_TIME 	    = 10
-const MOTOR_DEAD_TIME 	= 5
+const MOTOR_DEAD_TIME 	= 7
 
 
 func Fsm(motorChan chan config.MotorDirection, doorLampChan chan bool, floorChan chan int, buttonLampChan chan config.ButtonLamp, orderChangesChan chan config.ElevStateMap, newOrderChan chan config.ButtonEvent, statusChangesChan chan config.ElevStateMap){
@@ -53,6 +53,7 @@ func Fsm(motorChan chan config.MotorDirection, doorLampChan chan bool, floorChan
 			fmt.Printf("door timeout\n")
 			eventDoorTimeout(doorLampChan, statusChangesChan, idleTimer, motorChan, motorTimer)
 			idleTimer.Reset(time.Second * IDLE_TIME)
+			motorTimer.Reset(time.Second * MOTOR_DEAD_TIME)
 			
 		case <- idleTimer.C:
 			eventIdleTimeout(motorChan, statusChangesChan, orderChangesChan, doorLampChan, doorTimer, buttonLampChan, motorTimer)
@@ -187,7 +188,7 @@ func eventDoorTimeout(doorLampChan chan bool, statusChangesChan chan config.Elev
 				motorChan <- motorDir
 				currentMap[config.My_ID].IDLE = false
 				state = MOVING
-				motorTimer.Reset(time.Second * MOTOR_DEAD_TIME)
+			
 			} else {
 				currentMap[config.My_ID].IDLE = true
 				state = IDLE
