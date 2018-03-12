@@ -19,8 +19,8 @@ const(
 )
 
 const DOOR_TIME 	    = 2
-const IDLE_TIME 	    = 10
-const MOTOR_DEAD_TIME 	= 10
+const IDLE_TIME 	    = 9
+const MOTOR_DEAD_TIME 	= 11
 
 
 func Fsm(motorChan chan config.MotorDirection, doorLampChan chan bool, floorChan chan int, buttonLampChan chan config.ButtonLamp, orderChangesChan chan config.ElevStateMap, newOrderChan chan config.ButtonEvent, statusChangesChan chan config.ElevStateMap){
@@ -481,8 +481,7 @@ func nearestElevator(elevMap config.ElevStateMap, floor int) bool{
 
  	if elevMap[config.My_ID].CurrentFloor < floor { 
 	 	for e := 0; e<config.NUM_ELEVS; e++ {
-	 		if elevMap[e].Connected == true && elevMap[e].OutOfOrder == false{
-	 			fmt.Printf("heis %v er regnet med i nearest elev\n", e)	
+	 		if elevMap[e].Connected == true && elevMap[e].OutOfOrder == false{	
 			 	if e != config.My_ID{	
 			 		distElev := int(math.Abs(float64(elevMap[e].CurrentFloor - floor)))
 			 		if distElev < myDist{
