@@ -231,7 +231,6 @@ func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan conf
 
 	switch(state){
 		case IDLE:
-
 			if orderInThisFloor(currentMap[config.My_ID].CurrentFloor, currentMap) && currentMap[config.My_ID].OutOfOrder == false{
 				fmt.Printf("order, in this floor\n")
 				doorLampChan <- true	
@@ -244,6 +243,7 @@ func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan conf
 
 				
 			}else{
+				fmt.Printf("Jeg har lyst til å velge retning \n")
 				motorDir := chooseDirection(&currentMap, motorTimer)
 				if motorDir != config.MD_Stop {
 					motorChan <- motorDir
@@ -271,8 +271,10 @@ func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan conf
 			orderChangesChan <- currentMap
 		
 		case MOVING:
+			fmt.Printf("Button i moving")
 			orderChangesChan <- currentMap
 		case OUT_OF_ORDER:
+			fmt.Printf("Button i out of order")
 			orderChangesChan <- currentMap
 	}
 }
@@ -411,7 +413,7 @@ func orderInThisFloor( floor int, elevMap config.ElevStateMap) bool{
 
 
 func chooseDirection(elevMap *config.ElevStateMap, motorTimer *time.Timer) config.MotorDirection{
-	fmt.Printf("choose dri\n")
+	fmt.Printf("choose dir\n")
 	bool := motorTimer.Reset(time.Second * MOTOR_DEAD_TIME)
 	fmt.Printf("motor reset %v\n", bool)
 	switch elevMap[config.My_ID].CurrentDir{
