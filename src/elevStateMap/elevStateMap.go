@@ -177,8 +177,20 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, newOrderChan chan con
 			currentMap[e].CurrentFloor = recievedMap[e].CurrentFloor
 			currentMap[e].CurrentDir = recievedMap[e].CurrentDir
 			currentMap[e].Door = recievedMap[e].Door
-			currentMap[config.My_ID].OutOfOrder = recievedMap[config.My_ID].OutOfOrder
+			currentMap[e].OutOfOrder = recievedMap[e].OutOfOrder
+			if recievedMap[e].OutOfOrder == true{
+				FIND_ORDER:
+					for f:= 0; f < config.NUM_FLOORS; f++{
+						for b:= config.BT_HallUp; b < config.BT_Cab; b++{
+							if recievedMap[config.My_ID].Orders[f][b] == config.OT_OrderPlaced{
+								newOrderChan <- config.ButtonEvent{f, b, config.NetworkOrder}
+								break FIND_ORDER
+							}
+						}
+					}	
+			}
 		}
+
 				
 	}
 
