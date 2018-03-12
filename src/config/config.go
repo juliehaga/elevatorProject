@@ -93,6 +93,7 @@ type StatusMsg struct {
 	CurrentDir ElevDir
 	Door bool
 	OutOfOrder bool
+	IDLE bool
 }
 
 type OrderMsg struct{

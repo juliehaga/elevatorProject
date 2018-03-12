@@ -181,7 +181,7 @@ func Receiver(port int, orderMsgRx chan config.OrderMsg, statusMsgRx chan config
 			json.Unmarshal(b[:integer], &receivedMsg)
 			if receivedMsg.ID != config.My_ID{
 				if receivedMsg.MsgType == config.ElevStatus{
-					statusMsgRx <- config.StatusMsg{receivedMsg.ID, receivedMsg.ElevMap[receivedMsg.ID].CurrentFloor, receivedMsg.ElevMap[receivedMsg.ID].CurrentDir, receivedMsg.ElevMap[receivedMsg.ID].Door, receivedMsg.ElevMap[receivedMsg.ID].OutOfOrder}
+					statusMsgRx <- config.StatusMsg{receivedMsg.ID, receivedMsg.ElevMap[receivedMsg.ID].CurrentFloor, receivedMsg.ElevMap[receivedMsg.ID].CurrentDir, receivedMsg.ElevMap[receivedMsg.ID].Door, receivedMsg.ElevMap[receivedMsg.ID].OutOfOrder,receivedMsg.ElevMap[receivedMsg.ID].IDLE}
 					SendAck(messageTx, receivedMsg.ElevMap, receivedMsg.ID, port)
 				} else if receivedMsg.MsgType == config.Orders {
 					orderMsgRx <- config.OrderMsg{receivedMsg.ID, receivedMsg.ElevMap}
