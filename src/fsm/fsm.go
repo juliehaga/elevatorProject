@@ -213,7 +213,6 @@ func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan conf
 				accept = true
 			}
 		}
-
 		if accept == true{
 			buttonLampChan <- config.ButtonLamp{buttonPushed.Floor, buttonPushed.Button, true}
 			for elev := 0; elev < config.NUM_ELEVS; elev++{
