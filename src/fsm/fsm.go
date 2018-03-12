@@ -55,11 +55,11 @@ func Fsm(motorChan chan config.MotorDirection, doorLampChan chan bool, floorChan
 			eventDoorTimeout(doorLampChan, statusChangesChan, idleTimer, motorChan, motorTimer)
 			idleTimer.Reset(time.Second * IDLE_TIME)
 			
-		case <- idleTimer.C:
+		/*case <- idleTimer.C:
 			eventIdleTimeout(motorChan, statusChangesChan, orderChangesChan, doorLampChan, doorTimer, buttonLampChan, motorTimer)
-			idleTimer.Reset(time.Second * IDLE_TIME)
+			idleTimer.Reset(time.Second * IDLE_TIME)*/
 
-		case <- motorTimer.C:
+		/*case <- motorTimer.C:
 			currentMap := elevStateMap.GetLocalMap()
 			fmt.Printf("IDLE = %v", currentMap[config.My_ID].IDLE)
 			if (currentMap[config.My_ID].IDLE == false){
@@ -70,7 +70,7 @@ func Fsm(motorChan chan config.MotorDirection, doorLampChan chan bool, floorChan
 				fmt.Printf("motor reset %v\n", bool)
 				state = OUT_OF_ORDER
 				orderChangesChan <- currentMap
-			}
+			}*/
 		}
 	}
 }
