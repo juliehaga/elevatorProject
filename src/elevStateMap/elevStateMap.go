@@ -183,17 +183,17 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, newOrderChan chan con
 			currentMap[e].IDLE = recievedMap[e].IDLE
 
 			if recievedMap[e].OutOfOrder == true{
-			fmt.Printf("EN heis er out of order\n")
-			FIND_ORDER:
-				for f:= 0; f < config.NUM_FLOORS; f++{
-					for b:= config.BT_HallUp; b < config.BT_Cab; b++{
-						if recievedMap[config.My_ID].Orders[f][b] == config.OT_OrderPlaced{
-							fmt.Printf("Fant en bestilling som lå inne fra før\n")
-							newOrderChan <- config.ButtonEvent{f, b, config.NetworkOrder}
-							break FIND_ORDER
+				fmt.Printf("Heis %v er out of order\n", e)
+				FIND_ORDER:
+					for f:= 0; f < config.NUM_FLOORS; f++{
+						for b:= config.BT_HallUp; b < config.BT_Cab; b++{
+							if recievedMap[config.My_ID].Orders[f][b] == config.OT_OrderPlaced{
+								fmt.Printf("Fant en bestilling som lå inne fra før\n")
+								newOrderChan <- config.ButtonEvent{f, b, config.NetworkOrder}
+								break FIND_ORDER
+							}
 						}
-					}
-				}	
+					}	
 			}
 		}
 

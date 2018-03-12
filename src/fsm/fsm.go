@@ -19,7 +19,7 @@ const(
 )
 
 const DOOR_TIME 	    = 2
-const IDLE_TIME 	    = 4
+const IDLE_TIME 	    = 10
 const MOTOR_DEAD_TIME 	= 5
 
 
