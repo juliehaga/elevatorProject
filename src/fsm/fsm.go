@@ -413,7 +413,7 @@ func orderInThisFloor( floor int, elevMap config.ElevStateMap) bool{
 func chooseDirection(elevMap *config.ElevStateMap, motorTimer *time.Timer) config.MotorDirection{
 	fmt.Printf("choose dri\n")
 	bool := motorTimer.Reset(time.Second * MOTOR_DEAD_TIME)
-	fmt.Printf("motor reset %v\n", bool))
+	fmt.Printf("motor reset %v\n", bool)
 	switch elevMap[config.My_ID].CurrentDir{
 		case config.ED_Up: 
 			if ordersAbove(*elevMap){
