@@ -52,8 +52,8 @@ func main() {
 
     floorChan  := make(chan int)  
     buttonLampChan  := make(chan config.ButtonLamp, 20)
-    statusChangesChan := make(chan config.ElevStateMap)
-    orderChangesChan := make(chan config.ElevStateMap)
+    statusChangesChan := make(chan config.ElevStateMap, 30)
+    orderChangesChan := make(chan config.ElevStateMap, 30)
     newOrderChan := make(chan config.ButtonEvent)
 
     // We make a channel for receiving updates on the id's of the peers that are
