@@ -72,7 +72,8 @@ func InitDriver(addr string, numFloors int) {
 
 	currentMap[config.My_ID].CurrentFloor = getFloor()
 	elevStateMap.SetLocalMap(currentMap)
-	//InitOrders()
+	//ClearAllButtonLamps()
+	InitOrders()
 
 
 
@@ -87,6 +88,7 @@ func InitOrders(){
 	for f := 0; f < config.NUM_FLOORS; f++{
 		for b:= config.BT_HallUp; b <= config.BT_Cab; b++{
 			if currentMap[config.My_ID].Orders[f][b] == config.OT_OrderPlaced{
+				fmt.Printf("ordre i nettverket\n")
 				lamp := config.ButtonLamp{f, b, true}	
 				SetButtonLamp(lamp)
 			} else {
