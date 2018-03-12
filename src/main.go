@@ -69,7 +69,7 @@ func main() {
 	ackChan := make(chan config.AckMsg, 100)
 
 	config.Init(id, port)
-	elevio.InitDriver("localhost:" + port, config.NUM_FLOORS*)
+	elevio.InitDriver("localhost:" + port, config.NUM_FLOORS)
 	elevStateMap.InitElevStateMap(newOrderChan)
 	
 	init := true
