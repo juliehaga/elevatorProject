@@ -20,7 +20,7 @@ const(
 
 const DOOR_TIME 	    = 2
 const IDLE_TIME 	    = 10
-const MOTOR_DEAD_TIME 	= 7
+const MOTOR_DEAD_TIME 	= 10
 
 
 func Fsm(motorChan chan config.MotorDirection, doorLampChan chan bool, floorChan chan int, buttonLampChan chan config.ButtonLamp, orderChangesChan chan config.ElevStateMap, newOrderChan chan config.ButtonEvent, statusChangesChan chan config.ElevStateMap){
