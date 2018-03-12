@@ -141,9 +141,7 @@ func Transmitter(port int, messageTx chan config.Message, ackChan chan config.Ac
 									conn.Write(buf)
 									select {
 										case ackMsg := <- ackChan:
-											fmt.Printf("leser Ack melding %v\n", ackMsg)
 											if ackMsg.Reciever_ID == config.My_ID && ackMsg.Transmitter_ID == e{
-												fmt.Printf("ack from %v\n", e)
 												break WAIT_FOR_ACK
 											}
 										default:
