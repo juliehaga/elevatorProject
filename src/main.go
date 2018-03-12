@@ -47,20 +47,20 @@ func main() {
 //channels for communication between modules
 
 	//hardware channels
-	motorChan := make(chan config.MotorDirection)
-	doorLampChan := make(chan bool)
+	motorChan := make(chan config.MotorDirection, 100)
+	doorLampChan := make(chan bool, 100)
 
-    floorChan  := make(chan int)  
-    buttonLampChan  := make(chan config.ButtonLamp)
-    statusChangesChan := make(chan config.ElevStateMap)
-    orderChangesChan := make(chan config.ElevStateMap)
-    newOrderChan := make(chan config.ButtonEvent)
+    floorChan  := make(chan int, 100)  
+    buttonLampChan  := make(chan config.ButtonLamp, 100)
+    statusChangesChan := make(chan config.ElevStateMap, 100)
+    orderChangesChan := make(chan config.ElevStateMap, 100)
+    newOrderChan := make(chan config.ButtonEvent, 100)
 
     // We make a channel for receiving updates on the id's of the peers that are
 	//  alive on the network
-    peerUpdateCh := make(chan config.PeerUpdate)
+    peerUpdateCh := make(chan config.PeerUpdate, 100)
     // This could be used to signal that we are somehow "unavailable".
-    peerTxEnable := make(chan bool)
+    peerTxEnable := make(chan bool, 100)
 
  
 	messageTx := make(chan config.Message, 100)
