@@ -62,7 +62,6 @@ func Fsm(motorChan chan config.MotorDirection, doorLampChan chan bool, floorChan
 			idleTimer.Reset(time.Second * IDLE_TIME)
 
 		case <- motorTimer.C:
-			
 			currentMap := elevStateMap.GetLocalMap()
 			fmt.Printf("IDLE = %v", currentMap[config.My_ID].IDLE)
 			if (currentMap[config.My_ID].IDLE == false){
@@ -248,9 +247,9 @@ func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan conf
 				motorDir := chooseDirection(&currentMap, motorTimer)
 				if motorDir != config.MD_Stop {
 					motorChan <- motorDir
-					currentMap[config.My_ID].IDLE = false
 					state = MOVING
 					motorTimer.Reset(time.Second * MOTOR_DEAD_TIME)
+					currentMap[config.My_ID].IDLE = false
 				}
 				//så fremt det ikke va din knapp ønsker du ikke sende.
 				if buttonPushed.Order == config.LocalOrder{
