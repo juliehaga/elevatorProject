@@ -42,8 +42,8 @@ func Fsm(motorChan chan config.MotorDirection, doorLampChan chan bool, floorChan
 			fmt.Printf("floor event\n")
 			eventNewFloor(motorChan, doorLampChan, doorTimer,orderChangesChan, buttonLampChan, floor, idleTimer, statusChangesChan, motorTimer)
 			idleTimer.Reset(time.Second * IDLE_TIME)
-			fmt.Printf("motor reset\n")
-			motorTimer.Reset(time.Second * MOTOR_DEAD_TIME)
+			bool := motorTimer.Reset(time.Second * MOTOR_DEAD_TIME)
+			fmt.Printf("motor reset %v\n", bool)
 
 		case buttonPushed := <- newOrderChan:
 			fmt.Printf("buttonpushed\n")
@@ -54,8 +54,8 @@ func Fsm(motorChan chan config.MotorDirection, doorLampChan chan bool, floorChan
 			fmt.Printf("door timeout\n")
 			eventDoorTimeout(doorLampChan, statusChangesChan, idleTimer, motorChan, motorTimer)
 			idleTimer.Reset(time.Second * IDLE_TIME)
-			motorTimer.Reset(time.Second * MOTOR_DEAD_TIME)
-			fmt.Printf("motor reset\n")
+			bool := motorTimer.Reset(time.Second * MOTOR_DEAD_TIME)
+			fmt.Printf("motor reset %v\n", bool)
 			
 		case <- idleTimer.C:
 			eventIdleTimeout(motorChan, statusChangesChan, orderChangesChan, doorLampChan, doorTimer, buttonLampChan, motorTimer)
@@ -68,8 +68,8 @@ func Fsm(motorChan chan config.MotorDirection, doorLampChan chan bool, floorChan
 				fmt.Printf("I'm out of order\n\n")
 				currentMap[config.My_ID].OutOfOrder = true
 				eventOutOfOrder(motorChan, statusChangesChan)
-				motorTimer.Reset(time.Second * MOTOR_DEAD_TIME)
-				fmt.Printf("motor reset\n")
+				bool := motorTimer.Reset(time.Second * MOTOR_DEAD_TIME)
+				fmt.Printf("motor reset %v\n", bool)
 				state = OUT_OF_ORDER
 				orderChangesChan <- currentMap
 			}
@@ -412,8 +412,8 @@ func orderInThisFloor( floor int, elevMap config.ElevStateMap) bool{
 
 func chooseDirection(elevMap *config.ElevStateMap, motorTimer *time.Timer) config.MotorDirection{
 	fmt.Printf("choose dri\n")
-	motorTimer.Reset(time.Second * MOTOR_DEAD_TIME)
-	fmt.Printf("motor reset\n")
+	bool := motorTimer.Reset(time.Second * MOTOR_DEAD_TIME)
+	fmt.Printf("motor reset %v\n", bool))
 	switch elevMap[config.My_ID].CurrentDir{
 		case config.ED_Up: 
 			if ordersAbove(*elevMap){
@@ -519,8 +519,8 @@ func nearestElevator(elevMap config.ElevStateMap, floor int) bool{
 
 
 func forceChooseDirection(elevMap *config.ElevStateMap, motorTimer *time.Timer) config.MotorDirection{
-	motorTimer.Reset(time.Second * MOTOR_DEAD_TIME)
-	fmt.Printf("motor reset\n")
+	bool := motorTimer.Reset(time.Second * MOTOR_DEAD_TIME)
+	fmt.Printf("motor reset %v\n", bool)
 	elevsInIdle := 0
 	for e := 0; e < config.NUM_ELEVS; e++{
 		if e != config.My_ID{
