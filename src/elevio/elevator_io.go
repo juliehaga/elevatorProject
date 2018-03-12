@@ -12,7 +12,7 @@ import(
 
 
 
-const _pollRate = 20 * time.Millisecond
+const _pollRate = 200 * time.Millisecond
 
 var _initialized bool = false
 var _numFloors int = 4
@@ -142,6 +142,7 @@ func SetStopLamp(value bool) {
 
 
 func PollButtons(receiver chan<- config.ButtonEvent) {
+
 	prev := make([][3]bool, _numFloors)
 	for {
 		time.Sleep(_pollRate)
