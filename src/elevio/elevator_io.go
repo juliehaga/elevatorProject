@@ -66,11 +66,14 @@ func InitDriver(addr string, numFloors int) {
 	currentMap := elevStateMap.GetLocalMap()
 	SetMotorDirection(config.MD_Down)
 	currentMap[config.My_ID].CurrentDir = config.ED_Down
+
 	for getFloor() == -1{}
 	SetMotorDirection(config.MD_Stop)
+
 	currentMap[config.My_ID].CurrentFloor = getFloor()
 	elevStateMap.SetLocalMap(currentMap)
-	InitOrders()
+	//InitOrders()
+
 
 
 

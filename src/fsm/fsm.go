@@ -36,27 +36,28 @@ func Fsm(motorChan chan config.MotorDirection, doorLampChan chan bool, floorChan
 
 
 	for{
-		//checkIfAcceptOrder(mapChangesChan, buttonLampChan, ackOrderChan)
+		
 		select{
 		case  floor := <- floorChan:
 			fmt.Printf("floor event\n")
 			eventNewFloor(motorChan, doorLampChan, doorTimer,orderChangesChan, buttonLampChan, floor, idleTimer, statusChangesChan, motorTimer)
-			//idleTimer.Reset(time.Second * IDLE_TIME)
+			idleTimer.Reset(time.Second * IDLE_TIME)
+			motorTimer.Reset(time.Second * MOTOR_DEAD_TIME)
 
 		case buttonPushed := <- newOrderChan:
 			fmt.Printf("buttonpushed\n")
 			eventNewAckOrder(buttonLampChan, motorChan, doorLampChan, doorTimer, orderChangesChan, buttonPushed, idleTimer, motorTimer, statusChangesChan)
-			//idleTimer.Reset(time.Second * IDLE_TIME)
+			idleTimer.Reset(time.Second * IDLE_TIME)
 
 		case <- doorTimer.C:
 			fmt.Printf("door timeout\n")
 			eventDoorTimeout(doorLampChan, statusChangesChan, idleTimer, motorChan, motorTimer)
-			//idleTimer.Reset(time.Second * IDLE_TIME)
+			idleTimer.Reset(time.Second * IDLE_TIME)
 			
-		/*case <- idleTimer.C:
+		case <- idleTimer.C:
 			eventIdleTimeout(motorChan, statusChangesChan, orderChangesChan, doorLampChan, doorTimer, buttonLampChan, motorTimer)
 			idleTimer.Reset(time.Second * IDLE_TIME)
-*/
+
 		case <- motorTimer.C:
 			fmt.Printf("Motor timeoutr\n")
 			currentMap := elevStateMap.GetLocalMap()
@@ -171,7 +172,6 @@ func eventNewFloor(motorChan chan config.MotorDirection, doorLampChan chan bool,
 
 	
 		}
-	motorTimer.Reset(time.Second * MOTOR_DEAD_TIME)
 }
 
 func eventDoorTimeout(doorLampChan chan bool, statusChangesChan chan config.ElevStateMap, idleTimer *time.Timer, motorChan chan config.MotorDirection, motorTimer *time.Timer){

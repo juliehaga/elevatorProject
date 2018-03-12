@@ -67,10 +67,13 @@ func main() {
 	orderMsgRx := make(chan config.OrderMsg, 100)
 	statusMsgRx := make(chan config.StatusMsg, 100)
 	ackChan := make(chan config.AckMsg, 100)
-
+	
 	config.Init(id, port)
 	elevio.InitDriver("localhost:" + port, config.NUM_FLOORS)
-	elevStateMap.InitElevStateMap(newOrderChan)
+	elevStateMap.InitElevStateMap()
+
+
+	fmt.Printf("Init success\n")
 	
 	init := true
 
@@ -83,7 +86,7 @@ func main() {
     go network.PeerTransmitter(15600, id, peerTxEnable)
 	go network.PeerReceiver(15600, peerUpdateCh)
 
-
+	fmt.Printf("go all functions\n")
     
 	
 	for {

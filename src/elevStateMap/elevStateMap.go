@@ -34,7 +34,7 @@ func writeToBackup(){
 	if err != nil { return }
 }
 
-func readFromBackup(newOrderChan chan config.ButtonEvent){
+func readFromBackup(){
 	// re-open file
 	var file, err = os.OpenFile("backup.txt", os.O_RDWR, 0644)
 	if err != nil { return }
@@ -66,18 +66,16 @@ func readFromBackup(newOrderChan chan config.ButtonEvent){
 
 		//fmt.Printf("New line %v \n", order)
 	}
+	
 	for floor := 0; floor<config.NUM_FLOORS; floor++{
 		order, _ :=strconv.Atoi(string(buf[floor]))
 		currentMap[config.My_ID].Orders[floor][config.BT_Cab] = config.OrderType(order)
-		if currentMap[config.My_ID].Orders[floor][config.BT_Cab] == config.OT_OrderPlaced{
-			newOrderChan <- config.ButtonEvent{floor, config.BT_Cab, config.LocalOrder}
-		}
 	}
 
 	SetLocalMap(currentMap)
 }
 
-func InitElevStateMap(newOrderChan chan config.ButtonEvent){
+func InitElevStateMap(){
 	var _, err = os.Stat("backup.txt")
 
 	if os.IsNotExist(err) {
@@ -92,7 +90,7 @@ func InitElevStateMap(newOrderChan chan config.ButtonEvent){
 		}
 		defer file.Close()
 	}else{
-		readFromBackup(newOrderChan)
+		readFromBackup()
 
 	}
 
