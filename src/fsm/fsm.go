@@ -263,7 +263,7 @@ func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan conf
 			}
 		}
 		orderChangesChan <- currentMap
-		statusChangesChan <- currentMap
+		//statusChangesChan <- currentMap
 }
 
 
