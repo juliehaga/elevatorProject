@@ -128,7 +128,7 @@ func Transmitter(port int, messageTx chan config.Message, ackChan chan config.Ac
 			case message := <- messageTx:
 				addr, _ := net.ResolveUDPAddr("udp", fmt.Sprintf("255.255.255.255:%d", port))
 				conn, _ := net.DialUDP("udp", nil, addr)
-			
+				
 
 				for e:= 0; e < config.NUM_ELEVS; e++{
 
@@ -151,7 +151,7 @@ func Transmitter(port int, messageTx chan config.Message, ackChan chan config.Ac
 										default:
 
 									}
-									time.Sleep(20* time.Millisecond)
+									time.Sleep(200* time.Millisecond)
 									//antar at peer vil fiksa å sette til dead dersom en faller ut.
 								}
 						}
