@@ -177,15 +177,16 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, newOrderChan chan con
 	buttonEvent := false
 	currentMap := GetLocalMap()
 
-	floorWithOpenDoor := -1
 	//PrintMap(recievedMap)
-
-	if e != config.My_ID {
+	for e:= 0; e < config.NUM_ELEVS; e++{
+		if e != config.My_ID {
 		currentMap[e].CurrentFloor = recievedMap[e].CurrentFloor
 		currentMap[e].CurrentDir = recievedMap[e].CurrentDir
 		currentMap[e].Door = recievedMap[e].Door
 		currentMap[e].OutOfOrder = recievedMap[e].OutOfOrder
 		currentMap[e].IDLE = recievedMap[e].IDLE
+		}
+	}
 
 /*
 			if recievedMap[e].OutOfOrder == true && currentMap[e].OutOfOrder == false{
@@ -201,7 +202,7 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, newOrderChan chan con
 						}
 					}	
 			}*/
-	}
+	
 
 
 
@@ -223,7 +224,7 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, newOrderChan chan con
 
 					} else if recievedMap[config.My_ID].Orders[f][b] ==config.OT_NoOrder && currentMap[config.My_ID].Orders[f][b] == config.OT_OrderPlaced{
 
-						for e := 0; e < confi.NUM_ELEVS; e++{
+						for e := 0; e < config.NUM_ELEVS; e++{
 							if recievedMap[e].CurrentFloor == f && recievedMap[e].Door == true{
 								buttonLampChan <- config.ButtonLamp{f, b, false}
 								//clear orders from network 
