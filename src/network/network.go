@@ -128,20 +128,21 @@ func Transmitter(port int, messageTx chan config.Message, ackChan chan config.Ac
 			case message := <- messageTx:
 				addr, _ := net.ResolveUDPAddr("udp", fmt.Sprintf("255.255.255.255:%d", port))
 				conn, _ := net.DialUDP("udp", nil, addr)
-				buf, _ := json.Marshal(message)
-
-				conn.Write(buf)
-				
+			
 
 				for e:= 0; e < config.NUM_ELEVS; e++{
 
+
 					if e != config.My_ID{
+						message.Reciever_ID = e
+						buf, _ := json.Marshal(message)
 						//fmt.Printf("heis %v er connected %v\n", e, message.ElevMap[e].Connected)
 						if message.ElevMap[e].Connected == true{
+							fmt.Printf("Ny melding\n")
 							
 							WAIT_FOR_ACK:
 								for i := 0; i < 5; i++{
-									fmt.Printf("Sender igjen")
+									fmt.Printf("Sender igjen\n")
 									conn.Write(buf)
 									select {
 										case ackMsg := <- ackChan:
@@ -181,7 +182,7 @@ func Receiver(port int, orderMsgRx chan config.OrderMsg, statusMsgRx chan config
 		if integer > 0 {
 
 			json.Unmarshal(b[:integer], &receivedMsg)
-			if receivedMsg.ID != config.My_ID{
+			if receivedMsg.ID != config.My_ID && receivedMsg.Reciever_ID == config.My_ID{
 				if receivedMsg.MsgType == config.ElevStatus{
 					statusMsgRx <- config.StatusMsg{receivedMsg.ID, receivedMsg.ElevMap[receivedMsg.ID].CurrentFloor, receivedMsg.ElevMap[receivedMsg.ID].CurrentDir, receivedMsg.ElevMap[receivedMsg.ID].Door, receivedMsg.ElevMap[receivedMsg.ID].OutOfOrder,receivedMsg.ElevMap[receivedMsg.ID].IDLE}
 					SendAck(messageTx, receivedMsg.ElevMap, receivedMsg.ID, port)
