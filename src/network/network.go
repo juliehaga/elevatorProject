@@ -160,7 +160,7 @@ func Transmitter(port int, messageTx chan config.Message, ackChan chan config.Ac
 					}
 				}
 
-		}*/
+		}*/}}}
 		time.Sleep(2* time.Millisecond)
 	}
 }
