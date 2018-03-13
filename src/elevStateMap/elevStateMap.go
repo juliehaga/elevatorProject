@@ -166,7 +166,6 @@ func UpdateLocalMap(changedMap config.ElevStateMap) bool{
 			}
 		}
 	}
-	
 	SetLocalMap(currentMap)
 	writeToBackup()
 	return orderChangeMade
@@ -178,6 +177,8 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, newOrderChan chan con
 	currentMap := GetLocalMap()
 
 	//PrintMap(recievedMap)
+
+	//Update status
 	for e:= 0; e < config.NUM_ELEVS; e++{
 		if e != config.My_ID {
 		currentMap[e].CurrentFloor = recievedMap[e].CurrentFloor
@@ -209,6 +210,8 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, newOrderChan chan con
 
 	for f:= 0; f < config.NUM_FLOORS; f++{
 			for b:= config.BT_HallUp; b < config.BT_Cab; b++{
+
+
 					if recievedMap[config.My_ID].Orders[f][b] == config.OT_OrderPlaced && currentMap[config.My_ID].Orders[f][b] == config.OT_NoOrder{
 						if buttonEvent == false{
 							fmt.Printf("-------------order from network--------\n")
@@ -226,6 +229,7 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, newOrderChan chan con
 
 						for e := 0; e < config.NUM_ELEVS; e++{
 							if recievedMap[e].CurrentFloor == f && recievedMap[e].Door == true{
+								fmt.Printf("------------Order cleared from network--------------")
 								buttonLampChan <- config.ButtonLamp{f, b, false}
 								//clear orders from network 
 								for elev := 0; elev < config.NUM_ELEVS; elev++{
@@ -246,9 +250,7 @@ func UpdateElevStatusFromNetwork(newStatus config.StatusMsg){
 	currentMap[newStatus.ID].Door = newStatus.Door
 	currentMap[newStatus.ID].OutOfOrder = newStatus.OutOfOrder
 	currentMap[newStatus.ID].IDLE = newStatus.IDLE
-
 	SetLocalMap(currentMap)
-
 }
 
 func SetConnectedElevator(ID int, value bool){
