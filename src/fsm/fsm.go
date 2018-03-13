@@ -451,7 +451,9 @@ func chooseDirection(elevMap *config.ElevStateMap, motorTimer *time.Timer) confi
 func nearestElevator(elevMap config.ElevStateMap, floor int) bool{
 
  	myDist := int(math.Abs(float64(elevMap[config.My_ID].CurrentFloor - floor)))
-
+ 	fmt.Printf("*********************************************\n")
+ 	elevStateMap.PrintMap(elevMap)
+ 	fmt.Printf("*********************************************\n")
 
 
  	if elevMap[config.My_ID].CurrentFloor < floor { 
