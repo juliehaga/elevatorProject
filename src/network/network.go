@@ -142,7 +142,6 @@ func Transmitter(port int, messageTx chan config.Message, ackChan chan config.Ac
 							
 							WAIT_FOR_ACK:
 								for i := 0; i < 5; i++{
-									fmt.Printf("Sender igjen\n")
 									conn.Write(buf)
 									select {
 										case ackMsg := <- ackChan:

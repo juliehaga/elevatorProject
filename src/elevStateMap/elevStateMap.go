@@ -224,6 +224,7 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, newOrderChan chan con
 						//Add orders from network
 						for elev := 0; elev < config.NUM_ELEVS; elev++{
 							currentMap[elev].Orders[f][b] = config.OT_OrderPlaced
+							buttonLampChan <- config.ButtonLamp{f, b, true}
 						}
 
 					} else if recievedMap[config.My_ID].Orders[f][b] ==config.OT_NoOrder && currentMap[config.My_ID].Orders[f][b] == config.OT_OrderPlaced && floorWithOpenDoor == f{
