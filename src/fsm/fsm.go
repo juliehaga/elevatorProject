@@ -102,7 +102,7 @@ func eventIdleTimeout(motorChan chan config.MotorDirection, statusChangesChan ch
 		doorTimer.Reset(time.Second * DOOR_TIME)
 
 		currentMap[config.My_ID].Door = true
-		orderCompleted(&currentMap, buttonLampChan)
+		currentMap = orderCompleted(currentMap, buttonLampChan)
 		currentMap[config.My_ID].IDLE = false
 		state = DOOR_OPEN
 	}
@@ -124,7 +124,7 @@ func eventNewFloor(motorChan chan config.MotorDirection, doorLampChan chan bool,
 						doorLampChan <- true
 						doorTimer.Reset(time.Second * DOOR_TIME)
 						currentMap[config.My_ID].Door = true
-						orderCompleted(&currentMap, buttonLampChan)
+						currentMap = orderCompleted(currentMap, buttonLampChan)
 						currentMap[config.My_ID].IDLE = false
 						state = DOOR_OPEN
 					} else {
@@ -174,11 +174,12 @@ func eventNewFloor(motorChan chan config.MotorDirection, doorLampChan chan bool,
 
 func eventDoorTimeout(doorLampChan chan bool, orderChangesChan chan config.ElevStateMap, idleTimer *time.Timer, motorChan chan config.MotorDirection, motorTimer *time.Timer){
 	currentMap := elevStateMap.GetLocalMap()
+	var motorDir config.MotorDirection
 	switch(state){
 		case DOOR_OPEN:
 			doorLampChan <- false
 			currentMap[config.My_ID].Door = false
-			motorDir, currentMap[config.My_ID].CurrentDir := chooseDirection(currentMap, motorTimer)
+			motorDir, currentMap[config.My_ID].CurrentDir = chooseDirection(currentMap, motorTimer)
 			motorChan <- motorDir
 			if motorDir != config.MD_Stop {
 				currentMap[config.My_ID].IDLE = false
@@ -220,7 +221,7 @@ func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan conf
 	}
 
 	
-
+	var motorDir config.MotorDirection
 	switch(state){
 		case IDLE:
 			if orderInThisFloor(currentMap[config.My_ID].CurrentFloor, currentMap){// && currentMap[config.My_ID].OutOfOrder == false{
@@ -234,7 +235,7 @@ func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan conf
 				state = DOOR_OPEN
 			}else{
 				fmt.Printf("Jeg har lyst til å velge retning \n")
-				motorDir, currentMap[config.My_ID] := chooseDirection(currentMap, motorTimer)
+				motorDir, currentMap[config.My_ID].CurrentDir = chooseDirection(currentMap, motorTimer)
 				motorChan <- motorDir
 				if motorDir != config.MD_Stop {
 					state = MOVING
@@ -326,7 +327,7 @@ func ordersBelow(elevMap config.ElevStateMap) bool{
 
 
 
-func orderCompleted(elevMap config.ElevStateMap, buttonLampChan chan config.ButtonLamp), elevStateMap.ElevStateMap{
+func orderCompleted(elevMap config.ElevStateMap, buttonLampChan chan config.ButtonLamp) config.ElevStateMap{
 	fmt.Printf("ordercompleted\n")
 	if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_Cab] == config.OT_OrderPlaced{
 		elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_Cab] = config.OT_NoOrder
@@ -392,7 +393,7 @@ func orderInThisFloor( floor int, elevMap config.ElevStateMap) bool{
 }
 
 
-func chooseDirection(elevMap config.ElevStateMap, motorTimer *time.Timer) config.MotorDirection, config.ElevDir{
+func chooseDirection(elevMap config.ElevStateMap, motorTimer *time.Timer) (config.MotorDirection, config.ElevDir){
 	fmt.Printf("choose dir\n")
 	//bool := motorTimer.Reset(time.Second * MOTOR_DEAD_TIME)
 	//fmt.Printf("motor reset %v\n", bool)
