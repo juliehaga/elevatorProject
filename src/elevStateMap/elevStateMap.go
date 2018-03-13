@@ -135,9 +135,12 @@ func SetLocalMap(changedMap config.ElevStateMap){
 }
 
 
-func UpdateLocalMap(changedMap config.ElevStateMap){
+func UpdateLocalMap(changedMap config.ElevStateMap) bool{
 	currentMap := GetLocalMap()
+	orderChangeMade := false
 
+
+//Hvilke av disse trenger vi faktisk???
 	currentMap[config.My_ID].CurrentFloor = changedMap[config.My_ID].CurrentFloor
 	currentMap[config.My_ID].CurrentDir = changedMap[config.My_ID].CurrentDir
 	currentMap[config.My_ID].Door = changedMap[config.My_ID].Door
@@ -148,17 +151,25 @@ func UpdateLocalMap(changedMap config.ElevStateMap){
 
 	for e:= 0; e < config.NUM_ELEVS; e++{
 		for f:= 0; f < config.NUM_FLOORS; f++{
+			//CAB-orders kan skrives rett over fordi de sendes ikke
 			currentMap[config.My_ID].Orders[f][config.BT_Cab] = changedMap[config.My_ID].Orders[f][config.BT_Cab]
 
 			for b:= config.BT_HallUp; b < config.BT_Cab; b++{
-
-				currentMap[e].Orders[f][b] = changedMap[e].Orders[f][b]	
+				if changedMap[e].Orders[f][b] == config.OT_OrderPlaced && currentMap[e].Orders[f][b] == config.OT_NoOrder{
+					//lagt inn en ordre, dersom local -> send
+					orderChangeMade = true
+				} else if changedMap[e].Orders[f][b] == config.OT_NoOrder && currentMap[e].Orders[f][b] == config.OT_OrderPlaced{
+					orderChangeMade = true
+				}
+				currentMap[e].Orders[f][b] = changedMap[e].Orders[f][b]
+				
 			}
 		}
 	}
 	
 	SetLocalMap(currentMap)
 	writeToBackup()
+	return orderChangeMade
 }
 
 

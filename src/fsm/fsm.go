@@ -136,6 +136,9 @@ func eventNewFloor(motorChan chan config.MotorDirection, doorLampChan chan bool,
 						currentMap[config.My_ID].IDLE = false
 						orderChangesChan <- currentMap
 						state = DOOR_OPEN
+					} else {
+						currentMap[config.My_ID].IDLE = true
+						state = IDLE
 					}	
 			}
 		case OUT_OF_ORDER:
@@ -207,6 +210,7 @@ func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan conf
 		currentMap[config.My_ID].Orders[buttonPushed.Floor][buttonPushed.Button] = config.OT_OrderPlaced
 		buttonLampChan <- config.ButtonLamp{buttonPushed.Floor, buttonPushed.Button, true}
 	} else {
+
 	//check connection before accepting hall-order
 		for e:= 0; e < config.NUM_ELEVS; e++{
 			if currentMap[e].Connected && e != config.My_ID{
@@ -228,6 +232,7 @@ func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan conf
 	switch(state){
 		case IDLE:
 			if orderInThisFloor(currentMap[config.My_ID].CurrentFloor, currentMap){// && currentMap[config.My_ID].OutOfOrder == false{
+				//endret status og ordre
 				fmt.Printf("order, in this floor\n")
 				doorLampChan <- true	
 				currentMap[config.My_ID].Door = true
@@ -235,9 +240,7 @@ func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan conf
 				doorTimer.Reset(time.Second * DOOR_TIME)
 				currentMap[config.My_ID].IDLE = false
 				state = DOOR_OPEN
-				orderChangesChan <- currentMap
 
-				
 			}else{
 				fmt.Printf("Jeg har lyst til å velge retning \n")
 				motorDir := chooseDirection(&currentMap, motorTimer)
@@ -248,12 +251,7 @@ func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan conf
 				} else{
 					motorTimer.Stop()
 				}
-				//så fremt det ikke va din knapp ønsker du ikke sende.
-				if buttonPushed.Order == config.LocalOrder{
-					orderChangesChan <- currentMap
-				} else {
-					statusChangesChan <- currentMap
-				}
+
 			}
 		case DOOR_OPEN:
 			if orderInThisFloor(currentMap[config.My_ID].CurrentFloor, currentMap){
@@ -263,31 +261,10 @@ func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan conf
 				orderCompleted(&currentMap, buttonLampChan)
 				doorTimer.Reset(time.Second * DOOR_TIME)
 				currentMap[config.My_ID].IDLE = false
-				orderChangesChan <- currentMap
-			} else{
-				if buttonPushed.Order == config.LocalOrder{
-					orderChangesChan <- currentMap
-				} else {
-					statusChangesChan <- currentMap
-				}
 			}
-			
-		
-		case MOVING:
-			fmt.Printf("Button i moving")
-			if buttonPushed.Order == config.LocalOrder{
-				orderChangesChan <- currentMap
-			} else {
-				statusChangesChan <- currentMap
-			}
-		case OUT_OF_ORDER:
-			fmt.Printf("Button i out of order")
-			if buttonPushed.Order == config.LocalOrder{
-				orderChangesChan <- currentMap
-			} else {
-				statusChangesChan <- currentMap
-			}
-	}
+		}
+		orderChangesChan <- currentMap
+		statusChangesChan <- currentMap
 }
 
 
@@ -356,7 +333,6 @@ func ordersBelow(elevMap config.ElevStateMap) bool{
 	}
 	return false
 }
-
 
 
 
