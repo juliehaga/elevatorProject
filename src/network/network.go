@@ -29,7 +29,7 @@ func SendElevStatus(messageTx chan config.Message,  elevMap config.ElevStateMap)
 	elevMapMsg := config.Message{config.My_ID, config.ElevStatus, elevMap, -1}
 	messageTx <- elevMapMsg
 }
-
+/*
 func SendAck(messageTx chan config.Message,  elevMap config.ElevStateMap, recieverID int, port int){
 	AckMsg := config.Message{config.My_ID, config.Ack, elevMap, recieverID}
 	
@@ -37,7 +37,7 @@ func SendAck(messageTx chan config.Message,  elevMap config.ElevStateMap, reciev
 	conn, _ := net.DialUDP("udp", nil, addr)
 	buf, _ := json.Marshal(AckMsg)		
 	conn.Write(buf)
-}
+}*/
 
 func PeerTransmitter(port int, id string, transmitEnable <-chan bool) {
 
@@ -130,6 +130,9 @@ func Transmitter(port int, messageTx chan config.Message, ackChan chan config.Ac
 				conn, _ := net.DialUDP("udp", nil, addr)
 				buf, _ := json.Marshal(message)
 
+				conn.Write(buf)
+				/*
+
 				for e:= 0; e < config.NUM_ELEVS; e++{
 
 					if e != config.My_ID{
@@ -151,7 +154,7 @@ func Transmitter(port int, messageTx chan config.Message, ackChan chan config.Ac
 									//antar at peer vil fiksa å sette til dead dersom en faller ut.
 								}
 						}
-					}
+					}*/
 				}
 
 		}
@@ -186,14 +189,14 @@ func Receiver(port int, orderMsgRx chan config.OrderMsg, statusMsgRx chan config
 					SendAck(messageTx, receivedMsg.ElevMap, receivedMsg.ID, port)
 				}
 			}
-
+/*
 			if receivedMsg.MsgType == config.Ack{
 
 				if receivedMsg.ID != config.My_ID && receivedMsg.Reciever_ID == config.My_ID{
 					ackChan <- config.AckMsg{receivedMsg.ID, receivedMsg.Reciever_ID}
 				}
 			}
-			
+			*/
 		} else {
 			conn.Close()
 		}
