@@ -121,13 +121,15 @@ func main() {
 			if orderUpdates {
 				network.SendOrders(messageTx, elevMap)
 			}
+			network.SendElevStatus(messageTx, elevMap)
+
 		
 			init = false
 
-		case elevMap:= <-statusChangesChan:
+/*		case elevMap:= <-statusChangesChan:
 			elevStateMap.UpdateLocalMap(elevMap)
 			network.SendElevStatus(messageTx, elevMap)
-			init = false
+			init = false*/
 		}
 	}
 }

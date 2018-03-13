@@ -137,7 +137,7 @@ func SetLocalMap(changedMap config.ElevStateMap){
 
 func UpdateLocalMap(changedMap config.ElevStateMap) bool{
 	currentMap := GetLocalMap()
-	orderChangeMade := true
+	orderChangeMade := false
 
 
 //Hvilke av disse trenger vi faktisk???

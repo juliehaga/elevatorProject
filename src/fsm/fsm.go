@@ -52,7 +52,7 @@ func Fsm(motorChan chan config.MotorDirection, doorLampChan chan bool, floorChan
 
 		case <- doorTimer.C:
 			fmt.Printf("door timeout\n")
-			eventDoorTimeout(doorLampChan, statusChangesChan, idleTimer, motorChan, motorTimer)
+			eventDoorTimeout(doorLampChan, orderChangesChan, idleTimer, motorChan, motorTimer)
 			idleTimer.Reset(time.Second * IDLE_TIME)
 			
 		/*case <- idleTimer.C:
@@ -95,7 +95,6 @@ func eventIdleTimeout(motorChan chan config.MotorDirection, statusChangesChan ch
 	if motorDir != config.MD_Stop {
 		motorChan <- motorDir
 		currentMap[config.My_ID].IDLE = false
-		statusChangesChan <- currentMap	
 		state = MOVING
 
 	} else if orderInThisFloor(currentMap[config.My_ID].CurrentFloor, currentMap){
@@ -105,9 +104,9 @@ func eventIdleTimeout(motorChan chan config.MotorDirection, statusChangesChan ch
 		currentMap[config.My_ID].Door = true
 		orderCompleted(&currentMap, buttonLampChan)
 		currentMap[config.My_ID].IDLE = false
-		orderChangesChan <- currentMap
 		state = DOOR_OPEN
 	}
+	orderChangesChan <- currentMap
 }
 
 
@@ -117,7 +116,7 @@ func eventNewFloor(motorChan chan config.MotorDirection, doorLampChan chan bool,
 
 	if floor != -1 {
 		currentMap[config.My_ID].CurrentFloor = floor
-		statusChangesChan <- currentMap
+		orderChangesChan <- currentMap
 	}
 	//fmt.Printf("New floor %v\n", currentMap[config.My_ID].CurrentFloor)
 
@@ -130,17 +129,16 @@ func eventNewFloor(motorChan chan config.MotorDirection, doorLampChan chan bool,
 					if  orderInThisFloor(currentMap[config.My_ID].CurrentFloor, currentMap){
 						doorLampChan <- true
 						doorTimer.Reset(time.Second * DOOR_TIME)
-
 						currentMap[config.My_ID].Door = true
 						orderCompleted(&currentMap, buttonLampChan)
 						currentMap[config.My_ID].IDLE = false
-						orderChangesChan <- currentMap
 						state = DOOR_OPEN
 					} else {
 						currentMap[config.My_ID].IDLE = true
 						state = IDLE
 					}	
 			}
+/*
 		case OUT_OF_ORDER:
 			if  orderInThisFloor(currentMap[config.My_ID].CurrentFloor, currentMap){
 				doorLampChan <- true
@@ -171,14 +169,12 @@ func eventNewFloor(motorChan chan config.MotorDirection, doorLampChan chan bool,
 				}
 			currentMap[config.My_ID].OutOfOrder = false
 
-			}
-			statusChangesChan <- currentMap
-
-	
+			}*/
 		}
+		orderChangesChan <- currentMap
 }
 
-func eventDoorTimeout(doorLampChan chan bool, statusChangesChan chan config.ElevStateMap, idleTimer *time.Timer, motorChan chan config.MotorDirection, motorTimer *time.Timer){
+func eventDoorTimeout(doorLampChan chan bool, orderChangesChan chan config.ElevStateMap, idleTimer *time.Timer, motorChan chan config.MotorDirection, motorTimer *time.Timer){
 	currentMap := elevStateMap.GetLocalMap()
 	switch(state){
 		case DOOR_OPEN:
@@ -195,7 +191,7 @@ func eventDoorTimeout(doorLampChan chan bool, statusChangesChan chan config.Elev
 				state = IDLE
 				motorTimer.Stop()
 			}
-			statusChangesChan <- currentMap	
+			orderChangesChan <- currentMap	
 	}
 }
 
@@ -239,7 +235,6 @@ func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan conf
 				doorTimer.Reset(time.Second * DOOR_TIME)
 				currentMap[config.My_ID].IDLE = false
 				state = DOOR_OPEN
-
 			}else{
 				fmt.Printf("Jeg har lyst til å velge retning \n")
 				motorDir := chooseDirection(&currentMap, motorTimer)
