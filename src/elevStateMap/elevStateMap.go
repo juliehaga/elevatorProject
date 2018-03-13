@@ -221,13 +221,15 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, newOrderChan chan con
 							newOrderChan <- config.ButtonEvent{f, b, config.NetworkOrder}
 							buttonEvent = true
 						}
+						//Add orders from network
 						for elev := 0; elev < config.NUM_ELEVS; elev++{
 							currentMap[elev].Orders[f][b] = config.OT_OrderPlaced
 						}
-						//fmt.Printf("Order from network, floor %v, button %v\n\n", f, b)
 
 					} else if recievedMap[config.My_ID].Orders[f][b] ==config.OT_NoOrder && currentMap[config.My_ID].Orders[f][b] == config.OT_OrderPlaced && floorWithOpenDoor == f{
 						buttonLampChan <- config.ButtonLamp{f, b, false}
+
+						//clear orders from network 
 						for elev := 0; elev < config.NUM_ELEVS; elev++{
 							currentMap[elev].Orders[f][b] = config.OT_NoOrder
 						}
