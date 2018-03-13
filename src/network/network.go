@@ -139,7 +139,9 @@ func Transmitter(port int, messageTx chan config.Message, ackChan chan config.Ac
 						//fmt.Printf("heis %v er connected %v\n", e, message.ElevMap[e].Connected)
 						if message.ElevMap[e].Connected == true{
 							fmt.Printf("Ny melding\n")
-							
+							conn.Write(buf)
+						}
+							/*
 							WAIT_FOR_ACK:
 								for i := 0; i < 5; i++{
 									conn.Write(buf)
@@ -158,7 +160,7 @@ func Transmitter(port int, messageTx chan config.Message, ackChan chan config.Ac
 					}
 				}
 
-		}
+		}*/
 		time.Sleep(2* time.Millisecond)
 	}
 }

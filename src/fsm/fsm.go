@@ -384,12 +384,15 @@ func orderCompleted(elevMap *config.ElevStateMap, buttonLampChan chan config.But
 
 func orderInThisFloor( floor int, elevMap config.ElevStateMap) bool{
 	//elevStateMap.PrintMap(elevMap)
-	for b := config.BT_HallUp; b <= config.BT_Cab; b++ {
+	if (floor != -1){
+		for b := config.BT_HallUp; b <= config.BT_Cab; b++ {
 		if elevMap[config.My_ID].Orders[floor][b] == config.OT_OrderPlaced {
 			return true
 		
 		}
+}
 	}
+	
 	return false
 }
 
