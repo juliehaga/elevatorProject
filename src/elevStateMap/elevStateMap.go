@@ -179,20 +179,15 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, newOrderChan chan con
 
 	floorWithOpenDoor := -1
 	//PrintMap(recievedMap)
-	for e:= 0; e < config.NUM_ELEVS; e++{
-		if recievedMap[e].Door == true{
-			floorWithOpenDoor = recievedMap[e].CurrentFloor
-		}
 
+	if e != config.My_ID {
+		currentMap[e].CurrentFloor = recievedMap[e].CurrentFloor
+		currentMap[e].CurrentDir = recievedMap[e].CurrentDir
+		currentMap[e].Door = recievedMap[e].Door
+		currentMap[e].OutOfOrder = recievedMap[e].OutOfOrder
+		currentMap[e].IDLE = recievedMap[e].IDLE
 
-
-		if e != config.My_ID {
-			currentMap[e].CurrentFloor = recievedMap[e].CurrentFloor
-			currentMap[e].CurrentDir = recievedMap[e].CurrentDir
-			currentMap[e].Door = recievedMap[e].Door
-			currentMap[e].OutOfOrder = recievedMap[e].OutOfOrder
-			currentMap[e].IDLE = recievedMap[e].IDLE
-
+/*
 			if recievedMap[e].OutOfOrder == true && currentMap[e].OutOfOrder == false{
 				fmt.Printf("Heis %v er out of order\n", e)
 				FIND_ORDER:
@@ -205,11 +200,10 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, newOrderChan chan con
 							}
 						}
 					}	
-			}
-		}
-
-				
+			}*/
 	}
+
+
 
 
 	for f:= 0; f < config.NUM_FLOORS; f++{
@@ -227,12 +221,16 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, newOrderChan chan con
 							buttonLampChan <- config.ButtonLamp{f, b, true}
 						}
 
-					} else if recievedMap[config.My_ID].Orders[f][b] ==config.OT_NoOrder && currentMap[config.My_ID].Orders[f][b] == config.OT_OrderPlaced && floorWithOpenDoor == f{
-						buttonLampChan <- config.ButtonLamp{f, b, false}
+					} else if recievedMap[config.My_ID].Orders[f][b] ==config.OT_NoOrder && currentMap[config.My_ID].Orders[f][b] == config.OT_OrderPlaced{
 
-						//clear orders from network 
-						for elev := 0; elev < config.NUM_ELEVS; elev++{
-							currentMap[elev].Orders[f][b] = config.OT_NoOrder
+						for e := 0; e < confi.NUM_ELEVS; e++{
+							if recievedMap[e].CurrentFloor == f && recievedMap[e].Door == true{
+								buttonLampChan <- config.ButtonLamp{f, b, false}
+								//clear orders from network 
+								for elev := 0; elev < config.NUM_ELEVS; elev++{
+									currentMap[elev].Orders[f][b] = config.OT_NoOrder
+								}
+							}
 						}
 					}
 				}

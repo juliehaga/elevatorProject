@@ -138,6 +138,7 @@ func eventNewFloor(motorChan chan config.MotorDirection, doorLampChan chan bool,
 						state = IDLE
 					}	
 			}
+			orderChangesChan <- currentMap
 /*
 		case OUT_OF_ORDER:
 			if  orderInThisFloor(currentMap[config.My_ID].CurrentFloor, currentMap){
@@ -171,7 +172,7 @@ func eventNewFloor(motorChan chan config.MotorDirection, doorLampChan chan bool,
 
 			}*/
 		}
-		orderChangesChan <- currentMap
+		
 }
 
 func eventDoorTimeout(doorLampChan chan bool, orderChangesChan chan config.ElevStateMap, idleTimer *time.Timer, motorChan chan config.MotorDirection, motorTimer *time.Timer){
