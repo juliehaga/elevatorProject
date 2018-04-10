@@ -71,7 +71,7 @@ func main() {
 	config.Init(id, port)
 	elevio.InitDriver("localhost:" + port, config.NUM_FLOORS)
 	elevStateMap.InitElevStateMap()
-
+	elevio.InitOrders()
 
 	fmt.Printf("Init success\n")
 	
@@ -79,12 +79,13 @@ func main() {
 
 
 
-    go fsm.Fsm(motorChan, doorLampChan, floorChan, buttonLampChan, mapChangesChan, newOrderChan, statusChangesChan)
+  
     go elevio.Elevio(motorChan, doorLampChan, newOrderChan, floorChan, buttonLampChan)
 	go network.Transmitter(16502, messageTx, ackChan)
 	go network.Receiver(16502, orderMsgRx, statusMsgRx, ackChan, messageTx)
     go network.PeerTransmitter(15600, id, peerTxEnable)
 	go network.PeerReceiver(15600, peerUpdateCh)
+	go fsm.Fsm(motorChan, doorLampChan, floorChan, buttonLampChan, mapChangesChan, newOrderChan, statusChangesChan)
 
 	fmt.Printf("go all functions\n")
     

@@ -12,10 +12,11 @@ var state ElevState
 
 type ElevState int
 const(
-	IDLE            = 0
-	MOVING          = 1
-	DOOR_OPEN	    = 2
-	OUT_OF_ORDER    = 3
+	INIT            = 0
+	IDLE            = 1
+	MOVING          = 2
+	DOOR_OPEN	    = 3
+	OUT_OF_ORDER    = 4
 )
 
 const DOOR_TIME 	    = 2
@@ -24,6 +25,8 @@ const MOTOR_DEAD_TIME 	= 10
 
 
 func Fsm(motorChan chan config.MotorDirection, doorLampChan chan bool, floorChan chan int, buttonLampChan chan config.ButtonLamp, mapChangesChan chan config.ElevStateMap, newOrderChan chan config.ButtonEvent, statusChangesChan chan config.ElevStateMap){
+	state = INIT
+	
 	doorTimer := time.NewTimer(time.Second * DOOR_TIME)
 	doorTimer.Stop()
 
@@ -33,6 +36,7 @@ func Fsm(motorChan chan config.MotorDirection, doorLampChan chan bool, floorChan
 	motorTimer := time.NewTimer(time.Second * MOTOR_DEAD_TIME)
 	motorTimer.Stop()
 
+	
 
 
 	for{
@@ -115,12 +119,25 @@ func eventIdleTimeout(motorChan chan config.MotorDirection, statusChangesChan ch
 func eventNewFloor(motorChan chan config.MotorDirection, doorLampChan chan bool, doorTimer *time.Timer, mapChangesChan chan config.ElevStateMap, buttonLampChan chan config.ButtonLamp, floor int, idleTimer *time.Timer, statusChangesChan chan config.ElevStateMap, motorTimer *time.Timer){
 	currentMap := elevStateMap.GetLocalMap()
 	//var det en grunn til at vi skulle oppdatere currentfloor her? 
+	fmt.Printf("new floor event\n")
 	currentMap[config.My_ID].CurrentFloor = floor 
 	var motorDir config.MotorDirection
 	switch(state){
+		case INIT:
+			motorDir, currentMap[config.My_ID].CurrentDir = chooseDirection(currentMap, motorTimer)
+			if motorDir == config.MD_Stop{
+				fmt.Printf("IDLE\n")
+				state = IDLE
+			} else{
+				fmt.Printf("Moving\n")
+				motorChan <- motorDir
+				state = MOVING
+			}
+			
 		case MOVING:
 			//motorTimer.Reset(time.Second * MOTOR_DEAD_TIME)
 			if shouldStop(currentMap) {
+				fmt.Printf("stopper?\n")
 				motorChan <- config.MD_Stop
 					if  orderInThisFloor(currentMap[config.My_ID].CurrentFloor, currentMap){
 						doorLampChan <- true
@@ -330,7 +347,7 @@ func shouldStop(elevMap config.ElevStateMap) bool{
 
 func ordersAbove(elevMap config.ElevStateMap) bool{
 	for f := elevMap[config.My_ID].CurrentFloor + 1; f<config.NUM_FLOORS; f++{
-		for b := config.BT_HallUp; b<= config.BT_Cab; b++{ 
+		for b := config.BT_HallUp; b <= config.BT_Cab; b++{ 
 			if elevMap[config.My_ID].Orders[f][b] == config.OT_LocalOrderPlaced || elevMap[config.My_ID].Orders[f][b] == config.OT_ExternalOrderPlaced{
 
 
