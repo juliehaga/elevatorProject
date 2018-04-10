@@ -201,7 +201,6 @@ func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan conf
 	//accept CAB order
 	if buttonPushed.Button == config.BT_Cab{ //&& currentMap[config.My_ID].OutOfOrder == false{
 		currentMap[config.My_ID].Orders[buttonPushed.Floor][buttonPushed.Button] = config.OT_LocalOrderPlaced
-		buttonLampChan <- config.ButtonLamp{buttonPushed.Floor, buttonPushed.Button, true}
 	} else if buttonPushed.Order == config.LocalOrder{
 		//add Local HALL order
 		for e:= 0; e < config.NUM_ELEVS; e++{
@@ -210,7 +209,6 @@ func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan conf
 			}
 		}
 		if accept == true{
-			buttonLampChan <- config.ButtonLamp{buttonPushed.Floor, buttonPushed.Button, true}
 			for elev := 0; elev < config.NUM_ELEVS; elev++{
 				currentMap[elev].Orders[buttonPushed.Floor][buttonPushed.Button] = config.OT_LocalOrderPlaced
 			}
@@ -330,8 +328,6 @@ func orderCompleted(elevMap config.ElevStateMap, buttonLampChan chan config.Butt
 	fmt.Printf("ordercompleted\n")
 	if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_Cab] == config.OT_LocalOrderPlaced || elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_Cab] == config.OT_ExternalOrderPlaced{
 		elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_Cab] = config.OT_NoOrder
-		//fmt.Printf("Completed CAB order\n")
-		buttonLampChan <- config.ButtonLamp{elevMap[config.My_ID].CurrentFloor, config.BT_Cab, false}
 	}
 
 	switch(elevMap[config.My_ID].CurrentDir){
@@ -341,16 +337,13 @@ func orderCompleted(elevMap config.ElevStateMap, buttonLampChan chan config.Butt
 				for elev := 0; elev < config.NUM_ELEVS; elev++{				
 					elevMap[elev].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallUp] = config.OT_NoOrder
 				}	
-				//fmt.Printf("completed HALLUP %v\n", elevMap[config.My_ID].CurrentFloor)
-				buttonLampChan <-  config.ButtonLamp{elevMap[config.My_ID].CurrentFloor, config.BT_HallUp, false}
+
 
 			} else if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallDown] == config.OT_LocalOrderPlaced || elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallDown] == config.OT_ExternalOrderPlaced{
 
 				for elev := 0; elev < config.NUM_ELEVS; elev++{				
 					elevMap[elev].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallDown] = config.OT_NoOrder
 				}
-				//fmt.Printf("completed HALL-DOWN %v\n", elevMap[config.My_ID].CurrentFloor)
-				buttonLampChan <-  config.ButtonLamp{elevMap[config.My_ID].CurrentFloor, config.BT_HallDown, false}
 			}
 			
 		case config.ED_Down:
@@ -360,15 +353,12 @@ func orderCompleted(elevMap config.ElevStateMap, buttonLampChan chan config.Butt
 
 					elevMap[elev].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallDown] = config.OT_NoOrder
 				}
-				//fmt.Printf("completed Halldown %v\n", elevMap[config.My_ID].CurrentFloor)
-				buttonLampChan <-  config.ButtonLamp{elevMap[config.My_ID].CurrentFloor, config.BT_HallDown, false}
+
 			} else if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallUp] == config.OT_LocalOrderPlaced || elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallUp] == config.OT_ExternalOrderPlaced{
 
 				for elev := 0; elev < config.NUM_ELEVS; elev++{					
 					elevMap[elev].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallUp] = config.OT_NoOrder
 				}	
-				//fmt.Printf("completed Hall_UP %v\n", elevMap[config.My_ID].CurrentFloor)				
-				buttonLampChan <-  config.ButtonLamp{elevMap[config.My_ID].CurrentFloor, config.BT_HallUp, false}
 
 
 			}
