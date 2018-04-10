@@ -230,9 +230,7 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, newOrderChan chan con
 					} else if recievedMap[config.My_ID].Orders[f][b] ==config.OT_NoOrder && (currentMap[config.My_ID].Orders[f][b] == config.OT_LocalOrderPlaced || currentMap[config.My_ID].Orders[f][b] == config.OT_ExternalOrderPlaced){
 
 						for e := 0; e < config.NUM_ELEVS; e++{
-							if recievedMap[e].CurrentFloor == f && recievedMap[e].Door == true{
-								fmt.Printf("------------Order cleared from network--------------\n")
-								buttonLampChan <- config.ButtonLamp{f, b, false}
+							if recievedMap[e].CurrentFloor == f && recievedMap[e].Door == true{								buttonLampChan <- config.ButtonLamp{f, b, false}
 								//clear orders from network 
 								for elev := 0; elev < config.NUM_ELEVS; elev++{
 									currentMap[elev].Orders[f][b] = config.OT_NoOrder

@@ -121,13 +121,24 @@ func PeerReceiver(port int, peerUpdateCh chan<- config.PeerUpdate) {
 	}
 }
 
+func sendUdpMsg(msg config.Message, port int){
+	buf, _ := json.Marshal(msg)
+	addr, _ := net.ResolveUDPAddr("udp", fmt.Sprintf("255.255.255.255:%d", port))
+	conn, _ := net.DialUDP("udp", nil, addr)
+	defer conn.Close()
+	conn.Write(buf) 
+
+}
+
 
 func Transmitter(port int, messageTx chan config.Message, ackChan chan config.AckMsg){
 	for {
 		select {
 			case message := <- messageTx:
-				addr, _ := net.ResolveUDPAddr("udp", fmt.Sprintf("255.255.255.255:%d", port))
-				conn, _ := net.DialUDP("udp", nil, addr)
+				
+
+				//addr, _ := net.ResolveUDPAddr("udp", fmt.Sprintf("255.255.255.255:%d", port))
+				//conn, _ := net.DialUDP("udp", nil, addr)
 				
 
 				for e:= 0; e < config.NUM_ELEVS; e++{
@@ -135,15 +146,16 @@ func Transmitter(port int, messageTx chan config.Message, ackChan chan config.Ac
 
 					if e != config.My_ID{
 						message.Reciever_ID = e
-						buf, _ := json.Marshal(message)
+						//buf, _ := json.Marshal(message)
 						//fmt.Printf("heis %v er connected %v\n", e, message.ElevMap[e].Connected)
 						//if message.ElevMap[e].Connected == true{
 							//fmt.Printf("Ny melding\n")
-							conn.Write(buf) //DEnne skal ikke være her når vi har med ack
+							//conn.Write(buf) //DEnne skal ikke være her når vi har med ack
 							
-						/*	WAIT_FOR_ACK:
+							WAIT_FOR_ACK:
 								for i := 0; i < 5; i++{
-									conn.Write(buf)
+									sendUdpMsg(message, port)
+									time.Sleep(200* time.Millisecond)
 									select {
 										case ackMsg := <- ackChan:
 											if ackMsg.Reciever_ID == config.My_ID && ackMsg.Transmitter_ID == e{
@@ -152,10 +164,9 @@ func Transmitter(port int, messageTx chan config.Message, ackChan chan config.Ac
 										default:
 
 									}
-									time.Sleep(200* time.Millisecond)
+									
 									//antar at peer vil fiksa å sette til dead dersom en faller ut.
 								}
-						*/
 					//}
 				}
 			}
