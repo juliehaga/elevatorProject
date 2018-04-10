@@ -138,7 +138,7 @@ func Transmitter(port int, messageTx chan config.Message, ackChan chan config.Ac
 						buf, _ := json.Marshal(message)
 						//fmt.Printf("heis %v er connected %v\n", e, message.ElevMap[e].Connected)
 						if message.ElevMap[e].Connected == true{
-							fmt.Printf("Ny melding\n")
+							//fmt.Printf("Ny melding\n")
 							conn.Write(buf)
 							
 							WAIT_FOR_ACK:

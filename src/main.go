@@ -115,7 +115,7 @@ func main() {
 			elevStateMap.UpdateElevStatusFromNetwork(statusMsgFromNetwork)
 
 		case elevMap:= <-mapChangesChan:
-			fmt.Printf("Sender ordremelding\n")
+			//fmt.Printf("Sender ordremelding\n")
 			localOrderUpdates := elevStateMap.UpdateLocalMap(elevMap)
 			//elevStateMap.PrintMap(elevMap)
 			if localOrderUpdates {
