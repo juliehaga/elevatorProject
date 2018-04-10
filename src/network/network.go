@@ -191,13 +191,9 @@ func Receiver(port int, orderMsgRx chan config.OrderMsg, statusMsgRx chan config
 					fmt.Printf("mottatt ordremelding \n")
 					orderMsgRx <- config.OrderMsg{receivedMsg.ID, receivedMsg.ElevMap}
 					SendAck(messageTx, receivedMsg.ElevMap, receivedMsg.ID, port)
-				}
-			}
-
-			if receivedMsg.MsgType == config.Ack{
-
-				if receivedMsg.ID != config.My_ID && receivedMsg.Reciever_ID == config.My_ID{
+				} else if receivedMsg.MsgType == config.Ack{
 					ackChan <- config.AckMsg{receivedMsg.ID, receivedMsg.Reciever_ID}
+
 				}
 			}
 		

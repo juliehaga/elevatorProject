@@ -174,7 +174,7 @@ func UpdateLocalMap(changedMap config.ElevStateMap) bool{
 
 
 func UpdateMapFromNetwork(recievedMap config.ElevStateMap, newOrderChan chan config.ButtonEvent, buttonLampChan chan config.ButtonLamp){
-	buttonEvent := false
+	//buttonEvent := false
 	currentMap := GetLocalMap()
 
 	//PrintMap(recievedMap)
@@ -215,12 +215,12 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, newOrderChan chan con
 
 					if (recievedMap[config.My_ID].Orders[f][b] == config.OT_LocalOrderPlaced || recievedMap[config.My_ID].Orders[f][b] == config.OT_ExternalOrderPlaced) && currentMap[config.My_ID].Orders[f][b] == config.OT_NoOrder{
 						//DErsom det er mange nye ordre så ønsker vi bare å trigge newOrderChan en gang
-						if buttonEvent == false{
+						//if buttonEvent == false{
 							//fmt.Printf("-------------order from network--------\n")
 							//fmt.Printf("Floor %v, knappp %v\n", f, b)
 							newOrderChan <- config.ButtonEvent{f, b, config.NetworkOrder}
-							buttonEvent = true
-						}
+							//buttonEvent = true
+						//}
 						//Add orders from network
 						for elev := 0; elev < config.NUM_ELEVS; elev++{
 							currentMap[elev].Orders[f][b] = config.OT_ExternalOrderPlaced
