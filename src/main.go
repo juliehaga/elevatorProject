@@ -63,10 +63,10 @@ func main() {
     peerTxEnable := make(chan bool, 100)
 
  
-	messageTx := make(chan config.Message, 100)
-	orderMsgRx := make(chan config.OrderMsg, 100)
-	statusMsgRx := make(chan config.StatusMsg, 100)
-	ackChan := make(chan config.AckMsg, 100)
+	messageTx := make(chan config.Message, 10000)
+	orderMsgRx := make(chan config.OrderMsg, 10000)
+	statusMsgRx := make(chan config.StatusMsg, 10000)
+	ackChan := make(chan config.AckMsg, 10000)
 	
 	config.Init(id, port)
 	elevio.InitDriver("localhost:" + port, config.NUM_FLOORS)
