@@ -231,7 +231,7 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, newOrderChan chan con
 
 						for e := 0; e < config.NUM_ELEVS; e++{
 							if recievedMap[e].CurrentFloor == f && recievedMap[e].Door == true{
-								//fmt.Printf("------------Order cleared from network--------------")
+								fmt.Printf("------------Order cleared from network--------------")
 								buttonLampChan <- config.ButtonLamp{f, b, false}
 								//clear orders from network 
 								for elev := 0; elev < config.NUM_ELEVS; elev++{

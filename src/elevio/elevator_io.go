@@ -83,12 +83,12 @@ func InitDriver(addr string, numFloors int) {
 
 
 func InitOrders(){
-	fmt.Printf("INITIALISERER ORDRE FRA NETTET NÅR DU LOOGER PÅ\n")
+	//fmt.Printf("INITIALISERER ORDRE FRA NETTET NÅR DU LOOGER PÅ\n")
 	currentMap := elevStateMap.GetLocalMap()
 	for f := 0; f < config.NUM_FLOORS; f++{
 		for b:= config.BT_HallUp; b <= config.BT_Cab; b++{
 			if currentMap[config.My_ID].Orders[f][b] == config.OT_LocalOrderPlaced || currentMap[config.My_ID].Orders[f][b] == config.OT_ExternalOrderPlaced{
-				fmt.Printf("ordre i nettverket\n")
+				//fmt.Printf("ordre i nettverket\n")
 				lamp := config.ButtonLamp{f, b, true}	
 				SetButtonLamp(lamp)
 			} else {

@@ -79,7 +79,7 @@ func PeerReceiver(port int, peerUpdateCh chan<- config.PeerUpdate) {
 				p.New = id
 
 				newID, _ := strconv.Atoi(p.New)
-				fmt.Printf("Setter heis %v til connected ", newID)
+				//fmt.Printf("Setter heis %v til connected ", newID)
 				elevStateMap.SetConnectedElevator(newID, true)
 
 
@@ -97,7 +97,7 @@ func PeerReceiver(port int, peerUpdateCh chan<- config.PeerUpdate) {
 
 				lostID, _ := strconv.Atoi(k)
 				elevStateMap.SetConnectedElevator(lostID, false)
-				fmt.Printf("Setter heis %v til disconnected \n", lostID)
+				//fmt.Printf("Setter heis %v til disconnected \n", lostID)
 				delete(lastSeen, k)
 			}
 		}
@@ -178,7 +178,7 @@ func Receiver(port int, orderMsgRx chan config.OrderMsg, statusMsgRx chan config
 	for {
 		integer, _, err := conn.ReadFromUDP(b[:])
 		if err != nil {
-			fmt.Printf("Feil %s", err. Error())
+			//fmt.Printf("Feil %s", err. Error())
 		}
 		if integer > 0 {
 

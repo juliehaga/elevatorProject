@@ -39,19 +39,19 @@ func Fsm(motorChan chan config.MotorDirection, doorLampChan chan bool, floorChan
 		
 		select{
 		case  floor := <- floorChan:
-			fmt.Printf("floor event\n")
+			//fmt.Printf("floor event\n")
 			eventNewFloor(motorChan, doorLampChan, doorTimer,mapChangesChan, buttonLampChan, floor, idleTimer, statusChangesChan, motorTimer)
 			idleTimer.Reset(time.Second * IDLE_TIME)
 			//bool := motorTimer.Reset(time.Second * MOTOR_DEAD_TIME)
 			//fmt.Printf("motor reset %v\n", bool)
 
 		case buttonPushed := <- newOrderChan:
-			fmt.Printf("buttonpushed\n")
+			//fmt.Printf("buttonpushed\n")
 			eventNewAckOrder(buttonLampChan, motorChan, doorLampChan, doorTimer, mapChangesChan, buttonPushed, idleTimer, motorTimer, statusChangesChan)
 			idleTimer.Reset(time.Second * IDLE_TIME)
 
 		case <- doorTimer.C:
-			fmt.Printf("door timeout\n")
+			//fmt.Printf("door timeout\n")
 			eventDoorTimeout(doorLampChan, mapChangesChan, idleTimer, motorChan, motorTimer)
 			idleTimer.Reset(time.Second * IDLE_TIME)
 			
@@ -77,7 +77,7 @@ func Fsm(motorChan chan config.MotorDirection, doorLampChan chan bool, floorChan
 
 func eventOutOfOrder(motorChan chan config.MotorDirection, statusChangesChan chan config.ElevStateMap){
 	currentMap := elevStateMap.GetLocalMap()
-	fmt.Printf("Out of order\n")
+	//fmt.Printf("Out of order\n")
 	if currentMap[config.My_ID].CurrentFloor != config.NUM_FLOORS -1{
 		motorChan <- config.MD_Up
 		currentMap[config.My_ID].CurrentDir = config.ED_Up
@@ -89,7 +89,7 @@ func eventOutOfOrder(motorChan chan config.MotorDirection, statusChangesChan cha
 
 
 func eventIdleTimeout(motorChan chan config.MotorDirection, statusChangesChan chan config.ElevStateMap, mapChangesChan chan config.ElevStateMap, doorLampChan chan bool, doorTimer *time.Timer, buttonLampChan chan config.ButtonLamp,  motorTimer *time.Timer) {
-	fmt.Printf("In idle timeout")
+	//fmt.Printf("In idle timeout")
 	currentMap := elevStateMap.GetLocalMap()
 	motorDir := forceChooseDirection(&currentMap, motorTimer)
 	if motorDir != config.MD_Stop {
@@ -215,7 +215,7 @@ func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan conf
 				currentMap[elev].Orders[buttonPushed.Floor][buttonPushed.Button] = config.OT_LocalOrderPlaced
 			}
 		} else {
-			fmt.Printf("------------- No way to azzure redundancy --------------")
+			//fmt.Printf("------------- No way to azzure redundancy --------------")
 		}
 	}
 
@@ -225,7 +225,7 @@ func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan conf
 		case IDLE:
 			if orderInThisFloor(currentMap[config.My_ID].CurrentFloor, currentMap){// && currentMap[config.My_ID].OutOfOrder == false{
 				//endret status og ordre
-				fmt.Printf("order, in this floor\n")
+				//fmt.Printf("order, in this floor\n")
 				doorLampChan <- true	
 				currentMap[config.My_ID].Door = true
 				currentMap = orderCompleted(currentMap, buttonLampChan)
@@ -233,7 +233,7 @@ func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan conf
 				currentMap[config.My_ID].IDLE = false
 				state = DOOR_OPEN
 			}else{
-				fmt.Printf("Jeg har lyst til å velge retning \n")
+				//fmt.Printf("Jeg har lyst til å velge retning \n")
 				motorDir, currentMap[config.My_ID].CurrentDir = chooseDirection(currentMap, motorTimer)
 				motorChan <- motorDir
 				if motorDir != config.MD_Stop {
@@ -246,7 +246,7 @@ func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan conf
 			}
 		case DOOR_OPEN:
 			if orderInThisFloor(currentMap[config.My_ID].CurrentFloor, currentMap){
-				fmt.Printf("door open order, in this floor\n")
+				//fmt.Printf("door open order, in this floor\n")
 				doorLampChan <- true	
 				currentMap[config.My_ID].Door = true
 				currentMap = orderCompleted(currentMap, buttonLampChan)
@@ -330,7 +330,7 @@ func orderCompleted(elevMap config.ElevStateMap, buttonLampChan chan config.Butt
 	fmt.Printf("ordercompleted\n")
 	if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_Cab] == config.OT_LocalOrderPlaced || elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_Cab] == config.OT_ExternalOrderPlaced{
 		elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_Cab] = config.OT_NoOrder
-		fmt.Printf("Completed CAB order\n")
+		//fmt.Printf("Completed CAB order\n")
 		buttonLampChan <- config.ButtonLamp{elevMap[config.My_ID].CurrentFloor, config.BT_Cab, false}
 	}
 
@@ -439,9 +439,9 @@ func chooseDirection(elevMap config.ElevStateMap, motorTimer *time.Timer) (confi
 func nearestElevator(elevMap config.ElevStateMap, floor int) bool{
 
  	myDist := int(math.Abs(float64(elevMap[config.My_ID].CurrentFloor - floor)))
- 	fmt.Printf("*********************************************\n")
- 	elevStateMap.PrintMap(elevMap)
- 	fmt.Printf("*********************************************\n")
+ 	//fmt.Printf("*********************************************\n")
+ 	//elevStateMap.PrintMap(elevMap)
+ 	//fmt.Printf("*********************************************\n")
 
 
  	if elevMap[config.My_ID].CurrentFloor < floor { 
