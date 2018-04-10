@@ -132,6 +132,7 @@ func SetLocalMap(changedMap config.ElevStateMap){
 	mutex.Lock()
 	LocalMap = changedMap
 	mutex.Unlock()
+	
 }
 
 
