@@ -116,7 +116,7 @@ func main() {
 
 		case elevMap:= <-mapChangesChan:
 			//fmt.Printf("Sender ordremelding\n")
-			localOrderUpdates := elevStateMap.UpdateLocalMap(elevMap, buttonLampChan)
+			localOrderUpdates := elevStateMap.UpdateLocalMap(elevMap)
 			//elevStateMap.PrintMap(elevMap)
 			if localOrderUpdates {
 				network.SendOrders(messageTx, elevMap)
