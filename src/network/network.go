@@ -130,14 +130,14 @@ func Transmitter(port int, messageTx chan config.Message, ackChan chan config.Ac
 				conn, _ := net.DialUDP("udp", nil, addr)
 				
 
-				for e:= 0; e < config.NUM_ELEVS; e++{
+				//for e:= 0; e < config.NUM_ELEVS; e++{
 
 
-					if e != config.My_ID{
-						message.Reciever_ID = e
+					//if e != config.My_ID{
+						//message.Reciever_ID = e
 						buf, _ := json.Marshal(message)
 						//fmt.Printf("heis %v er connected %v\n", e, message.ElevMap[e].Connected)
-						if message.ElevMap[e].Connected == true{
+						//if message.ElevMap[e].Connected == true{
 							//fmt.Printf("Ny melding\n")
 							conn.Write(buf) //DEnne skal ikke være her når vi har med ack
 							/*
@@ -156,9 +156,9 @@ func Transmitter(port int, messageTx chan config.Message, ackChan chan config.Ac
 									//antar at peer vil fiksa å sette til dead dersom en faller ut.
 								}
 							*/
-						}
-					}
-				}
+						//}
+					//}
+				//}
 
 		time.Sleep(2* time.Millisecond)
 		}	
