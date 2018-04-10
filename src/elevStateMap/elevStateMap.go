@@ -154,9 +154,9 @@ func UpdateLocalMap(changedMap config.ElevStateMap, buttonLampChan chan config.B
 			//CAB-orders kan skrives rett over fordi de sendes ikke
 			currentMap[config.My_ID].Orders[f][config.BT_Cab] = changedMap[config.My_ID].Orders[f][config.BT_Cab]
 			if currentMap[config.My_ID].Orders[f][config.BT_Cab] == config.OT_LocalOrderPlaced{
-				buttonLampChan <-  config.ButtonLamp{elevMap[config.My_ID].CurrentFloor, config.BT_Cab, true}
+				buttonLampChan <-  config.ButtonLamp{currentMap[config.My_ID].CurrentFloor, config.BT_Cab, true}
 			} else {
-				buttonLampChan <-  config.ButtonLamp{elevMap[config.My_ID].CurrentFloor, config.BT_Cab, false}	
+				buttonLampChan <-  config.ButtonLamp{currentMap[config.My_ID].CurrentFloor, config.BT_Cab, false}	
 			}
 
 			for b:= config.BT_HallUp; b < config.BT_Cab; b++{
@@ -164,11 +164,11 @@ func UpdateLocalMap(changedMap config.ElevStateMap, buttonLampChan chan config.B
 					//lagt inn en ordre, dersom local -> send
 					LocalOrderChangeMade = true
 					currentMap[e].Orders[f][b] = changedMap[e].Orders[f][b]
-					buttonLampChan <-  config.ButtonLamp{elevMap[config.My_ID].CurrentFloor, b, true}
+					buttonLampChan <-  config.ButtonLamp{currentMap[config.My_ID].CurrentFloor, b, true}
 				} else if changedMap[e].Orders[f][b] == config.OT_NoOrder && (currentMap[e].Orders[f][b] == config.OT_LocalOrderPlaced || currentMap[e].Orders[f][b] == config.OT_ExternalOrderPlaced){
 					LocalOrderChangeMade = true
 					currentMap[e].Orders[f][b] = changedMap[e].Orders[f][b]
-					buttonLampChan <-  config.ButtonLamp{elevMap[config.My_ID].CurrentFloor, b, false}
+					buttonLampChan <-  config.ButtonLamp{currentMap[config.My_ID].CurrentFloor, b, false}
 				}
 				
 			}
