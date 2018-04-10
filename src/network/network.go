@@ -137,11 +137,11 @@ func Transmitter(port int, messageTx chan config.Message, ackChan chan config.Ac
 						message.Reciever_ID = e
 						buf, _ := json.Marshal(message)
 						//fmt.Printf("heis %v er connected %v\n", e, message.ElevMap[e].Connected)
-						if message.ElevMap[e].Connected == true{
+						//if message.ElevMap[e].Connected == true{
 							//fmt.Printf("Ny melding\n")
-							//conn.Write(buf) //DEnne skal ikke være her når vi har med ack
+							conn.Write(buf) //DEnne skal ikke være her når vi har med ack
 							
-							WAIT_FOR_ACK:
+						/*	WAIT_FOR_ACK:
 								for i := 0; i < 5; i++{
 									conn.Write(buf)
 									select {
@@ -155,10 +155,10 @@ func Transmitter(port int, messageTx chan config.Message, ackChan chan config.Ac
 									time.Sleep(200* time.Millisecond)
 									//antar at peer vil fiksa å sette til dead dersom en faller ut.
 								}
-						
-						}
-					}
+						*/
+					//}
 				}
+			}
 
 		time.Sleep(2* time.Millisecond)
 		}	
