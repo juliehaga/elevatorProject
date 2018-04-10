@@ -48,7 +48,8 @@ type ButtonLamp struct {
 type OrderType int
 const (
 	OT_NoOrder                = 0
-	OT_OrderPlaced            = 1
+	OT_LocalOrderPlaced       = 1
+	OT_ExternalOrderPlaced    = 2
 )
 
 type ElevDir int

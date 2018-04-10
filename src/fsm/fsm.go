@@ -23,7 +23,7 @@ const IDLE_TIME 	    = 9
 const MOTOR_DEAD_TIME 	= 11
 
 
-func Fsm(motorChan chan config.MotorDirection, doorLampChan chan bool, floorChan chan int, buttonLampChan chan config.ButtonLamp, orderChangesChan chan config.ElevStateMap, newOrderChan chan config.ButtonEvent, statusChangesChan chan config.ElevStateMap){
+func Fsm(motorChan chan config.MotorDirection, doorLampChan chan bool, floorChan chan int, buttonLampChan chan config.ButtonLamp, mapChangesChan chan config.ElevStateMap, newOrderChan chan config.ButtonEvent, statusChangesChan chan config.ElevStateMap){
 	doorTimer := time.NewTimer(time.Second * DOOR_TIME)
 	doorTimer.Stop()
 
@@ -40,23 +40,23 @@ func Fsm(motorChan chan config.MotorDirection, doorLampChan chan bool, floorChan
 		select{
 		case  floor := <- floorChan:
 			fmt.Printf("floor event\n")
-			eventNewFloor(motorChan, doorLampChan, doorTimer,orderChangesChan, buttonLampChan, floor, idleTimer, statusChangesChan, motorTimer)
+			eventNewFloor(motorChan, doorLampChan, doorTimer,mapChangesChan, buttonLampChan, floor, idleTimer, statusChangesChan, motorTimer)
 			idleTimer.Reset(time.Second * IDLE_TIME)
 			//bool := motorTimer.Reset(time.Second * MOTOR_DEAD_TIME)
 			//fmt.Printf("motor reset %v\n", bool)
 
 		case buttonPushed := <- newOrderChan:
 			fmt.Printf("buttonpushed\n")
-			eventNewAckOrder(buttonLampChan, motorChan, doorLampChan, doorTimer, orderChangesChan, buttonPushed, idleTimer, motorTimer, statusChangesChan)
+			eventNewAckOrder(buttonLampChan, motorChan, doorLampChan, doorTimer, mapChangesChan, buttonPushed, idleTimer, motorTimer, statusChangesChan)
 			idleTimer.Reset(time.Second * IDLE_TIME)
 
 		case <- doorTimer.C:
 			fmt.Printf("door timeout\n")
-			eventDoorTimeout(doorLampChan, orderChangesChan, idleTimer, motorChan, motorTimer)
+			eventDoorTimeout(doorLampChan, mapChangesChan, idleTimer, motorChan, motorTimer)
 			idleTimer.Reset(time.Second * IDLE_TIME)
 			
 		/*case <- idleTimer.C:
-			eventIdleTimeout(motorChan, statusChangesChan, orderChangesChan, doorLampChan, doorTimer, buttonLampChan, motorTimer)
+			eventIdleTimeout(motorChan, statusChangesChan, mapChangesChan, doorLampChan, doorTimer, buttonLampChan, motorTimer)
 			idleTimer.Reset(time.Second * IDLE_TIME)*/
 
 		/*case <- motorTimer.C:
@@ -69,7 +69,7 @@ func Fsm(motorChan chan config.MotorDirection, doorLampChan chan bool, floorChan
 				bool := motorTimer.Reset(time.Second * MOTOR_DEAD_TIME)
 				fmt.Printf("motor reset %v\n", bool)
 				state = OUT_OF_ORDER
-				orderChangesChan <- currentMap
+				mapChangesChan <- currentMap
 			}*/
 		}
 	}
@@ -88,7 +88,7 @@ func eventOutOfOrder(motorChan chan config.MotorDirection, statusChangesChan cha
 }
 
 
-func eventIdleTimeout(motorChan chan config.MotorDirection, statusChangesChan chan config.ElevStateMap, orderChangesChan chan config.ElevStateMap, doorLampChan chan bool, doorTimer *time.Timer, buttonLampChan chan config.ButtonLamp,  motorTimer *time.Timer) {
+func eventIdleTimeout(motorChan chan config.MotorDirection, statusChangesChan chan config.ElevStateMap, mapChangesChan chan config.ElevStateMap, doorLampChan chan bool, doorTimer *time.Timer, buttonLampChan chan config.ButtonLamp,  motorTimer *time.Timer) {
 	fmt.Printf("In idle timeout")
 	currentMap := elevStateMap.GetLocalMap()
 	motorDir := forceChooseDirection(&currentMap, motorTimer)
@@ -106,12 +106,12 @@ func eventIdleTimeout(motorChan chan config.MotorDirection, statusChangesChan ch
 		currentMap[config.My_ID].IDLE = false
 		state = DOOR_OPEN
 	}
-	orderChangesChan <- currentMap
+	mapChangesChan <- currentMap
 }
 
 
 
-func eventNewFloor(motorChan chan config.MotorDirection, doorLampChan chan bool, doorTimer *time.Timer, orderChangesChan chan config.ElevStateMap, buttonLampChan chan config.ButtonLamp, floor int, idleTimer *time.Timer, statusChangesChan chan config.ElevStateMap, motorTimer *time.Timer){
+func eventNewFloor(motorChan chan config.MotorDirection, doorLampChan chan bool, doorTimer *time.Timer, mapChangesChan chan config.ElevStateMap, buttonLampChan chan config.ButtonLamp, floor int, idleTimer *time.Timer, statusChangesChan chan config.ElevStateMap, motorTimer *time.Timer){
 	currentMap := elevStateMap.GetLocalMap()
 	//var det en grunn til at vi skulle oppdatere currentfloor her? 
 	currentMap[config.My_ID].CurrentFloor = floor 
@@ -132,9 +132,7 @@ func eventNewFloor(motorChan chan config.MotorDirection, doorLampChan chan bool,
 						state = IDLE
 					}	
 			}
-			orderChangesChan <- currentMap
-		case IDLE:
-			orderChangesChan <- currentMap
+		
 
 /*
 		case OUT_OF_ORDER:
@@ -146,7 +144,7 @@ func eventNewFloor(motorChan chan config.MotorDirection, doorLampChan chan bool,
 				motorChan <- config.MD_Stop
 				currentMap[config.My_ID].IDLE = false
 				state = DOOR_OPEN
-				orderChangesChan <- currentMap
+				mapChangesChan <- currentMap
 			}else if currentMap[config.My_ID].CurrentDir == config.ED_Up && !ordersAbove(currentMap){
 				motorChan <- config.MD_Stop
 				state = IDLE
@@ -169,10 +167,11 @@ func eventNewFloor(motorChan chan config.MotorDirection, doorLampChan chan bool,
 
 			}*/
 		}
+	mapChangesChan <- currentMap
 		
 }
 
-func eventDoorTimeout(doorLampChan chan bool, orderChangesChan chan config.ElevStateMap, idleTimer *time.Timer, motorChan chan config.MotorDirection, motorTimer *time.Timer){
+func eventDoorTimeout(doorLampChan chan bool, mapChangesChan chan config.ElevStateMap, idleTimer *time.Timer, motorChan chan config.MotorDirection, motorTimer *time.Timer){
 	currentMap := elevStateMap.GetLocalMap()
 	var motorDir config.MotorDirection
 	switch(state){
@@ -190,18 +189,18 @@ func eventDoorTimeout(doorLampChan chan bool, orderChangesChan chan config.ElevS
 				state = IDLE
 				
 			}
-			orderChangesChan <- currentMap	
+			mapChangesChan <- currentMap	
 	}
 }
 
 
-func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan config.MotorDirection, doorLampChan chan bool, doorTimer *time.Timer, orderChangesChan chan config.ElevStateMap, buttonPushed config.ButtonEvent, idleTimer *time.Timer, motorTimer *time.Timer, statusChangesChan chan config.ElevStateMap){
+func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan config.MotorDirection, doorLampChan chan bool, doorTimer *time.Timer, mapChangesChan chan config.ElevStateMap, buttonPushed config.ButtonEvent, idleTimer *time.Timer, motorTimer *time.Timer, statusChangesChan chan config.ElevStateMap){
 	currentMap := elevStateMap.GetLocalMap()
 	accept := false
 
 	//accept CAB order
 	if buttonPushed.Button == config.BT_Cab{ //&& currentMap[config.My_ID].OutOfOrder == false{
-		currentMap[config.My_ID].Orders[buttonPushed.Floor][buttonPushed.Button] = config.OT_OrderPlaced
+		currentMap[config.My_ID].Orders[buttonPushed.Floor][buttonPushed.Button] = config.OT_LocalOrderPlaced
 		buttonLampChan <- config.ButtonLamp{buttonPushed.Floor, buttonPushed.Button, true}
 	} else if buttonPushed.Order == config.LocalOrder{
 		//add Local HALL order
@@ -213,7 +212,7 @@ func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan conf
 		if accept == true{
 			buttonLampChan <- config.ButtonLamp{buttonPushed.Floor, buttonPushed.Button, true}
 			for elev := 0; elev < config.NUM_ELEVS; elev++{
-				currentMap[elev].Orders[buttonPushed.Floor][buttonPushed.Button] = config.OT_OrderPlaced
+				currentMap[elev].Orders[buttonPushed.Floor][buttonPushed.Button] = config.OT_LocalOrderPlaced
 			}
 		} else {
 			fmt.Printf("------------- No way to azzure redundancy --------------")
@@ -255,7 +254,7 @@ func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan conf
 				currentMap[config.My_ID].IDLE = false
 			}
 		}
-		orderChangesChan <- currentMap
+		mapChangesChan <- currentMap
 }
 
 
@@ -272,16 +271,16 @@ func shouldStop(elevMap config.ElevStateMap) bool{
 	
 	//elevStateMap.PrintMap(elevMap)
 
-	if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_Cab]==config.OT_OrderPlaced{
+	if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_Cab]==config.OT_LocalOrderPlaced || elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_Cab]==config.OT_ExternalOrderPlaced{
 		return true
 	}
 
 	switch elevMap[config.My_ID].CurrentDir{
 		case config.ED_Up:
 			//order on current floor and no orders above
-			if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallUp]==config.OT_OrderPlaced{
+			if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallUp]==config.OT_LocalOrderPlaced || elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallUp]==config.OT_ExternalOrderPlaced{
 				return true
-			} else if !ordersAbove(elevMap) && elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallDown]==config.OT_OrderPlaced{
+			} else if !ordersAbove(elevMap) && (elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallDown]==config.OT_LocalOrderPlaced || elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallDown]==config.OT_ExternalOrderPlaced){
 				return true 
 			} else if !ordersAbove(elevMap){
 				return true
@@ -289,9 +288,9 @@ func shouldStop(elevMap config.ElevStateMap) bool{
 
 		case config.ED_Down:
 			//order on current floor and no orders below
-		 	if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallDown]==config.OT_OrderPlaced{
+		 	if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallDown]==config.OT_LocalOrderPlaced || elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallDown]==config.OT_ExternalOrderPlaced{
 		 		return true
-		 	} else if !ordersBelow(elevMap) && elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallUp]==config.OT_OrderPlaced {
+		 	} else if !ordersBelow(elevMap) && (elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallUp]==config.OT_LocalOrderPlaced || elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallUp]==config.OT_ExternalOrderPlaced) {
 			 	return true 
 			} else if !ordersBelow(elevMap){
 				return true
@@ -303,7 +302,7 @@ func shouldStop(elevMap config.ElevStateMap) bool{
 func ordersAbove(elevMap config.ElevStateMap) bool{
 	for f := elevMap[config.My_ID].CurrentFloor + 1; f<config.NUM_FLOORS; f++{
 		for b := config.BT_HallUp; b<= config.BT_Cab; b++{ 
-			if elevMap[config.My_ID].Orders[f][b] == config.OT_OrderPlaced{
+			if elevMap[config.My_ID].Orders[f][b] == config.OT_LocalOrderPlaced || elevMap[config.My_ID].Orders[f][b] == config.OT_ExternalOrderPlaced{
 
 
 				return true
@@ -317,7 +316,7 @@ func ordersAbove(elevMap config.ElevStateMap) bool{
 func ordersBelow(elevMap config.ElevStateMap) bool{
 	for f := elevMap[config.My_ID].CurrentFloor - 1; f>=0; f--{
 		for b := config.BT_HallUp; b<= config.BT_Cab; b++{ 
-			if elevMap[config.My_ID].Orders[f][b] == config.OT_OrderPlaced {
+			if elevMap[config.My_ID].Orders[f][b] == config.OT_LocalOrderPlaced || elevMap[config.My_ID].Orders[f][b] == config.OT_ExternalOrderPlaced {
 				return true
 			}
 		}
@@ -329,7 +328,7 @@ func ordersBelow(elevMap config.ElevStateMap) bool{
 
 func orderCompleted(elevMap config.ElevStateMap, buttonLampChan chan config.ButtonLamp) config.ElevStateMap{
 	fmt.Printf("ordercompleted\n")
-	if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_Cab] == config.OT_OrderPlaced{
+	if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_Cab] == config.OT_LocalOrderPlaced || elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_Cab] == config.OT_ExternalOrderPlaced{
 		elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_Cab] = config.OT_NoOrder
 		fmt.Printf("Completed CAB order\n")
 		buttonLampChan <- config.ButtonLamp{elevMap[config.My_ID].CurrentFloor, config.BT_Cab, false}
@@ -337,7 +336,7 @@ func orderCompleted(elevMap config.ElevStateMap, buttonLampChan chan config.Butt
 
 	switch(elevMap[config.My_ID].CurrentDir){
 		case config.ED_Up: 
-			if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallUp] == config.OT_OrderPlaced{
+			if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallUp] == config.OT_LocalOrderPlaced || elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallUp] == config.OT_ExternalOrderPlaced{
 				
 				for elev := 0; elev < config.NUM_ELEVS; elev++{				
 					elevMap[elev].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallUp] = config.OT_NoOrder
@@ -345,7 +344,7 @@ func orderCompleted(elevMap config.ElevStateMap, buttonLampChan chan config.Butt
 				fmt.Printf("completed HALLUP %v\n", elevMap[config.My_ID].CurrentFloor)
 				buttonLampChan <-  config.ButtonLamp{elevMap[config.My_ID].CurrentFloor, config.BT_HallUp, false}
 
-			} else if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallDown] == config.OT_OrderPlaced{
+			} else if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallDown] == config.OT_LocalOrderPlaced || elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallDown] == config.OT_ExternalOrderPlaced{
 
 				for elev := 0; elev < config.NUM_ELEVS; elev++{				
 					elevMap[elev].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallDown] = config.OT_NoOrder
@@ -355,7 +354,7 @@ func orderCompleted(elevMap config.ElevStateMap, buttonLampChan chan config.Butt
 			}
 			
 		case config.ED_Down:
-			if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallDown] == config.OT_OrderPlaced{
+			if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallDown] == config.OT_LocalOrderPlaced || elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallDown] == config.OT_ExternalOrderPlaced{
 				
 				for elev := 0; elev < config.NUM_ELEVS; elev++{			
 
@@ -363,7 +362,7 @@ func orderCompleted(elevMap config.ElevStateMap, buttonLampChan chan config.Butt
 				}
 				fmt.Printf("completed Halldown %v\n", elevMap[config.My_ID].CurrentFloor)
 				buttonLampChan <-  config.ButtonLamp{elevMap[config.My_ID].CurrentFloor, config.BT_HallDown, false}
-			} else if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallUp] == config.OT_OrderPlaced{
+			} else if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallUp] == config.OT_LocalOrderPlaced || elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallUp] == config.OT_ExternalOrderPlaced{
 
 				for elev := 0; elev < config.NUM_ELEVS; elev++{					
 					elevMap[elev].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallUp] = config.OT_NoOrder
@@ -384,7 +383,7 @@ func orderInThisFloor( floor int, elevMap config.ElevStateMap) bool{
 	//elevStateMap.PrintMap(elevMap)
 	if (floor != -1){
 		for b := config.BT_HallUp; b <= config.BT_Cab; b++ {
-			if elevMap[config.My_ID].Orders[floor][b] == config.OT_OrderPlaced {
+			if elevMap[config.My_ID].Orders[floor][b] == config.OT_LocalOrderPlaced || elevMap[config.My_ID].Orders[floor][b] == config.OT_ExternalOrderPlaced {
 				return true
 			}
 		}
@@ -401,14 +400,14 @@ func chooseDirection(elevMap config.ElevStateMap, motorTimer *time.Timer) (confi
 		case config.ED_Up: 
 			if ordersAbove(elevMap){
 				for f:= elevMap[config.My_ID].CurrentFloor + 1; f < config.NUM_FLOORS; f++{
-					if  orderInThisFloor(f, elevMap) && (nearestElevator(elevMap, f) || elevMap[config.My_ID].Orders[f][config.BT_Cab] == config.OT_OrderPlaced){
+					if  orderInThisFloor(f, elevMap) && (nearestElevator(elevMap, f) || (elevMap[config.My_ID].Orders[f][config.BT_Cab] == config.OT_LocalOrderPlaced || elevMap[config.My_ID].Orders[f][config.BT_Cab] == config.OT_ExternalOrderPlaced)){
 						fmt.Printf("velger opp\n")
 						return config.MD_Up, config.ED_Up
 					}
 				}
 			} else if ordersBelow(elevMap){
 				for f:= elevMap[config.My_ID].CurrentFloor - 1; f >= 0; f--{
-					if orderInThisFloor(f, elevMap) && (nearestElevator(elevMap, f) || elevMap[config.My_ID].Orders[f][config.BT_Cab] == config.OT_OrderPlaced){
+					if orderInThisFloor(f, elevMap) && (nearestElevator(elevMap, f) || (elevMap[config.My_ID].Orders[f][config.BT_Cab] == config.OT_LocalOrderPlaced || elevMap[config.My_ID].Orders[f][config.BT_Cab] == config.OT_ExternalOrderPlaced)){
 						fmt.Printf("Velger ned \n")
 						return config.MD_Down, config.ED_Down
 					}
@@ -417,14 +416,14 @@ func chooseDirection(elevMap config.ElevStateMap, motorTimer *time.Timer) (confi
 		case config.ED_Down:
 			if ordersBelow(elevMap){
 				for f:= elevMap[config.My_ID].CurrentFloor - 1; f >= 0; f--{
-					if orderInThisFloor(f, elevMap) && (nearestElevator(elevMap, f) || elevMap[config.My_ID].Orders[f][config.BT_Cab] == config.OT_OrderPlaced){
+					if orderInThisFloor(f, elevMap) && (nearestElevator(elevMap, f) || (elevMap[config.My_ID].Orders[f][config.BT_Cab] == config.OT_LocalOrderPlaced || elevMap[config.My_ID].Orders[f][config.BT_Cab] == config.OT_ExternalOrderPlaced)){
 						fmt.Printf("Velger ned \n")
 						return config.MD_Down, config.ED_Down
 					}
 				}
 			} else if ordersAbove(elevMap){
 				for f:= elevMap[config.My_ID].CurrentFloor + 1; f < config.NUM_FLOORS; f++{
-					if orderInThisFloor(f, elevMap) && (nearestElevator(elevMap, f) || elevMap[config.My_ID].Orders[f][config.BT_Cab] == config.OT_OrderPlaced){
+					if orderInThisFloor(f, elevMap) && (nearestElevator(elevMap, f) || (elevMap[config.My_ID].Orders[f][config.BT_Cab] == config.OT_LocalOrderPlaced || elevMap[config.My_ID].Orders[f][config.BT_Cab] == config.OT_ExternalOrderPlaced)){
 						fmt.Printf("velger opp\n")
 						return config.MD_Up, config.ED_Up
 					}

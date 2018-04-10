@@ -87,7 +87,7 @@ func InitOrders(){
 	currentMap := elevStateMap.GetLocalMap()
 	for f := 0; f < config.NUM_FLOORS; f++{
 		for b:= config.BT_HallUp; b <= config.BT_Cab; b++{
-			if currentMap[config.My_ID].Orders[f][b] == config.OT_OrderPlaced{
+			if currentMap[config.My_ID].Orders[f][b] == config.OT_LocalOrderPlaced || currentMap[config.My_ID].Orders[f][b] == config.OT_ExternalOrderPlaced{
 				fmt.Printf("ordre i nettverket\n")
 				lamp := config.ButtonLamp{f, b, true}	
 				SetButtonLamp(lamp)

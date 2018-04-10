@@ -137,7 +137,7 @@ func SetLocalMap(changedMap config.ElevStateMap){
 
 func UpdateLocalMap(changedMap config.ElevStateMap) bool{
 	currentMap := GetLocalMap()
-	orderChangeMade := false
+	LocalOrderChangeMade := false
 
 
 //Hvilke av disse trenger vi faktisk???
@@ -155,20 +155,21 @@ func UpdateLocalMap(changedMap config.ElevStateMap) bool{
 			currentMap[config.My_ID].Orders[f][config.BT_Cab] = changedMap[config.My_ID].Orders[f][config.BT_Cab]
 
 			for b:= config.BT_HallUp; b < config.BT_Cab; b++{
-				if changedMap[e].Orders[f][b] == config.OT_OrderPlaced && currentMap[e].Orders[f][b] == config.OT_NoOrder{
+				if changedMap[e].Orders[f][b] == config.OT_LocalOrderPlaced && currentMap[e].Orders[f][b] == config.OT_NoOrder{
 					//lagt inn en ordre, dersom local -> send
-					orderChangeMade = true
-				} else if changedMap[e].Orders[f][b] == config.OT_NoOrder && currentMap[e].Orders[f][b] == config.OT_OrderPlaced{
-					orderChangeMade = true
+					LocalOrderChangeMade = true
+					currentMap[e].Orders[f][b] = changedMap[e].Orders[f][b]
+				} else if changedMap[e].Orders[f][b] == config.OT_NoOrder && currentMap[e].Orders[f][b] == config.OT_LocalOrderPlaced{
+					LocalOrderChangeMade = true
+					currentMap[e].Orders[f][b] = changedMap[e].Orders[f][b]
 				}
-				currentMap[e].Orders[f][b] = changedMap[e].Orders[f][b]
 				
 			}
 		}
 	}
 	SetLocalMap(currentMap)
 	writeToBackup()
-	return orderChangeMade
+	return LocalOrderChangeMade
 }
 
 
@@ -212,7 +213,8 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, newOrderChan chan con
 			for b:= config.BT_HallUp; b < config.BT_Cab; b++{
 
 
-					if recievedMap[config.My_ID].Orders[f][b] == config.OT_OrderPlaced && currentMap[config.My_ID].Orders[f][b] == config.OT_NoOrder{
+					if (recievedMap[config.My_ID].Orders[f][b] == config.OT_LocalOrderPlaced || recievedMap[config.My_ID].Orders[f][b] == config.OT_ExternalOrderPlaced) && currentMap[config.My_ID].Orders[f][b] == config.OT_NoOrder{
+						//DErsom det er mange nye ordre så ønsker vi bare å trigge newOrderChan en gang
 						if buttonEvent == false{
 							fmt.Printf("-------------order from network--------\n")
 							fmt.Printf("Floor %v, knappp %v\n", f, b)
@@ -221,11 +223,11 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, newOrderChan chan con
 						}
 						//Add orders from network
 						for elev := 0; elev < config.NUM_ELEVS; elev++{
-							currentMap[elev].Orders[f][b] = config.OT_OrderPlaced
+							currentMap[elev].Orders[f][b] = config.OT_ExternalOrderPlaced
 							buttonLampChan <- config.ButtonLamp{f, b, true}
 						}
 
-					} else if recievedMap[config.My_ID].Orders[f][b] ==config.OT_NoOrder && currentMap[config.My_ID].Orders[f][b] == config.OT_OrderPlaced{
+					} else if recievedMap[config.My_ID].Orders[f][b] ==config.OT_NoOrder && (currentMap[config.My_ID].Orders[f][b] == config.OT_LocalOrderPlaced || currentMap[config.My_ID].Orders[f][b] == config.OT_ExternalOrderPlaced){
 
 						for e := 0; e < config.NUM_ELEVS; e++{
 							if recievedMap[e].CurrentFloor == f && recievedMap[e].Door == true{
