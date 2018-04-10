@@ -132,7 +132,7 @@ func SetLocalMap(changedMap config.ElevStateMap){
 	mutex.Lock()
 	LocalMap = changedMap
 	mutex.Unlock()
-	
+
 }
 
 
@@ -150,22 +150,22 @@ func UpdateLocalMap(changedMap config.ElevStateMap) bool{
 
 
 
-	for e:= 0; e < config.NUM_ELEVS; e++{
-		for f:= 0; f < config.NUM_FLOORS; f++{
-			//CAB-orders kan skrives rett over fordi de sendes ikke
-			currentMap[config.My_ID].Orders[f][config.BT_Cab] = changedMap[config.My_ID].Orders[f][config.BT_Cab]
+	for f:= 0; f < config.NUM_FLOORS; f++{
+		//CAB-orders kan skrives rett over fordi de sendes ikke
+		currentMap[config.My_ID].Orders[f][config.BT_Cab] = changedMap[config.My_ID].Orders[f][config.BT_Cab]
 
-			for b:= config.BT_HallUp; b < config.BT_Cab; b++{
-				if changedMap[e].Orders[f][b] == config.OT_LocalOrderPlaced && currentMap[e].Orders[f][b] == config.OT_NoOrder{
-					//lagt inn en ordre, dersom local -> send
-					LocalOrderChangeMade = true
-					currentMap[e].Orders[f][b] = changedMap[e].Orders[f][b]
-				} else if changedMap[e].Orders[f][b] == config.OT_NoOrder && (currentMap[e].Orders[f][b] == config.OT_LocalOrderPlaced || currentMap[e].Orders[f][b] == config.OT_ExternalOrderPlaced){
-					LocalOrderChangeMade = true
-					currentMap[e].Orders[f][b] = changedMap[e].Orders[f][b]
-				}
-				
-			}
+		for b:= config.BT_HallUp; b < config.BT_Cab; b++{
+			if changedMap[config.My_ID].Orders[f][b] == config.OT_OrderPlaced && currentMap[config.My_ID].Orders[f][b] == config.OT_NoOrder{
+				//lagt inn en ordre, dersom local -> send
+				LocalOrderChangeMade = true
+				currentMap[config.My_ID].Orders[f][b] = changedMap[config.My_ID].Orders[f][b]
+
+			} /*else if changedMap[e].Orders[f][b] == config.OT_NoOrder && (currentMap[e].Orders[f][b] == config.OT_LocalOrderPlaced || currentMap[e].Orders[f][b] == config.OT_ExternalOrderPlaced){
+				LocalOrderChangeMade = true
+				currentMap[e].Orders[f][b] = changedMap[e].Orders[f][b]
+			}*/
+			//sjekk floor og door_open
+			//send en ordre_complete_msg
 		}
 	}
 	SetLocalMap(currentMap)
@@ -174,9 +174,10 @@ func UpdateLocalMap(changedMap config.ElevStateMap) bool{
 }
 
 
-func UpdateMapFromNetwork(recievedMap config.ElevStateMap, newOrderChan chan config.ButtonEvent, buttonLampChan chan config.ButtonLamp){
+func UpdateMapFromNetwork(recievedMap config.ElevStateMap, newOrderChan chan config.ButtonEvent, buttonLampChan chan config.ButtonLamp) bool{
 	//buttonEvent := false
 	currentMap := GetLocalMap()
+	changedMade := false
 
 	//PrintMap(recievedMap)
 
@@ -207,8 +208,27 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, newOrderChan chan con
 			}*/
 	
 
+	for e:= 0; e < config.NUM_ELEVS; e++{
+		for f:= 0; f < config.NUM_FLOORS; f++{
+			for b:= config.BT_HallUp; b < config.BT_Cab; b++{
+				if recievedMap[e].Orders[f][b] == config.OT_OrderPlaced && currentMap[e].Orders[f][b] == config.OT_NoOrder{
+					currentMap[e].Orders[f][b] = config.OT_OrderPlaced
+					currentMap[config.My_ID].Orders[f][b]  = config.OT_OrderPlaced
+					changedMade = true
+				}
+
+			}
+		}
 
 
+	}
+
+
+
+
+
+
+/*
 
 	for f:= 0; f < config.NUM_FLOORS; f++{
 			for b:= config.BT_HallUp; b < config.BT_Cab; b++{
@@ -241,8 +261,9 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, newOrderChan chan con
 						}
 					}
 				}
-			}
+			}*/
 	SetLocalMap(currentMap)
+	return changedMade
 }
 
 func UpdateElevStatusFromNetwork(newStatus config.StatusMsg){

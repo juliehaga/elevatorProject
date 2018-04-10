@@ -36,7 +36,6 @@ const (
 type ButtonEvent struct {
 	Floor  int
 	Button ButtonType
-	Order int
 }
 
 type ButtonLamp struct {
@@ -46,10 +45,10 @@ type ButtonLamp struct {
 }
 
 type OrderType int
+
 const (
 	OT_NoOrder                = 0
-	OT_LocalOrderPlaced       = 1
-	OT_ExternalOrderPlaced    = 2
+	OT_OrderPlaced            = 1
 )
 
 type ElevDir int
@@ -58,12 +57,6 @@ const (
 	ED_Up   		ElevDir = 1
 	ED_Down                 = -1
 )
-
-const (
-	LocalOrder		= 0 
-	NetworkOrder	= 1
-)
-
 
 
 type ElevInfo struct{
@@ -107,11 +100,16 @@ type AckMsg struct{
 	Reciever_ID int
 }
 
+type OrderCompleteMsg struct{
+	button ButtonType
+}
+
 
 const (
-	ElevStatus = 0
-	Orders     = 1
-	Ack 	   = 2
+	ElevStatus     = 0
+	Orders         = 1
+	Ack 	       = 2
+	OrderComplete  = 3
 )
 
 

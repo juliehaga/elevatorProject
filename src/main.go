@@ -81,6 +81,7 @@ func main() {
 
   
     go elevio.Elevio(motorChan, doorLampChan, newOrderChan, floorChan, buttonLampChan)
+    go elevio.OrderLights(newOrderChan, buttonLampChan)
 	go network.Transmitter(16502, messageTx, ackChan)
 	go network.Receiver(16502, orderMsgRx, statusMsgRx, ackChan, messageTx)
     go network.PeerTransmitter(15600, id, peerTxEnable)
@@ -106,14 +107,19 @@ func main() {
 
 		case orderMsgFromNetwork := <- orderMsgRx:
 			//Når vi mottar melding bør vi sjekke at hardware er oppdatert			
-			elevStateMap.UpdateMapFromNetwork(orderMsgFromNetwork.ElevMap, newOrderChan, buttonLampChan)
+			orderUpdates := elevStateMap.UpdateMapFromNetwork(orderMsgFromNetwork.ElevMap, newOrderChan, buttonLampChan)
 			if init == true{
 				elevio.InitOrders()
 			}
 			init = false
 
+			if orderUpdates {
+				network.SendOrders(messageTx, elevStateMap.GetLocalMap())
+			}
+
 		case statusMsgFromNetwork := <- statusMsgRx:
 			elevStateMap.UpdateElevStatusFromNetwork(statusMsgFromNetwork)
+			
 
 		case elevMap:= <-mapChangesChan:
 			//fmt.Printf("Sender ordremelding\n")

@@ -49,6 +49,7 @@ func Elevio(motorChan chan config.MotorDirection, doorLampChan chan bool, newOrd
 
 
 
+
 func InitDriver(addr string, numFloors int) {
 	if _initialized {
 		fmt.Println("Driver already initialized!")
@@ -87,7 +88,7 @@ func InitOrders(){
 	currentMap := elevStateMap.GetLocalMap()
 	for f := 0; f < config.NUM_FLOORS; f++{
 		for b:= config.BT_HallUp; b <= config.BT_Cab; b++{
-			if currentMap[config.My_ID].Orders[f][b] == config.OT_LocalOrderPlaced || currentMap[config.My_ID].Orders[f][b] == config.OT_ExternalOrderPlaced{
+			if currentMap[config.My_ID].Orders[f][b] == config.OT_OrderPlaced{
 				//fmt.Printf("ordre i nettverket\n")
 				lamp := config.ButtonLamp{f, b, true}	
 				SetButtonLamp(lamp)
@@ -99,6 +100,30 @@ func InitOrders(){
 	}
 }
 
+func OrderLights(newOrderChan chan config.ButtonEvent, buttonLampChan chan config.ButtonLamp){
+	for {
+		currentMap := elevStateMap.GetLocalMap()
+		for f:= 0; f < config.NUM_FLOORS; f++{
+			for b:= config.BT_HallUp; b < config.BT_Cab; b++{
+				if currentMap[config.My_ID].Orders[f][b] == config.OT_OrderPlaced{
+					newOrder := true
+					for e:= 0; e < config.NUM_ELEVS; e++{
+						if currentMap[e].Orders[f][b] == config.OT_NoOrder && currentMap[e].Connected == true{
+							newOrder = false
+						}	
+					}
+					if newOrder {
+						newOrderChan <- config.ButtonEvent{f, b}
+						buttonLampChan <- config.ButtonLamp{f, b, true}
+						//trigg buttonevent og slå på lys
+					}
+				}
+			}
+		}
+			
+	}
+
+}
 
 func ClearAllButtonLamps(){
 	for f:= 0; f < _numFloors; f++ {
@@ -150,7 +175,7 @@ func PollButtons(receiver chan<- config.ButtonEvent) {
 			for b := config.ButtonType(0); b < 3; b++ {
 				v := getButton(b, f)
 				if v != prev[f][b] && v != false {
-					receiver <- config.ButtonEvent{f, config.ButtonType(b), config.LocalOrder}
+					receiver <- config.ButtonEvent{f, config.ButtonType(b)}
 				}
 				prev[f][b] = v
 			}

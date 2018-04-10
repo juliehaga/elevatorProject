@@ -39,6 +39,11 @@ func SendAck(messageTx chan config.Message,  elevMap config.ElevStateMap, reciev
 	conn.Write(buf)
 }
 
+func SendOrderComplete(messageTx chan config.Message,  order config.ButtonType){
+	elevMapMsg := config.Message{config.My_ID, config.OrderComplete, elevMap, -1}
+	messageTx <- elevMapMsg
+}
+
 func PeerTransmitter(port int, id string, transmitEnable <-chan bool) {
 
 	conn := DialBroadcastUDP(port)
