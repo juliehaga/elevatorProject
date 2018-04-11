@@ -213,6 +213,7 @@ func eventNewFloor(orderCompleteChan chan config.ButtonEvent, motorChan chan con
 func eventDoorTimeout(doorLampChan chan bool, mapChangesChan chan config.ElevStateMap, idleTimer *time.Timer, motorChan chan config.MotorDirection, motorTimer *time.Timer){
 	currentMap := elevStateMap.GetLocalMap()
 	var motorDir config.MotorDirection
+	elevStateMap.PrintMap(currentMap)
 
 	switch(state){
 		case DOOR_OPEN:
