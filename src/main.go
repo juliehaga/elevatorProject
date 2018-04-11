@@ -143,9 +143,10 @@ func main() {
 		case order := <- clearOrderChan:
 			elevMap := elevStateMap.GetLocalMap()
 			fmt.Printf("msg from network about clear order\n")
-			elevStateMap.PrintMap(elevMap)
+			
 			elevMap = fsm.ClearOrder(elevMap, order, buttonLampChan)
 			elevStateMap.SetLocalMap(elevMap)
+			elevStateMap.PrintMap(elevMap)
 
 
 /*		case elevMap:= <-statusChangesChan:
