@@ -107,8 +107,7 @@ func main() {
 				network.SendOrders(messageTx, elevStateMap.GetLocalMap())	
 			}
 
-		case orderMsgFromNetwork := <- orderMsgRx:
-			//Når vi mottar melding bør vi sjekke at hardware er oppdatert			
+		case orderMsgFromNetwork := <- orderMsgRx:		
 			orderUpdates := elevStateMap.UpdateMapFromNetwork(orderMsgFromNetwork.ElevMap, newOrderChan, buttonLampChan)
 			if init == true{
 				elevio.InitOrders()
@@ -118,6 +117,8 @@ func main() {
 			if orderUpdates {
 				orderMsgChan <- true
 				network.SendOrders(messageTx, elevStateMap.GetLocalMap())
+				fmt.Printf("-------Locale orderchange ------\n")
+				elevStateMap.PrintMap()
 			}
 
 		case statusMsgFromNetwork := <- statusMsgRx:
@@ -131,13 +132,15 @@ func main() {
 			if localOrderUpdates {
 				orderMsgChan <- true
 				network.SendOrders(messageTx, elevMap)
+				fmt.Printf("-------Network orderchange ------\n")
+				elevStateMap.PrintMap(ele)
 			}
 			network.SendElevStatus(messageTx, elevMap)
 			init = false
 
 		case button:= <- orderCompleteChan:
 			fmt.Printf("I completed an order, sending msg\n")
-			elevStateMap.PrintMap(elevStateMap.GetLocalMap())
+			//elevStateMap.PrintMap(elevStateMap.GetLocalMap())
 			network.SendOrderComplete(messageTx, button)
 
 		case order := <- clearOrderChan:
@@ -145,7 +148,7 @@ func main() {
 			fmt.Printf("msg from network about clear order\n")
 			
 			elevMap = fsm.ClearOrder(elevMap, order, buttonLampChan)
-			elevStateMap.PrintMap(elevMap)
+			//elevStateMap.PrintMap(elevMap)
 
 
 /*		case elevMap:= <-statusChangesChan:

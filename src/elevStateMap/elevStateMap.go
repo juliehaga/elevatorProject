@@ -198,6 +198,7 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, newOrderChan chan con
 				if recievedMap[e].Orders[f][b] == config.OT_OrderPlaced && currentMap[e].Orders[f][b] == config.OT_NoOrder{
 					currentMap[e].Orders[f][b] = config.OT_OrderPlaced
 					currentMap[config.My_ID].Orders[f][b]  = config.OT_OrderPlaced
+					fmt.Printf("legger inn bestillinger\n")
 					changedMade = true
 				}
 			}

@@ -560,6 +560,8 @@ func ClearOrder(elevMap config.ElevStateMap, button config.ButtonEvent, buttonLa
 	}	
 				//fmt.Printf("completed HALLUP %v\n", elevMap[config.My_ID].CurrentFloor)
 	buttonLampChan <-  config.ButtonLamp{button.Floor, button.Button, false}
-
+	elevStateMap.SetLocalMap(elevMap)
+	elevStateMap.GetLocalMap(elevMap)
+	elevStateMap.PrintMap(elevMap)
 	return elevMap
 }
