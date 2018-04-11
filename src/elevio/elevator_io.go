@@ -105,8 +105,9 @@ func OrderLights(newOrderChan chan config.ButtonEvent, buttonLampChan chan confi
 		select{
 		//Burde bare gjøre sjekken når man faktisk mottar en ordre. 
 		case <- orderMsgChan:
-			fmt.Printf("vi legger på ordrechan\n")
 			currentMap := elevStateMap.GetLocalMap()
+			fmt.Printf("--------------------IN order lights-----------------------\n")
+			elevStateMap.PrintMap(currentMap)
 			for f:= 0; f < config.NUM_FLOORS; f++{
 				for b:= config.BT_HallUp; b < config.BT_Cab; b++{
 					if currentMap[config.My_ID].Orders[f][b] == config.OT_OrderPlaced{

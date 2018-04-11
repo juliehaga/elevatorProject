@@ -158,6 +158,7 @@ func UpdateLocalMap(changedMap config.ElevStateMap) bool{
 			if changedMap[config.My_ID].Orders[f][b] == config.OT_OrderPlaced && currentMap[config.My_ID].Orders[f][b] == config.OT_NoOrder{
 				//lagt inn en ordre, dersom local -> send
 				LocalOrderChangeMade = true
+				fmt.Printf("jeg har LOCAL ordre placed\n")
 				currentMap[config.My_ID].Orders[f][b] = changedMap[config.My_ID].Orders[f][b]
 
 			} /*else if changedMap[e].Orders[f][b] == config.OT_NoOrder && (currentMap[e].Orders[f][b] == config.OT_LocalOrderPlaced || currentMap[e].Orders[f][b] == config.OT_ExternalOrderPlaced){
