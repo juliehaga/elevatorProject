@@ -49,7 +49,6 @@ func Fsm(motorChan chan config.MotorDirection, doorLampChan chan bool, floorChan
 			//fmt.Printf("motor reset %v\n", bool)
 
 		case buttonPushed := <- newOrderChan:
-			fmt.Printf("button pushed\n")
 			eventNewAckOrder(orderCompleteChan, buttonLampChan, motorChan, doorLampChan, doorTimer, mapChangesChan, buttonPushed, idleTimer, motorTimer, statusChangesChan)
 			idleTimer.Reset(time.Second * IDLE_TIME)
 

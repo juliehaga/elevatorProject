@@ -23,7 +23,7 @@ var _conn net.Conn
 
 
 
-func Elevio(motorChan chan config.MotorDirection, doorLampChan chan bool, newOrderChan chan config.ButtonEvent, floorChan chan int, buttonLampChan chan config.ButtonLamp, orderMsgChan chan bool, newLocalOrderChan chan config.ButtonEvent, mapChangesChan chan config.ElevStateMap) {
+func Elevio(motorChan chan config.MotorDirection, doorLampChan chan bool, newOrderChan chan config.ButtonEvent, floorChan chan int, buttonLampChan chan config.ButtonLamp, orderMsgChan chan config.ElevStateMap, newLocalOrderChan chan config.ButtonEvent, mapChangesChan chan config.ElevStateMap) {
 	go PollButtons(newLocalOrderChan)
     go PollFloorSensor(floorChan)
     go OrderLights(newOrderChan, buttonLampChan, orderMsgChan)
@@ -117,13 +117,14 @@ func InitOrders(){
 }
 
 
-func OrderLights(newOrderChan chan config.ButtonEvent, buttonLampChan chan config.ButtonLamp, orderMsgChan chan bool){
+func OrderLights(newOrderChan chan config.ButtonEvent, buttonLampChan chan config.ButtonLamp, orderMsgChan chan config.ElevStateMap){
 	for {
 		select{
 		//Burde bare gjøre sjekken når man faktisk mottar en ordre. 
-		case <- orderMsgChan:
-			fmt.Printf("OrderMSGChan")
-			currentMap := elevStateMap.GetLocalMap()
+		case currentMap := <- orderMsgChan:
+			fmt.Printf("OrderMSGChan\n")
+
+
 			//elevStateMap.PrintMap(currentMap)
 			for f:= 0; f < config.NUM_FLOORS; f++{
 				for b:= config.BT_HallUp; b < config.BT_Cab; b++{

@@ -57,7 +57,7 @@ func main() {
     newOrderChan := make(chan config.ButtonEvent, 100)
     newLocalOrderChan := make(chan config.ButtonEvent, 100)
   
-    orderMsgChan := make(chan bool, 100)
+    orderMsgChan := make(chan config.ElevStateMap, 100)
 
     // We make a channel for receiving updates on the id's of the peers that are
 	//  alive on the network
@@ -110,14 +110,14 @@ func main() {
 
 		case orderMsgFromNetwork := <- orderMsgRx:
 
-			orderUpdates := elevStateMap.UpdateMapFromNetwork(orderMsgFromNetwork.ElevMap, newOrderChan, buttonLampChan)
+			orderUpdates := elevStateMap.UpdateMapFromNetwork(orderMsgFromNetwork.ElevMap, buttonLampChan)
 			if init == true{
 				elevio.InitOrders()
 			}
 			init = false
 
 			if orderUpdates {
-				orderMsgChan <- true
+				orderMsgChan <- elevStateMap.GetLocalMap()
 				network.SendOrders(messageTx, elevStateMap.GetLocalMap())
 			}
 
@@ -128,7 +128,7 @@ func main() {
 		case elevMap:= <-mapChangesChan:
 			localOrderUpdates := elevStateMap.UpdateLocalMap(elevMap)
 			if localOrderUpdates {
-				orderMsgChan <- true
+				orderMsgChan <- elevMap
 				network.SendOrders(messageTx, elevMap)
 				//elevStateMap.PrintMap(elevMap)
 			}
