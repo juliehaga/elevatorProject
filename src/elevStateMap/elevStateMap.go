@@ -179,7 +179,7 @@ func UpdateLocalMap(changedMap config.ElevStateMap) bool{
 }
 
 
-func UpdateMapFromNetwork(recievedMap config.ElevStateMap, buttonLampChan chan config.ButtonLamp) bool{
+func UpdateMapFromNetwork(recievedMap config.ElevStateMap, buttonLampChan chan config.ButtonLamp) (bool, config.ElevStateMap){
 	//buttonEvent := false
 	//fmt.Printf("--------------------FROM NETWORK--------------------")
 	//PrintMap(recievedMap)
@@ -232,7 +232,7 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, buttonLampChan chan c
 		}
 
 	SetLocalMap(currentMap)
-	return changedMade
+	return changedMade, currentMap
 }
 
 func UpdateElevStatusFromNetwork(newStatus config.StatusMsg){

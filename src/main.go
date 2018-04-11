@@ -110,17 +110,17 @@ func main() {
 
 		case orderMsgFromNetwork := <- orderMsgRx:
 
-			orderUpdates := elevStateMap.UpdateMapFromNetwork(orderMsgFromNetwork.ElevMap, buttonLampChan)
+			orderUpdates, currentMap := elevStateMap.UpdateMapFromNetwork(orderMsgFromNetwork.ElevMap, buttonLampChan)
 			if init == true{
 				elevio.InitOrders()
 			}
 			init = false
 
 			if orderUpdates {
-				orderMsgChan <- elevStateMap.GetLocalMap()
+				orderMsgChan <- currentMap
 				fmt.Printf("//////////// LEGGER PÅ ORDERMSGCHAN FRA NETTVERK/////////////////////////\n")
-				elevStateMap.PrintMap(elevStateMap.GetLocalMap())
-				network.SendOrders(messageTx, elevStateMap.GetLocalMap())
+				elevStateMap.PrintMap(currentMap)
+				network.SendOrders(messageTx, currentMap)
 			}
 
 		case statusMsgFromNetwork := <- statusMsgRx:
