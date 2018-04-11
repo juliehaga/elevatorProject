@@ -43,19 +43,19 @@ func Fsm(motorChan chan config.MotorDirection, doorLampChan chan bool, floorChan
 		
 		select{
 		case  floor := <- floorChan:
-			//fmt.Printf("floor event\n")
+			fmt.Printf("floor event\n")
 			eventNewFloor(orderCompleteChan, motorChan, doorLampChan, doorTimer,mapChangesChan, buttonLampChan, floor, idleTimer, statusChangesChan, motorTimer)
 			idleTimer.Reset(time.Second * IDLE_TIME)
 			motorTimer.Reset(time.Second * MOTOR_DEAD_TIME)
 			//fmt.Printf("motor reset %v\n", bool)
 
 		case buttonPushed := <- newOrderChan:
-			//fmt.Printf("buttonpushed\n")
+			fmt.Printf("neworderchan\n")
 			eventNewAckOrder(orderCompleteChan, buttonLampChan, motorChan, doorLampChan, doorTimer, mapChangesChan, buttonPushed, idleTimer, motorTimer, statusChangesChan)
 			idleTimer.Reset(time.Second * IDLE_TIME)
 
 		case <- doorTimer.C:
-			//fmt.Printf("door timeout\n")
+			fmt.Printf("door timeout\n")
 			eventDoorTimeout(doorLampChan, mapChangesChan, idleTimer, motorChan, motorTimer)
 			idleTimer.Reset(time.Second * IDLE_TIME)
 			
