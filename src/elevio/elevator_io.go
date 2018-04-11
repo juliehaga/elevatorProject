@@ -100,7 +100,7 @@ func InitOrders(){
 }
 
 func OrderLights(newOrderChan chan config.ButtonEvent, buttonLampChan chan config.ButtonLamp, orderMsgChan chan bool){
-	for {
+	/*for {
 		select{
 		case <- orderMsgChan:
 			currentMap := elevStateMap.GetLocalMap()
@@ -122,7 +122,7 @@ func OrderLights(newOrderChan chan config.ButtonEvent, buttonLampChan chan confi
 				}
 			}
 		}	
-	}
+	}*/
 
 }
 
