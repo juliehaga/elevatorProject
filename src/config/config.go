@@ -77,7 +77,7 @@ type Message struct {
 	MsgType int
 	ElevMap   ElevStateMap
 	Reciever_ID int 
-
+	Button ButtonEvent
 }
 
 

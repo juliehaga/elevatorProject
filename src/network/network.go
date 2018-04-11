@@ -21,17 +21,17 @@ const timeout = 1500 * time.Millisecond
 
 
 func SendOrders(messageTx chan config.Message, elevMap config.ElevStateMap) {
-	elevMapMsg := config.Message{config.My_ID, config.Orders, elevMap, -1}
+	elevMapMsg := config.Message{config.My_ID, config.Orders, elevMap, -1, config.ButtonEvent{0, config.BT_HallDown}}
 	messageTx <- elevMapMsg
 }
 
 func SendElevStatus(messageTx chan config.Message,  elevMap config.ElevStateMap){
-	elevMapMsg := config.Message{config.My_ID, config.ElevStatus, elevMap, -1}
+	elevMapMsg := config.Message{config.My_ID, config.ElevStatus, elevMap, -1, config.ButtonEvent{0, config.BT_HallDown}}
 	messageTx <- elevMapMsg
 }
 
 func SendAck(messageTx chan config.Message,  elevMap config.ElevStateMap, recieverID int, port int){
-	AckMsg := config.Message{config.My_ID, config.Ack, elevMap, recieverID}
+	AckMsg := config.Message{config.My_ID, config.Ack, elevMap, recieverID, config.ButtonEvent{0, config.BT_HallDown}}
 	
 	addr, _ := net.ResolveUDPAddr("udp", fmt.Sprintf("255.255.255.255:%d", port))
 	conn, _ := net.DialUDP("udp", nil, addr)
@@ -39,8 +39,9 @@ func SendAck(messageTx chan config.Message,  elevMap config.ElevStateMap, reciev
 	conn.Write(buf)
 }
 
-func SendOrderComplete(messageTx chan config.Message,  order config.ButtonType){
-	elevMapMsg := config.Message{config.My_ID, config.OrderComplete, elevMap, -1}
+func SendOrderComplete(messageTx chan config.Message,  order config.ButtonEvent){
+	elevMap := elevStateMap.GetLocalMap()
+	elevMapMsg := config.Message{config.My_ID, config.OrderComplete, elevMap, -1, order}
 	messageTx <- elevMapMsg
 }
 
@@ -185,7 +186,7 @@ func Transmitter(port int, messageTx chan config.Message, ackChan chan config.Ac
 
 // Matches type-tagged JSON received on `port` to element types of `chans`, then
 // sends the decoded value on the corresponding channel
-func Receiver(port int, orderMsgRx chan config.OrderMsg, statusMsgRx chan config.StatusMsg, ackChan chan config.AckMsg, messageTx chan config.Message) {
+func Receiver(port int, orderMsgRx chan config.OrderMsg, statusMsgRx chan config.StatusMsg, ackChan chan config.AckMsg, messageTx chan config.Message, clearOrderChan chan config.ButtonEvent) {
 	//var receivedMap elevStateMap.ElevStateMap
 	var receivedMsg config.Message
 	addr, _ := net.ResolveUDPAddr("udp", fmt.Sprintf("255.255.255.255:%d", port))
@@ -212,6 +213,9 @@ func Receiver(port int, orderMsgRx chan config.OrderMsg, statusMsgRx chan config
 				} else if receivedMsg.MsgType == config.Ack{
 					ackChan <- config.AckMsg{receivedMsg.ID, receivedMsg.Reciever_ID}
 
+				} else if receivedMsg.MsgType == config.OrderComplete {
+					clearOrderChan <- receivedMsg.Button
+					SendAck(messageTx, receivedMsg.ElevMap, receivedMsg.ID, port)
 				}
 			}
 		

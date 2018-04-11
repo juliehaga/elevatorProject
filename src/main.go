@@ -55,6 +55,7 @@ func main() {
     statusChangesChan := make(chan config.ElevStateMap, 100)
     mapChangesChan := make(chan config.ElevStateMap, 100)
     newOrderChan := make(chan config.ButtonEvent, 100)
+    clearOrderChan := make(chan config.ButtonEvent, 100)
 
     // We make a channel for receiving updates on the id's of the peers that are
 	//  alive on the network
@@ -67,6 +68,7 @@ func main() {
 	orderMsgRx := make(chan config.OrderMsg, 10000)
 	statusMsgRx := make(chan config.StatusMsg, 10000)
 	ackChan := make(chan config.AckMsg, 10000)
+	orderCompleteChan := make(chan config.ButtonEvent, 10000)
 	
 	config.Init(id, port)
 	elevio.InitDriver("localhost:" + port, config.NUM_FLOORS)
@@ -83,10 +85,10 @@ func main() {
     go elevio.Elevio(motorChan, doorLampChan, newOrderChan, floorChan, buttonLampChan)
     go elevio.OrderLights(newOrderChan, buttonLampChan)
 	go network.Transmitter(16502, messageTx, ackChan)
-	go network.Receiver(16502, orderMsgRx, statusMsgRx, ackChan, messageTx)
+	go network.Receiver(16502, orderMsgRx, statusMsgRx, ackChan, messageTx, clearOrderChan)
     go network.PeerTransmitter(15600, id, peerTxEnable)
 	go network.PeerReceiver(15600, peerUpdateCh)
-	go fsm.Fsm(motorChan, doorLampChan, floorChan, buttonLampChan, mapChangesChan, newOrderChan, statusChangesChan)
+	go fsm.Fsm(motorChan, doorLampChan, floorChan, buttonLampChan, mapChangesChan, newOrderChan, statusChangesChan, orderCompleteChan)
 
 	fmt.Printf("go all functions\n")
     
@@ -132,6 +134,14 @@ func main() {
 
 		
 			init = false
+
+		case button:= <- orderCompleteChan:
+			network.SendOrderComplete(messageTx, button)
+
+		case order := <- clearOrderChan:
+			elevMap := fsm.ClearOrder(order, buttonLampChan)
+			elevStateMap.SetLocalMap(elevMap)
+
 
 /*		case elevMap:= <-statusChangesChan:
 			elevStateMap.UpdateLocalMap(elevMap)

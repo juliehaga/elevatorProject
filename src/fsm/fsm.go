@@ -24,7 +24,7 @@ const IDLE_TIME 	    = 9
 const MOTOR_DEAD_TIME 	= 10
 
 
-func Fsm(motorChan chan config.MotorDirection, doorLampChan chan bool, floorChan chan int, buttonLampChan chan config.ButtonLamp, mapChangesChan chan config.ElevStateMap, newOrderChan chan config.ButtonEvent, statusChangesChan chan config.ElevStateMap){
+func Fsm(motorChan chan config.MotorDirection, doorLampChan chan bool, floorChan chan int, buttonLampChan chan config.ButtonLamp, mapChangesChan chan config.ElevStateMap, newOrderChan chan config.ButtonEvent, statusChangesChan chan config.ElevStateMap, orderCompleteChan chan config.ButtonEvent){
 	state = INIT
 	
 	doorTimer := time.NewTimer(time.Second * DOOR_TIME)
@@ -44,14 +44,14 @@ func Fsm(motorChan chan config.MotorDirection, doorLampChan chan bool, floorChan
 		select{
 		case  floor := <- floorChan:
 			//fmt.Printf("floor event\n")
-			eventNewFloor(motorChan, doorLampChan, doorTimer,mapChangesChan, buttonLampChan, floor, idleTimer, statusChangesChan, motorTimer)
+			eventNewFloor(orderCompleteChan, motorChan, doorLampChan, doorTimer,mapChangesChan, buttonLampChan, floor, idleTimer, statusChangesChan, motorTimer)
 			idleTimer.Reset(time.Second * IDLE_TIME)
 			motorTimer.Reset(time.Second * MOTOR_DEAD_TIME)
 			//fmt.Printf("motor reset %v\n", bool)
 
 		case buttonPushed := <- newOrderChan:
 			//fmt.Printf("buttonpushed\n")
-			eventNewAckOrder(buttonLampChan, motorChan, doorLampChan, doorTimer, mapChangesChan, buttonPushed, idleTimer, motorTimer, statusChangesChan)
+			eventNewAckOrder(orderCompleteChan, buttonLampChan, motorChan, doorLampChan, doorTimer, mapChangesChan, buttonPushed, idleTimer, motorTimer, statusChangesChan)
 			idleTimer.Reset(time.Second * IDLE_TIME)
 
 		case <- doorTimer.C:
@@ -116,7 +116,7 @@ func eventIdleTimeout(motorChan chan config.MotorDirection, statusChangesChan ch
 
 */
 
-func eventNewFloor(motorChan chan config.MotorDirection, doorLampChan chan bool, doorTimer *time.Timer, mapChangesChan chan config.ElevStateMap, buttonLampChan chan config.ButtonLamp, floor int, idleTimer *time.Timer, statusChangesChan chan config.ElevStateMap, motorTimer *time.Timer){
+func eventNewFloor(orderCompleteChan chan config.ButtonEvent, motorChan chan config.MotorDirection, doorLampChan chan bool, doorTimer *time.Timer, mapChangesChan chan config.ElevStateMap, buttonLampChan chan config.ButtonLamp, floor int, idleTimer *time.Timer, statusChangesChan chan config.ElevStateMap, motorTimer *time.Timer){
 	currentMap := elevStateMap.GetLocalMap()
 	//var det en grunn til at vi skulle oppdatere currentfloor her? 
 	fmt.Printf("new floor event\n")
@@ -143,7 +143,7 @@ func eventNewFloor(motorChan chan config.MotorDirection, doorLampChan chan bool,
 						doorLampChan <- true
 						doorTimer.Reset(time.Second * DOOR_TIME)
 						currentMap[config.My_ID].Door = true
-						currentMap = orderCompleted(currentMap, buttonLampChan)
+						currentMap = orderCompleted(currentMap, buttonLampChan, orderCompleteChan)
 						currentMap[config.My_ID].IDLE = false
 						state = DOOR_OPEN
 					} else {
@@ -239,7 +239,7 @@ func eventDoorTimeout(doorLampChan chan bool, mapChangesChan chan config.ElevSta
 }
 
 
-func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan config.MotorDirection, doorLampChan chan bool, doorTimer *time.Timer, mapChangesChan chan config.ElevStateMap, buttonPushed config.ButtonEvent, idleTimer *time.Timer, motorTimer *time.Timer, statusChangesChan chan config.ElevStateMap){
+func eventNewAckOrder(orderCompleteChan chan config.ButtonEvent, buttonLampChan chan config.ButtonLamp, motorChan chan config.MotorDirection, doorLampChan chan bool, doorTimer *time.Timer, mapChangesChan chan config.ElevStateMap, buttonPushed config.ButtonEvent, idleTimer *time.Timer, motorTimer *time.Timer, statusChangesChan chan config.ElevStateMap){
 	currentMap := elevStateMap.GetLocalMap()
 	accept := false
 
@@ -268,7 +268,7 @@ func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan conf
 				//fmt.Printf("order, in this floor\n")
 				doorLampChan <- true	
 				currentMap[config.My_ID].Door = true
-				currentMap = orderCompleted(currentMap, buttonLampChan)
+				currentMap = orderCompleted(currentMap, buttonLampChan, orderCompleteChan)
 				doorTimer.Reset(time.Second * DOOR_TIME)
 				currentMap[config.My_ID].IDLE = false
 				state = DOOR_OPEN
@@ -289,7 +289,7 @@ func eventNewAckOrder(buttonLampChan chan config.ButtonLamp, motorChan chan conf
 				//fmt.Printf("door open order, in this floor\n")
 				doorLampChan <- true	
 				currentMap[config.My_ID].Door = true
-				currentMap = orderCompleted(currentMap, buttonLampChan)
+				currentMap = orderCompleted(currentMap, buttonLampChan, orderCompleteChan)
 				doorTimer.Reset(time.Second * DOOR_TIME)
 				currentMap[config.My_ID].IDLE = false
 			}
@@ -367,7 +367,7 @@ func ordersBelow(elevMap config.ElevStateMap) bool{
 
 
 
-func orderCompleted(elevMap config.ElevStateMap, buttonLampChan chan config.ButtonLamp) config.ElevStateMap{
+func orderCompleted(elevMap config.ElevStateMap, buttonLampChan chan config.ButtonLamp, orderCompleteChan chan config.ButtonEvent) config.ElevStateMap{
 	fmt.Printf("ordercompleted\n")
 	if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_Cab] == config.OT_OrderPlaced{
 		elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_Cab] = config.OT_NoOrder
@@ -379,38 +379,24 @@ func orderCompleted(elevMap config.ElevStateMap, buttonLampChan chan config.Butt
 		case config.ED_Up: 
 			if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallUp] == config.OT_OrderPlaced{
 				
-				for elev := 0; elev < config.NUM_ELEVS; elev++{				
-					elevMap[elev].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallUp] = config.OT_NoOrder
-				}	
-				//fmt.Printf("completed HALLUP %v\n", elevMap[config.My_ID].CurrentFloor)
-				buttonLampChan <-  config.ButtonLamp{elevMap[config.My_ID].CurrentFloor, config.BT_HallUp, false}
+				elevMap = ClearOrder(config.ButtonEvent{elevMap[config.My_ID].CurrentFloor, config.BT_HallUp}, buttonLampChan)
+				orderCompleteChan <- config.ButtonEvent{elevMap[config.My_ID].CurrentFloor, config.BT_HallUp}
 
 			} else if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallDown] == config.OT_OrderPlaced {
-
-				for elev := 0; elev < config.NUM_ELEVS; elev++{				
-					elevMap[elev].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallDown] = config.OT_NoOrder
-				}
-				//fmt.Printf("completed HALL-DOWN %v\n", elevMap[config.My_ID].CurrentFloor)
-				buttonLampChan <-  config.ButtonLamp{elevMap[config.My_ID].CurrentFloor, config.BT_HallDown, false}
+				elevMap = ClearOrder(config.ButtonEvent{elevMap[config.My_ID].CurrentFloor, config.BT_HallDown}, buttonLampChan)
+				orderCompleteChan <- config.ButtonEvent{elevMap[config.My_ID].CurrentFloor, config.BT_HallDown}			
 			}
 			
 		case config.ED_Down:
 			if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallDown] == config.OT_OrderPlaced{
-				for elev := 0; elev < config.NUM_ELEVS; elev++{			
-
-					elevMap[elev].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallDown] = config.OT_NoOrder
-				}
-				//fmt.Printf("completed Halldown %v\n", elevMap[config.My_ID].CurrentFloor)
-				buttonLampChan <-  config.ButtonLamp{elevMap[config.My_ID].CurrentFloor, config.BT_HallDown, false}
+				
+				elevMap = ClearOrder(config.ButtonEvent{elevMap[config.My_ID].CurrentFloor, config.BT_HallDown}, buttonLampChan)				
+				orderCompleteChan <- config.ButtonEvent{elevMap[config.My_ID].CurrentFloor, config.BT_HallDown}
+			
 			} else if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallUp] == config.OT_OrderPlaced{
-
-				for elev := 0; elev < config.NUM_ELEVS; elev++{					
-					elevMap[elev].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallUp] = config.OT_NoOrder
-				}	
-				//fmt.Printf("completed Hall_UP %v\n", elevMap[config.My_ID].CurrentFloor)				
-				buttonLampChan <-  config.ButtonLamp{elevMap[config.My_ID].CurrentFloor, config.BT_HallUp, false}
-
-
+				
+				elevMap = ClearOrder(config.ButtonEvent{elevMap[config.My_ID].CurrentFloor, config.BT_HallUp}, buttonLampChan)
+				orderCompleteChan <- config.ButtonEvent{elevMap[config.My_ID].CurrentFloor, config.BT_HallUp}
 			}
 			
 	}
@@ -567,3 +553,17 @@ func forceChooseDirection(elevMap *config.ElevStateMap, motorTimer *time.Timer) 
 	}
 	return config.MD_Stop
 } 
+
+func ClearOrder(button config.ButtonEvent, buttonLampChan chan config.ButtonLamp) config.ElevStateMap{
+	elevMap := elevStateMap.GetLocalMap()
+
+	for elev := 0; elev < config.NUM_ELEVS; elev++{				
+		elevMap[elev].Orders[button.Floor][button.Button] = config.OT_NoOrder
+	}	
+				//fmt.Printf("completed HALLUP %v\n", elevMap[config.My_ID].CurrentFloor)
+	buttonLampChan <-  config.ButtonLamp{button.Floor, button.Button, false}
+
+	return elevMap
+				
+
+}
