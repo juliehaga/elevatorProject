@@ -158,13 +158,13 @@ func UpdateLocalMap(changedMap config.ElevStateMap) bool{
 			if changedMap[config.My_ID].Orders[f][b] == config.OT_OrderPlaced && currentMap[config.My_ID].Orders[f][b] == config.OT_NoOrder{
 				//lagt inn en ordre, dersom local -> send
 				LocalOrderChangeMade = true
-				fmt.Printf("jeg har LOCAL ordre placed\n")
+				fmt.Printf("jeg legger til en lokal ordre\n")
 				currentMap[config.My_ID].Orders[f][b] = changedMap[config.My_ID].Orders[f][b]
 
 			} else if changedMap[config.My_ID].Orders[f][b] == config.OT_NoOrder && currentMap[config.My_ID].Orders[f][b] == config.OT_OrderPlaced {
 				LocalOrderChangeMade = true
 				currentMap[config.My_ID].Orders[f][b] = changedMap[config.My_ID].Orders[f][b]
-				//fmt.Printf("SENDING CLEAR ORDER\n")
+				fmt.Printf("SENDING CLEAR ORDER\n")
 				for elev := 0; elev < config.NUM_ELEVS; elev++{
 					currentMap[elev].Orders[f][b] = config.OT_NoOrder
 				}
@@ -203,6 +203,7 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, newOrderChan chan con
 		for f:= 0; f < config.NUM_FLOORS; f++{
 			for b:= config.BT_HallUp; b < config.BT_Cab; b++{
 				if recievedMap[e].Orders[f][b] == config.OT_OrderPlaced && currentMap[e].Orders[f][b] == config.OT_NoOrder{
+					fmt.Printf("legger til ordre fra nettverket\n")
 					currentMap[e].Orders[f][b] = config.OT_OrderPlaced
 					currentMap[config.My_ID].Orders[f][b]  = config.OT_OrderPlaced
 					changedMade = true
@@ -220,6 +221,7 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, newOrderChan chan con
 					for e := 0; e < config.NUM_ELEVS; e++{
 						if recievedMap[e].CurrentFloor == f && recievedMap[e].Door == true{							
 							buttonLampChan <- config.ButtonLamp{f, b, false}
+							fmt.Printf("fjerner ordre fra nettverket\n")
 							//clear orders from network 
 							for elev := 0; elev < config.NUM_ELEVS; elev++{
 								currentMap[elev].Orders[f][b] = config.OT_NoOrder
