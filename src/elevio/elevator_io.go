@@ -123,6 +123,7 @@ func OrderLights(newOrderChan chan config.ButtonEvent, buttonLampChan chan confi
 		//Burde bare gjøre sjekken når man faktisk mottar en ordre. 
 		case currentMap := <- orderMsgChan:
 			fmt.Printf("OrderMSGChan\n")
+			elevStateMap.PrintMap(currentMap)
 
 
 			//elevStateMap.PrintMap(currentMap)
