@@ -122,6 +122,7 @@ func OrderLights(newOrderChan chan config.ButtonEvent, buttonLampChan chan confi
 		select{
 		//Burde bare gjøre sjekken når man faktisk mottar en ordre. 
 		case <- orderMsgChan:
+			fmt.Printf("OrderMSGChan")
 			currentMap := elevStateMap.GetLocalMap()
 			//elevStateMap.PrintMap(currentMap)
 			for f:= 0; f < config.NUM_FLOORS; f++{
@@ -136,6 +137,7 @@ func OrderLights(newOrderChan chan config.ButtonEvent, buttonLampChan chan confi
 							}	
 						}
 						if newOrder {
+							fmt.Printf("fant ny ordre\n")
 							newOrderChan <- config.ButtonEvent{f, b}
 							buttonLampChan <- config.ButtonLamp{f, b, true}
 							//trigg buttonevent og slå på lys
