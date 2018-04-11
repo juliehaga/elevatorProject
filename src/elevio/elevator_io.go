@@ -42,8 +42,6 @@ func Elevio(motorChan chan config.MotorDirection, doorLampChan chan bool, newOrd
 
 		}
 	
-
-
 	}
 	
 }
