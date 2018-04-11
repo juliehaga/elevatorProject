@@ -107,7 +107,7 @@ func OrderLights(newOrderChan chan config.ButtonEvent, buttonLampChan chan confi
 		case <- orderMsgChan:
 			currentMap := elevStateMap.GetLocalMap()
 			fmt.Printf("--------------------IN order lights-----------------------\n")
-			elevStateMap.PrintMap(currentMap)
+			//elevStateMap.PrintMap(currentMap)
 			for f:= 0; f < config.NUM_FLOORS; f++{
 				for b:= config.BT_HallUp; b < config.BT_Cab; b++{
 					if currentMap[config.My_ID].Orders[f][b] == config.OT_OrderPlaced{
