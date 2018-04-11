@@ -107,7 +107,8 @@ func main() {
 				network.SendOrders(messageTx, elevStateMap.GetLocalMap())	
 			}
 
-		case orderMsgFromNetwork := <- orderMsgRx:		
+		case orderMsgFromNetwork := <- orderMsgRx:	
+	
 			orderUpdates := elevStateMap.UpdateMapFromNetwork(orderMsgFromNetwork.ElevMap, newOrderChan, buttonLampChan)
 			if init == true{
 				elevio.InitOrders()
