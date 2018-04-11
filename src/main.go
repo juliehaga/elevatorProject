@@ -117,8 +117,6 @@ func main() {
 			if orderUpdates {
 				orderMsgChan <- true
 				network.SendOrders(messageTx, elevStateMap.GetLocalMap())
-				fmt.Printf("-------Locale orderchange ------\n")
-				elevStateMap.PrintMap()
 			}
 
 		case statusMsgFromNetwork := <- statusMsgRx:
@@ -132,8 +130,6 @@ func main() {
 			if localOrderUpdates {
 				orderMsgChan <- true
 				network.SendOrders(messageTx, elevMap)
-				fmt.Printf("-------Network orderchange ------\n")
-				elevStateMap.PrintMap(ele)
 			}
 			network.SendElevStatus(messageTx, elevMap)
 			init = false

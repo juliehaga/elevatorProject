@@ -141,6 +141,7 @@ func eventNewFloor(orderCompleteChan chan config.ButtonEvent, motorChan chan con
 						currentMap[config.My_ID].Door = true
 						currentMap = orderCompleted(currentMap, buttonLampChan, orderCompleteChan)
 						currentMap[config.My_ID].IDLE = false
+						elevStateMap.PrintMap(currentMap)
 						state = DOOR_OPEN
 					} else {
 						currentMap[config.My_ID].IDLE = true
@@ -561,7 +562,5 @@ func ClearOrder(elevMap config.ElevStateMap, button config.ButtonEvent, buttonLa
 				//fmt.Printf("completed HALLUP %v\n", elevMap[config.My_ID].CurrentFloor)
 	buttonLampChan <-  config.ButtonLamp{button.Floor, button.Button, false}
 	elevStateMap.SetLocalMap(elevMap)
-	elevStateMap.GetLocalMap(elevMap)
-	elevStateMap.PrintMap(elevMap)
 	return elevMap
 }
