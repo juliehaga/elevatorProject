@@ -264,9 +264,9 @@ func eventNewAckOrder(orderCompleteChan chan config.ButtonEvent, buttonLampChan 
 				//endret status og ordre
 				//fmt.Printf("order, in this floor\n")
 				doorLampChan <- true	
+				doorTimer.Reset(time.Second * DOOR_TIME)
 				currentMap[config.My_ID].Door = true
 				currentMap = orderCompleted(currentMap, buttonLampChan, orderCompleteChan)
-				doorTimer.Reset(time.Second * DOOR_TIME)
 				currentMap[config.My_ID].IDLE = false
 				state = DOOR_OPEN
 				time.Sleep(2000*time.Millisecond)
@@ -286,14 +286,14 @@ func eventNewAckOrder(orderCompleteChan chan config.ButtonEvent, buttonLampChan 
 			if orderInThisFloor(currentMap[config.My_ID].CurrentFloor, currentMap){
 				//fmt.Printf("door open order, in this floor\n")
 				doorLampChan <- true	
+				doorTimer.Reset(time.Second * DOOR_TIME)
 				currentMap[config.My_ID].Door = true
 				currentMap = orderCompleted(currentMap, buttonLampChan, orderCompleteChan)
-				doorTimer.Reset(time.Second * DOOR_TIME)
 				currentMap[config.My_ID].IDLE = false
 				time.Sleep(2000*time.Millisecond)
 			}
-		}
-		mapChangesChan <- currentMap
+	}
+	mapChangesChan <- currentMap
 }
 
 
