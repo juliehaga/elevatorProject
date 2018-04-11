@@ -215,9 +215,9 @@ func eventNewFloor(orderCompleteChan chan config.ButtonEvent, motorChan chan con
 
 func eventDoorTimeout(doorLampChan chan bool, mapChangesChan chan config.ElevStateMap, idleTimer *time.Timer, motorChan chan config.MotorDirection, motorTimer *time.Timer){
 	currentMap := elevStateMap.GetLocalMap()
-	fmt.Printf("****************************************DOOR TIMEOUT*********************************\n")
-	elevStateMap.PrintMap(currentMap)
 	var motorDir config.MotorDirection
+	fmt.Printf("*******************DOOR TIMEOUT**************\n")
+	elevStateMap.PrintMap(currentMap)
 	switch(state){
 		case DOOR_OPEN:
 			doorLampChan <- false
@@ -240,12 +240,24 @@ func eventDoorTimeout(doorLampChan chan bool, mapChangesChan chan config.ElevSta
 
 func eventNewAckOrder(orderCompleteChan chan config.ButtonEvent, buttonLampChan chan config.ButtonLamp, motorChan chan config.MotorDirection, doorLampChan chan bool, doorTimer *time.Timer, mapChangesChan chan config.ElevStateMap, buttonPushed config.ButtonEvent, idleTimer *time.Timer, motorTimer *time.Timer, statusChangesChan chan config.ElevStateMap){
 	currentMap := elevStateMap.GetLocalMap()
+	accept := false
 
 	//accept CAB order
 	if buttonPushed.Button == config.BT_Cab{ //&& currentMap[config.My_ID].OutOfOrder == false{
 		currentMap[config.My_ID].Orders[buttonPushed.Floor][buttonPushed.Button] = config.OT_OrderPlaced
 		buttonLampChan <- config.ButtonLamp{buttonPushed.Floor, buttonPushed.Button, true}
 	}
+		//add HALL order
+		for e:= 0; e < config.NUM_ELEVS; e++{
+			if currentMap[e].Connected && e != config.My_ID{
+				accept = true
+			}
+		}
+		if accept == true{
+			currentMap[config.My_ID].Orders[buttonPushed.Floor][buttonPushed.Button] = config.OT_OrderPlaced
+		}
+	
+
 	
 	var motorDir config.MotorDirection
 	switch(state){
