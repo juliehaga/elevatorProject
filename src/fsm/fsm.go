@@ -209,6 +209,7 @@ func eventNewFloor(orderCompleteChan chan config.ButtonEvent, motorChan chan con
 
 			}
 		}*/
+	fmt.Printf("legger på update fra new floor\n")
 	mapChangesChan <- currentMap
 		
 }
@@ -233,6 +234,7 @@ func eventDoorTimeout(doorLampChan chan bool, mapChangesChan chan config.ElevSta
 				state = IDLE
 				
 			}
+			fmt.Printf("door timeout")
 			mapChangesChan <- currentMap	
 	}
 }
@@ -284,6 +286,7 @@ func eventNewAckOrder(orderCompleteChan chan config.ButtonEvent, buttonLampChan 
 				time.Sleep(2000*time.Millisecond)
 			}
 	}
+	fmt.Printf("eventAckNewOrder\n")
 	mapChangesChan <- currentMap
 }
 
