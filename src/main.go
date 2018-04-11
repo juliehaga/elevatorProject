@@ -83,8 +83,7 @@ func main() {
 
 
   
-    go elevio.Elevio(motorChan, doorLampChan, newOrderChan, floorChan, buttonLampChan)
-    go elevio.OrderLights(newOrderChan, buttonLampChan)
+    go elevio.Elevio(motorChan, doorLampChan, newOrderChan, floorChan, buttonLampChan, orderMsgChan)
 	go network.Transmitter(16502, messageTx, ackChan)
 	go network.Receiver(16502, orderMsgRx, statusMsgRx, ackChan, messageTx, clearOrderChan)
     go network.PeerTransmitter(15600, id, peerTxEnable)

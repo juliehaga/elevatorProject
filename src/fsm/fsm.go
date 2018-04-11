@@ -5,7 +5,7 @@ import(
 	"../config"
 	"time"
 	"math"
-	"fmt"
+	//"fmt"
 )
 
 var state ElevState

@@ -23,10 +23,10 @@ var _conn net.Conn
 
 
 
-func Elevio(motorChan chan config.MotorDirection, doorLampChan chan bool, newOrderChan chan config.ButtonEvent, floorChan chan int, buttonLampChan chan config.ButtonLamp) {
+func Elevio(motorChan chan config.MotorDirection, doorLampChan chan bool, newOrderChan chan config.ButtonEvent, floorChan chan int, buttonLampChan chan config.ButtonLamp, orderMsgChan chan bool) {
 	go PollButtons(newOrderChan)
     go PollFloorSensor(floorChan)
-    go OrderLights(newOrderChan, buttonLampChan)
+    go OrderLights(newOrderChan, buttonLampChan, orderMsgChan)
     //update map?
 
 	for {
@@ -99,7 +99,7 @@ func InitOrders(){
 	}
 }
 
-func OrderLights(newOrderChan chan config.ButtonEvent, buttonLampChan chan config.ButtonLamp){
+func OrderLights(newOrderChan chan config.ButtonEvent, buttonLampChan chan config.ButtonLamp, orderMsgChan chan bool){
 	for {
 		select{
 		case <- orderMsgChan:
