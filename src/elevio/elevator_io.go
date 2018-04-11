@@ -99,9 +99,11 @@ func InitOrders(){
 	}
 }
 
+
 func OrderLights(newOrderChan chan config.ButtonEvent, buttonLampChan chan config.ButtonLamp, orderMsgChan chan bool){
 	for {
 		select{
+		//Burde bare gjøre sjekken når man faktisk mottar en ordre. 
 		case <- orderMsgChan:
 			currentMap := elevStateMap.GetLocalMap()
 			for f:= 0; f < config.NUM_FLOORS; f++{
@@ -110,6 +112,8 @@ func OrderLights(newOrderChan chan config.ButtonEvent, buttonLampChan chan confi
 						newOrder := true
 						for e:= 0; e < config.NUM_ELEVS; e++{
 							if currentMap[e].Orders[f][b] == config.OT_NoOrder && currentMap[e].Connected == true{
+								//ER det lettere å slukke lys her??
+								//buttonLampChan <- config.ButtonLamp{f, b, false}
 								newOrder = false
 							}	
 						}

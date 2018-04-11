@@ -566,6 +566,8 @@ func forceChooseDirection(elevMap *config.ElevStateMap, motorTimer *time.Timer) 
 	return config.MD_Stop
 } 
 
+
+//Kanskje vi må sende med map her, mulig det blir feil å bruke den i completedOrder om ikke???
 func ClearOrder(button config.ButtonEvent, buttonLampChan chan config.ButtonLamp) config.ElevStateMap{
 	elevMap := elevStateMap.GetLocalMap()
 
