@@ -373,24 +373,41 @@ func orderCompleted(elevMap config.ElevStateMap, buttonLampChan chan config.Butt
 	switch(elevMap[config.My_ID].CurrentDir){
 		case config.ED_Up: 
 			if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallUp] == config.OT_OrderPlaced{
-				
-				elevMap = ClearOrder(config.ButtonEvent{elevMap[config.My_ID].CurrentFloor, config.BT_HallUp}, buttonLampChan)
+				for elev := 0; elev < config.NUM_ELEVS; elev++{				
+					elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallUp] = config.OT_NoOrder
+				}	
+							//fmt.Printf("completed HALLUP %v\n", elevMap[config.My_ID].CurrentFloor)
+				buttonLampChan <-  config.ButtonLamp{elevMap[config.My_ID].CurrentFloor, config.BT_HallUp, false}
+				//elevMap = ClearOrder(config.ButtonEvent{elevMap[config.My_ID].CurrentFloor, config.BT_HallUp}, buttonLampChan)
 				orderCompleteChan <- config.ButtonEvent{elevMap[config.My_ID].CurrentFloor, config.BT_HallUp}
 
 			} else if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallDown] == config.OT_OrderPlaced {
-				elevMap = ClearOrder(config.ButtonEvent{elevMap[config.My_ID].CurrentFloor, config.BT_HallDown}, buttonLampChan)
+				//elevMap = ClearOrder(config.ButtonEvent{elevMap[config.My_ID].CurrentFloor, config.BT_HallDown}, buttonLampChan)
+				for elev := 0; elev < config.NUM_ELEVS; elev++{				
+					elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallDown] = config.OT_NoOrder
+				}	
+							//fmt.Printf("completed HALLUP %v\n", elevMap[config.My_ID].CurrentFloor)
+				buttonLampChan <-  config.ButtonLamp{elevMap[config.My_ID].CurrentFloor, config.BT_HallDown, false}
 				orderCompleteChan <- config.ButtonEvent{elevMap[config.My_ID].CurrentFloor, config.BT_HallDown}			
 			}
 			
 		case config.ED_Down:
 			if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallDown] == config.OT_OrderPlaced{
-				
-				elevMap = ClearOrder(config.ButtonEvent{elevMap[config.My_ID].CurrentFloor, config.BT_HallDown}, buttonLampChan)				
+				for elev := 0; elev < config.NUM_ELEVS; elev++{				
+					elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallDown] = config.OT_NoOrder
+				}	
+							//fmt.Printf("completed HALLUP %v\n", elevMap[config.My_ID].CurrentFloor)
+				buttonLampChan <-  config.ButtonLamp{elevMap[config.My_ID].CurrentFloor, config.BT_HallDown, false}
+				//elevMap = ClearOrder(config.ButtonEvent{elevMap[config.My_ID].CurrentFloor, config.BT_HallDown}, buttonLampChan)				
 				orderCompleteChan <- config.ButtonEvent{elevMap[config.My_ID].CurrentFloor, config.BT_HallDown}
 			
 			} else if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallUp] == config.OT_OrderPlaced{
-				
-				elevMap = ClearOrder(config.ButtonEvent{elevMap[config.My_ID].CurrentFloor, config.BT_HallUp}, buttonLampChan)
+				for elev := 0; elev < config.NUM_ELEVS; elev++{				
+					elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallUp] = config.OT_NoOrder
+				}	
+							//fmt.Printf("completed HALLUP %v\n", elevMap[config.My_ID].CurrentFloor)
+				buttonLampChan <-  config.ButtonLamp{elevMap[config.My_ID].CurrentFloor, config.BT_HallUp, false}
+				//elevMap = ClearOrder(config.ButtonEvent{elevMap[config.My_ID].CurrentFloor, config.BT_HallUp}, buttonLampChan)
 				orderCompleteChan <- config.ButtonEvent{elevMap[config.My_ID].CurrentFloor, config.BT_HallUp}
 			}
 			
