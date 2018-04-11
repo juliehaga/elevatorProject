@@ -164,7 +164,10 @@ func UpdateLocalMap(changedMap config.ElevStateMap) bool{
 			} else if changedMap[config.My_ID].Orders[f][b] == config.OT_NoOrder && currentMap[config.My_ID].Orders[f][b] == config.OT_OrderPlaced {
 				LocalOrderChangeMade = true
 				currentMap[config.My_ID].Orders[f][b] = changedMap[config.My_ID].Orders[f][b]
-				fmt.Printf("SENDING CLEAR ORDE\n")
+				fmt.Printf("SENDING CLEAR ORDER\n")
+				for elev := 0; elev < config.NUM_ELEVS; elev++{
+					currentMap[elev].Orders[f][b] = config.OT_NoOrder
+				}
 			}
 			//sjekk floor og door_open
 			//send en ordre_complete_msg
