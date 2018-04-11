@@ -113,7 +113,7 @@ func OrderLights(newOrderChan chan config.ButtonEvent, buttonLampChan chan confi
 						for e:= 0; e < config.NUM_ELEVS; e++{
 							if currentMap[e].Orders[f][b] == config.OT_NoOrder && currentMap[e].Connected == true{
 								//ER det lettere å slukke lys her??
-								//buttonLampChan <- config.ButtonLamp{f, b, false}
+								buttonLampChan <- config.ButtonLamp{f, b, false}
 								newOrder = false
 							}	
 						}
