@@ -138,7 +138,6 @@ func Transmitter(port int, messageTx chan config.Message, ackChan chan config.Ac
 	for {
 		select {
 			case message := <- messageTx:
-				fmt.Printf("Sending MSG of type %v", message.MsgType)
 			
 				//addr, _ := net.ResolveUDPAddr("udp", fmt.Sprintf("255.255.255.255:%d", port))
 				//conn, _ := net.DialUDP("udp", nil, addr)

@@ -164,7 +164,7 @@ func UpdateLocalMap(changedMap config.ElevStateMap) bool{
 			} else if changedMap[config.My_ID].Orders[f][b] == config.OT_NoOrder && currentMap[config.My_ID].Orders[f][b] == config.OT_OrderPlaced {
 				LocalOrderChangeMade = true
 				currentMap[config.My_ID].Orders[f][b] = changedMap[config.My_ID].Orders[f][b]
-				fmt.Printf("SENDING CLEAR ORDER\n")
+				//fmt.Printf("SENDING CLEAR ORDER\n")
 				for elev := 0; elev < config.NUM_ELEVS; elev++{
 					currentMap[elev].Orders[f][b] = config.OT_NoOrder
 				}
@@ -219,8 +219,7 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, newOrderChan chan con
 
 
 					for e := 0; e < config.NUM_ELEVS; e++{
-						if recievedMap[e].CurrentFloor == f && recievedMap[e].Door == true{		
-							fmt.Printf("CLEARING ORDER\n")						
+						if recievedMap[e].CurrentFloor == f && recievedMap[e].Door == true{							
 							buttonLampChan <- config.ButtonLamp{f, b, false}
 							//clear orders from network 
 							for elev := 0; elev < config.NUM_ELEVS; elev++{
