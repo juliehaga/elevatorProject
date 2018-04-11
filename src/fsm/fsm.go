@@ -138,7 +138,7 @@ func eventNewFloor(orderCompleteChan chan config.ButtonEvent, motorChan chan con
 						currentMap[config.My_ID].Door = true
 						currentMap = orderCompleted(currentMap, buttonLampChan, orderCompleteChan)
 						currentMap[config.My_ID].IDLE = false
-						elevStateMap.PrintMap(currentMap)
+						//elevStateMap.PrintMap(currentMap)
 						state = DOOR_OPEN
 					} else {
 						currentMap[config.My_ID].IDLE = true
@@ -207,7 +207,7 @@ func eventNewFloor(orderCompleteChan chan config.ButtonEvent, motorChan chan con
 			}
 		}*/
 	fmt.Printf("*******************************new floor***************************")
-	elevStateMap.PrintMap(currentMap)
+	//elevStateMap.PrintMap(currentMap)
 	mapChangesChan <- currentMap
 		
 }
@@ -234,7 +234,7 @@ func eventDoorTimeout(doorLampChan chan bool, mapChangesChan chan config.ElevSta
 			}
 
 			fmt.Printf("*******************************DOOR TIMEOUT***************************")
-			elevStateMap.PrintMap(currentMap)
+			//elevStateMap.PrintMap(currentMap)
 			mapChangesChan <- currentMap	
 	}
 }
@@ -263,7 +263,7 @@ func eventNewAckOrder(orderCompleteChan chan config.ButtonEvent, buttonLampChan 
 				currentMap[config.My_ID].IDLE = false
 				state = DOOR_OPEN
 				fmt.Printf("----------------------------orderInflorr----------------------------")
-				elevStateMap.PrintMap(currentMap)
+				//elevStateMap.PrintMap(currentMap)
 			}else{
 				//fmt.Printf("Jeg har lyst til å velge retning \n")
 				motorDir, currentMap[config.My_ID].CurrentDir = chooseDirection(currentMap, motorTimer)
@@ -275,7 +275,7 @@ func eventNewAckOrder(orderCompleteChan chan config.ButtonEvent, buttonLampChan 
 					//motorTimer.Stop()
 				}
 				fmt.Printf("----------------------------choosedir----------------------------")
-				elevStateMap.PrintMap(currentMap)
+				//elevStateMap.PrintMap(currentMap)
 
 			}
 		case DOOR_OPEN:
