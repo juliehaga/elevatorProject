@@ -26,6 +26,7 @@ var _conn net.Conn
 func Elevio(motorChan chan config.MotorDirection, doorLampChan chan bool, newOrderChan chan config.ButtonEvent, floorChan chan int, buttonLampChan chan config.ButtonLamp) {
 	go PollButtons(newOrderChan)
     go PollFloorSensor(floorChan)
+    go OrderLights(newOrderChan, buttonLampChan)
     //update map?
 
 	for {
