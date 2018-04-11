@@ -55,7 +55,8 @@ func main() {
     statusChangesChan := make(chan config.ElevStateMap, 100)
     mapChangesChan := make(chan config.ElevStateMap, 100)
     newOrderChan := make(chan config.ButtonEvent, 100)
-    clearOrderChan := make(chan config.ButtonEvent, 100)
+    newLocalOrderChan := make(chan config.ButtonEvent, 100)
+  
     orderMsgChan := make(chan bool, 100)
 
     // We make a channel for receiving updates on the id's of the peers that are
@@ -83,9 +84,9 @@ func main() {
 
 
   
-    go elevio.Elevio(motorChan, doorLampChan, newOrderChan, floorChan, buttonLampChan, orderMsgChan)
+    go elevio.Elevio(motorChan, doorLampChan, newOrderChan, floorChan, buttonLampChan, orderMsgChan, newLocalOrderChan, mapChangesChan)
 	go network.Transmitter(16502, messageTx, ackChan)
-	go network.Receiver(16502, orderMsgRx, statusMsgRx, ackChan, messageTx, clearOrderChan)
+	go network.Receiver(16502, orderMsgRx, statusMsgRx, ackChan, messageTx)
     go network.PeerTransmitter(15600, id, peerTxEnable)
 	go network.PeerReceiver(15600, peerUpdateCh)
 	go fsm.Fsm(motorChan, doorLampChan, floorChan, buttonLampChan, mapChangesChan, newOrderChan, statusChangesChan, orderCompleteChan)
@@ -108,7 +109,7 @@ func main() {
 			}
 
 		case orderMsgFromNetwork := <- orderMsgRx:	
-	
+
 			orderUpdates := elevStateMap.UpdateMapFromNetwork(orderMsgFromNetwork.ElevMap, newOrderChan, buttonLampChan)
 			if init == true{
 				elevio.InitOrders()
@@ -135,6 +136,19 @@ func main() {
 			}
 			network.SendElevStatus(messageTx, elevMap)
 			init = false
+
+
+
+
+
+
+
+
+
+
+			//add HALL order
+		
+	
 
 		/*case button:= <- orderCompleteChan:
 			fmt.Printf("I completed an order, sending msg\n")

@@ -23,8 +23,8 @@ var _conn net.Conn
 
 
 
-func Elevio(motorChan chan config.MotorDirection, doorLampChan chan bool, newOrderChan chan config.ButtonEvent, floorChan chan int, buttonLampChan chan config.ButtonLamp, orderMsgChan chan bool) {
-	go PollButtons(newOrderChan)
+func Elevio(motorChan chan config.MotorDirection, doorLampChan chan bool, newOrderChan chan config.ButtonEvent, floorChan chan int, buttonLampChan chan config.ButtonLamp, orderMsgChan chan bool, newLocalOrderChan chan config.ButtonEvent, mapChangesChan chan config.ElevStateMap) {
+	go PollButtons(newLocalOrderChan)
     go PollFloorSensor(floorChan)
     go OrderLights(newOrderChan, buttonLampChan, orderMsgChan)
     //update map?
@@ -39,6 +39,19 @@ func Elevio(motorChan chan config.MotorDirection, doorLampChan chan bool, newOrd
 			//fmt.Printf("LYSBESKJED %v", lamp)
 			SetButtonLamp(lamp)
 			//InitOrders()
+
+		case orderButton := <- newLocalOrderChan: 
+			accept := false
+			currentMap := elevStateMap.GetLocalMap()
+			for e:= 0; e < config.NUM_ELEVS; e++{
+				if currentMap[e].Connected && e != config.My_ID{
+					accept = true
+				}
+			}
+			if accept == true{
+				currentMap[config.My_ID].Orders[orderButton.Floor][orderButton.Button] = config.OT_OrderPlaced
+			}
+			mapChangesChan <- currentMap
 
 		}
 	

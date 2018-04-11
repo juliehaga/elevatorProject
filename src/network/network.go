@@ -178,7 +178,7 @@ func Transmitter(port int, messageTx chan config.Message, ackChan chan config.Ac
 
 // Matches type-tagged JSON received on `port` to element types of `chans`, then
 // sends the decoded value on the corresponding channel
-func Receiver(port int, orderMsgRx chan config.OrderMsg, statusMsgRx chan config.StatusMsg, ackChan chan config.AckMsg, messageTx chan config.Message, clearOrderChan chan config.ButtonEvent) {
+func Receiver(port int, orderMsgRx chan config.OrderMsg, statusMsgRx chan config.StatusMsg, ackChan chan config.AckMsg, messageTx chan config.Message) {
 	//var receivedMap elevStateMap.ElevStateMap
 	var receivedMsg config.Message
 	addr, _ := net.ResolveUDPAddr("udp", fmt.Sprintf("255.255.255.255:%d", port))
@@ -204,10 +204,6 @@ func Receiver(port int, orderMsgRx chan config.OrderMsg, statusMsgRx chan config
 					SendAck(messageTx, receivedMsg.ElevMap, receivedMsg.ID, port)
 				} else if receivedMsg.MsgType == config.Ack{
 					ackChan <- config.AckMsg{receivedMsg.ID, receivedMsg.Reciever_ID}
-
-				} else if receivedMsg.MsgType == config.OrderComplete {
-					clearOrderChan <- receivedMsg.Button
-					SendAck(messageTx, receivedMsg.ElevMap, receivedMsg.ID, port)
 				}
 			}
 		
