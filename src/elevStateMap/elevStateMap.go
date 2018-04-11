@@ -168,7 +168,6 @@ func UpdateLocalMap(changedMap config.ElevStateMap) bool{
 				for elev := 0; elev < config.NUM_ELEVS; elev++{
 					currentMap[elev].Orders[f][b] = config.OT_NoOrder
 				}
-				PrintMap(currentMap)
 			}
 			//sjekk floor og door_open
 			//send en ordre_complete_msg

@@ -43,17 +43,21 @@ func Elevio(motorChan chan config.MotorDirection, doorLampChan chan bool, newOrd
 		case orderButton := <- newLocalOrderChan: 
 			accept := false
 			currentMap := elevStateMap.GetLocalMap()
-			for e:= 0; e < config.NUM_ELEVS; e++{
-				if currentMap[e].Connected && e != config.My_ID{
-					accept = true
+			if orderButton.Button == config.BT_Cab{
+				newOrderChan <- orderButton
+			} else{
+				for e:= 0; e < config.NUM_ELEVS; e++{
+					if currentMap[e].Connected && e != config.My_ID{
+						accept = true
+					}
 				}
-			}
-			if accept == true{
-				currentMap[config.My_ID].Orders[orderButton.Floor][orderButton.Button] = config.OT_OrderPlaced
-			}
-			mapChangesChan <- currentMap
+				if accept == true{
+					currentMap[config.My_ID].Orders[orderButton.Floor][orderButton.Button] = config.OT_OrderPlaced
+				}
+				mapChangesChan <- currentMap
 
-		}
+			}
+		}	
 	
 	}
 	
