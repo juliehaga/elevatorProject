@@ -131,8 +131,8 @@ func main() {
 			localOrderUpdates := elevStateMap.UpdateLocalMap(elevMap)
 			if localOrderUpdates {
 				orderMsgChan <- elevMap
-				fmt.Printf("//////////// LEGGER PÅ ORDERMSGCHAN LOKALT/////////////////////////\n")
-				elevStateMap.PrintMap(elevStateMap.GetLocalMap())
+				//fmt.Printf("//////////// LEGGER PÅ ORDERMSGCHAN LOKALT/////////////////////////\n")
+				//elevStateMap.PrintMap(elevStateMap.GetLocalMap())
 				network.SendOrders(messageTx, elevMap)
 				//elevStateMap.PrintMap(elevMap)
 			}
