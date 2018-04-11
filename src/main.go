@@ -115,6 +115,7 @@ func main() {
 			init = false
 
 			if orderUpdates {
+				fmt.PrintMap("Made change from network\n")
 				orderMsgChan <- true
 				network.SendOrders(messageTx, elevStateMap.GetLocalMap())
 			}
@@ -124,12 +125,12 @@ func main() {
 			
 
 		case elevMap:= <-mapChangesChan:
-			//fmt.Printf("Sender ordremelding\n")
 			localOrderUpdates := elevStateMap.UpdateLocalMap(elevMap)
-			//elevStateMap.PrintMap(elevMap)
 			if localOrderUpdates {
+				fmt.PrintMap("made change in local map\n")
 				orderMsgChan <- true
 				network.SendOrders(messageTx, elevMap)
+				elevStateMap.PrintMap(elevMap)
 			}
 			network.SendElevStatus(messageTx, elevMap)
 			init = false
