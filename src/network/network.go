@@ -162,11 +162,9 @@ func Transmitter(port int, messageTx chan config.Message, ackChan chan config.Ac
 								for i := 0; i < 5; i++{
 									sendUdpMsg(message, port)
 									time.Sleep(200* time.Millisecond)
-									fmt.Printf("Sender mld\n")
 									select {
 										case ackMsg := <- ackChan:
 											if ackMsg.Reciever_ID == config.My_ID && ackMsg.Transmitter_ID == e{
-												fmt.Printf("ACK mottatt fra %v\n", ackMsg.Transmitter_ID)
 												break WAIT_FOR_ACK
 											}
 										default:
