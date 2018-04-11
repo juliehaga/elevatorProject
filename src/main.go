@@ -137,14 +137,15 @@ func main() {
 
 		case button:= <- orderCompleteChan:
 			fmt.Printf("I completed an order, sending msg\n")
+			elevStateMap.PrintMap(elevStateMap.GetLocalMap())
 			network.SendOrderComplete(messageTx, button)
 
 		case order := <- clearOrderChan:
 			elevMap := elevStateMap.GetLocalMap()
 			fmt.Printf("msg from network about clear order\n")
+			elevStateMap.PrintMap(elevMap)
 			elevMap = fsm.ClearOrder(elevMap, order, buttonLampChan)
 			elevStateMap.SetLocalMap(elevMap)
-			elevStateMap.PrintMap(elevMap)
 
 
 /*		case elevMap:= <-statusChangesChan:
