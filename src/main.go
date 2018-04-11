@@ -135,7 +135,7 @@ func main() {
 			network.SendElevStatus(messageTx, elevMap)
 			init = false
 
-		case button:= <- orderCompleteChan:
+		/*case button:= <- orderCompleteChan:
 			fmt.Printf("I completed an order, sending msg\n")
 			//elevStateMap.PrintMap(elevStateMap.GetLocalMap())
 			network.SendOrderComplete(messageTx, button)
@@ -145,7 +145,7 @@ func main() {
 			fmt.Printf("msg from network about clear order\n")
 			
 			elevMap = fsm.ClearOrder(elevMap, order, buttonLampChan)
-			//elevStateMap.PrintMap(elevMap)
+			//elevStateMap.PrintMap(elevMap)*/
 
 
 /*		case elevMap:= <-statusChangesChan:
