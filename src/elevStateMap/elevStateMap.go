@@ -192,22 +192,6 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, newOrderChan chan con
 		}
 	}
 
-/*
-			if recievedMap[e].OutOfOrder == true && currentMap[e].OutOfOrder == false{
-				fmt.Printf("Heis %v er out of order\n", e)
-				FIND_ORDER:
-					for f:= 0; f < config.NUM_FLOORS; f++{
-						for b:= config.BT_HallUp; b < config.BT_Cab; b++{
-							if recievedMap[config.My_ID].Orders[f][b] == config.OT_OrderPlaced{
-								fmt.Printf("Det ligger inne bestillinger\n")
-								newOrderChan <- config.ButtonEvent{f, b, config.NetworkOrder}
-								break FIND_ORDER
-							}
-						}
-					}	
-			}*/
-	
-
 	for e:= 0; e < config.NUM_ELEVS; e++{
 		for f:= 0; f < config.NUM_FLOORS; f++{
 			for b:= config.BT_HallUp; b < config.BT_Cab; b++{
@@ -216,52 +200,10 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, newOrderChan chan con
 					currentMap[config.My_ID].Orders[f][b]  = config.OT_OrderPlaced
 					changedMade = true
 				}
-
 			}
 		}
-
-
 	}
 
-
-
-
-
-
-/*
-
-	for f:= 0; f < config.NUM_FLOORS; f++{
-			for b:= config.BT_HallUp; b < config.BT_Cab; b++{
-
-
-					if (recievedMap[config.My_ID].Orders[f][b] == config.OT_LocalOrderPlaced || recievedMap[config.My_ID].Orders[f][b] == config.OT_ExternalOrderPlaced) && currentMap[config.My_ID].Orders[f][b] == config.OT_NoOrder{
-						//DErsom det er mange nye ordre så ønsker vi bare å trigge newOrderChan en gang
-						//if buttonEvent == false{
-							//fmt.Printf("-------------order from network--------\n")
-							//fmt.Printf("Floor %v, knappp %v\n", f, b)
-							newOrderChan <- config.ButtonEvent{f, b, config.NetworkOrder}
-							//buttonEvent = true
-						//}
-						//Add orders from network
-						for elev := 0; elev < config.NUM_ELEVS; elev++{
-							currentMap[elev].Orders[f][b] = config.OT_ExternalOrderPlaced
-							buttonLampChan <- config.ButtonLamp{f, b, true}
-						}
-
-					} else if recievedMap[config.My_ID].Orders[f][b] ==config.OT_NoOrder && (currentMap[config.My_ID].Orders[f][b] == config.OT_LocalOrderPlaced || currentMap[config.My_ID].Orders[f][b] == config.OT_ExternalOrderPlaced){
-
-						for e := 0; e < config.NUM_ELEVS; e++{
-							if recievedMap[e].CurrentFloor == f && recievedMap[e].Door == true{								
-								buttonLampChan <- config.ButtonLamp{f, b, false}
-								//clear orders from network 
-								for elev := 0; elev < config.NUM_ELEVS; elev++{
-									currentMap[elev].Orders[f][b] = config.OT_NoOrder
-								}
-							}
-						}
-					}
-				}
-			}*/
 	SetLocalMap(currentMap)
 	return changedMade
 }

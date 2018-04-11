@@ -116,10 +116,9 @@ func main() {
 			init = false
 
 			if orderUpdates {
+				orderMsgChan <- true
 				network.SendOrders(messageTx, elevStateMap.GetLocalMap())
 			}
-
-			orderMsgChan <- true
 
 		case statusMsgFromNetwork := <- statusMsgRx:
 			elevStateMap.UpdateElevStatusFromNetwork(statusMsgFromNetwork)
@@ -129,8 +128,8 @@ func main() {
 			//fmt.Printf("Sender ordremelding\n")
 			localOrderUpdates := elevStateMap.UpdateLocalMap(elevMap)
 			//elevStateMap.PrintMap(elevMap)
-			orderMsgChan <- true
 			if localOrderUpdates {
+				orderMsgChan <- true
 				network.SendOrders(messageTx, elevMap)
 			}
 			network.SendElevStatus(messageTx, elevMap)
@@ -141,6 +140,7 @@ func main() {
 			network.SendOrderComplete(messageTx, button)
 
 		case order := <- clearOrderChan:
+			elevMap := elevStateMap.GetLocalMap()
 			fmt.Printf("msg from network about clear order\n")
 			elevMap := fsm.ClearOrder(order, buttonLampChan)
 			elevStateMap.SetLocalMap(elevMap)

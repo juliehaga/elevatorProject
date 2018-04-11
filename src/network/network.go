@@ -12,7 +12,6 @@ import (
 	"os"
 	"syscall"
 	"strconv"
-
 )
 
 
@@ -32,7 +31,6 @@ func SendElevStatus(messageTx chan config.Message,  elevMap config.ElevStateMap)
 
 func SendAck(messageTx chan config.Message,  elevMap config.ElevStateMap, recieverID int, port int){
 	AckMsg := config.Message{config.My_ID, config.Ack, elevMap, recieverID, config.ButtonEvent{0, config.BT_HallDown}}
-	
 	addr, _ := net.ResolveUDPAddr("udp", fmt.Sprintf("255.255.255.255:%d", port))
 	conn, _ := net.DialUDP("udp", nil, addr)
 	buf, _ := json.Marshal(AckMsg)		
@@ -133,7 +131,6 @@ func sendUdpMsg(msg config.Message, port int){
 	conn, _ := net.DialUDP("udp", nil, addr)
 	defer conn.Close()
 	conn.Write(buf) 
-
 }
 
 
@@ -141,11 +138,9 @@ func Transmitter(port int, messageTx chan config.Message, ackChan chan config.Ac
 	for {
 		select {
 			case message := <- messageTx:
-				
-
+			
 				//addr, _ := net.ResolveUDPAddr("udp", fmt.Sprintf("255.255.255.255:%d", port))
 				//conn, _ := net.DialUDP("udp", nil, addr)
-				
 
 				for e:= 0; e < config.NUM_ELEVS; e++{
 
@@ -170,13 +165,11 @@ func Transmitter(port int, messageTx chan config.Message, ackChan chan config.Ac
 										default:
 
 									}
-									
 									//antar at peer vil fiksa å sette til dead dersom en faller ut.
 							}
 					}
 				}
 			}
-
 		time.Sleep(2* time.Millisecond)
 		}	
 	}
@@ -225,15 +218,6 @@ func Receiver(port int, orderMsgRx chan config.OrderMsg, statusMsgRx chan config
 	
 }
 
-
-
-// Checks that args to Tx'er/Rx'er are valid:
-//  All args must be channels
-//  Element types of channels must be encodable with JSON
-//  No element types are repeated
-// Implementation note:
-//  - Why there is no `isMarshalable()` function in encoding/json is a mystery,
-//    so the tests on element type are hand-copied from `encoding/json/encode.go`
 func checkArgs(chans ...interface{}) {
 	n := 0
 	for range chans {
