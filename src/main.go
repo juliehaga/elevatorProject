@@ -56,6 +56,7 @@ func main() {
     mapChangesChan := make(chan config.ElevStateMap, 100)
     newOrderChan := make(chan config.ButtonEvent, 100)
     clearOrderChan := make(chan config.ButtonEvent, 100)
+    orderMsgChan := make(chan bool, 100)
 
     // We make a channel for receiving updates on the id's of the peers that are
 	//  alive on the network
@@ -119,6 +120,8 @@ func main() {
 				network.SendOrders(messageTx, elevStateMap.GetLocalMap())
 			}
 
+			orderMsgChan <- true
+
 		case statusMsgFromNetwork := <- statusMsgRx:
 			elevStateMap.UpdateElevStatusFromNetwork(statusMsgFromNetwork)
 			
@@ -127,6 +130,7 @@ func main() {
 			//fmt.Printf("Sender ordremelding\n")
 			localOrderUpdates := elevStateMap.UpdateLocalMap(elevMap)
 			//elevStateMap.PrintMap(elevMap)
+			orderMsgChan <- true
 			if localOrderUpdates {
 				network.SendOrders(messageTx, elevMap)
 			}

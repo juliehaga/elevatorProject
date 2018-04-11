@@ -101,25 +101,27 @@ func InitOrders(){
 
 func OrderLights(newOrderChan chan config.ButtonEvent, buttonLampChan chan config.ButtonLamp){
 	for {
-		currentMap := elevStateMap.GetLocalMap()
-		for f:= 0; f < config.NUM_FLOORS; f++{
-			for b:= config.BT_HallUp; b < config.BT_Cab; b++{
-				if currentMap[config.My_ID].Orders[f][b] == config.OT_OrderPlaced{
-					newOrder := true
-					for e:= 0; e < config.NUM_ELEVS; e++{
-						if currentMap[e].Orders[f][b] == config.OT_NoOrder && currentMap[e].Connected == true{
-							newOrder = false
-						}	
-					}
-					if newOrder {
-						newOrderChan <- config.ButtonEvent{f, b}
-						buttonLampChan <- config.ButtonLamp{f, b, true}
-						//trigg buttonevent og slå på lys
+		select{
+		case <- orderMsgChan:
+			currentMap := elevStateMap.GetLocalMap()
+			for f:= 0; f < config.NUM_FLOORS; f++{
+				for b:= config.BT_HallUp; b < config.BT_Cab; b++{
+					if currentMap[config.My_ID].Orders[f][b] == config.OT_OrderPlaced{
+						newOrder := true
+						for e:= 0; e < config.NUM_ELEVS; e++{
+							if currentMap[e].Orders[f][b] == config.OT_NoOrder && currentMap[e].Connected == true{
+								newOrder = false
+							}	
+						}
+						if newOrder {
+							newOrderChan <- config.ButtonEvent{f, b}
+							buttonLampChan <- config.ButtonLamp{f, b, true}
+							//trigg buttonevent og slå på lys
+						}
 					}
 				}
 			}
-		}
-			
+		}	
 	}
 
 }
