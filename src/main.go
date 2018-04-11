@@ -145,7 +145,6 @@ func main() {
 			fmt.Printf("msg from network about clear order\n")
 			
 			elevMap = fsm.ClearOrder(elevMap, order, buttonLampChan)
-			elevStateMap.SetLocalMap(elevMap)
 			elevStateMap.PrintMap(elevMap)
 
 
