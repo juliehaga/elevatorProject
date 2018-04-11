@@ -269,7 +269,7 @@ func eventNewAckOrder(orderCompleteChan chan config.ButtonEvent, buttonLampChan 
 				doorTimer.Reset(time.Second * DOOR_TIME)
 				currentMap[config.My_ID].IDLE = false
 				state = DOOR_OPEN
-				time.Sleep(20*time.Millisecond)
+				time.Sleep(2000*time.Millisecond)
 			}else{
 				//fmt.Printf("Jeg har lyst til å velge retning \n")
 				motorDir, currentMap[config.My_ID].CurrentDir = chooseDirection(currentMap, motorTimer)
@@ -290,7 +290,7 @@ func eventNewAckOrder(orderCompleteChan chan config.ButtonEvent, buttonLampChan 
 				currentMap = orderCompleted(currentMap, buttonLampChan, orderCompleteChan)
 				doorTimer.Reset(time.Second * DOOR_TIME)
 				currentMap[config.My_ID].IDLE = false
-				time.Sleep(20*time.Millisecond)
+				time.Sleep(2000*time.Millisecond)
 			}
 		}
 		mapChangesChan <- currentMap
