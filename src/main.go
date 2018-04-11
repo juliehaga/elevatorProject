@@ -117,7 +117,6 @@ func main() {
 			init = false
 
 			if orderUpdates {
-				fmt.Printf("Ordre fra nettverket. Jeg sender\n")
 				orderMsgChan <- true
 				network.SendOrders(messageTx, elevStateMap.GetLocalMap())
 			}

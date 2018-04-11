@@ -5,7 +5,7 @@ import(
 	"../config"
 	"time"
 	"math"
-	//"fmt"
+	"fmt"
 )
 
 var state ElevState
@@ -206,6 +206,8 @@ func eventNewFloor(orderCompleteChan chan config.ButtonEvent, motorChan chan con
 
 			}
 		}*/
+	fmt.Printf("*******************************new floor***************************")
+	elevStateMap.PrintMap(currentMap)
 	mapChangesChan <- currentMap
 		
 }
@@ -213,7 +215,7 @@ func eventNewFloor(orderCompleteChan chan config.ButtonEvent, motorChan chan con
 func eventDoorTimeout(doorLampChan chan bool, mapChangesChan chan config.ElevStateMap, idleTimer *time.Timer, motorChan chan config.MotorDirection, motorTimer *time.Timer){
 	currentMap := elevStateMap.GetLocalMap()
 	var motorDir config.MotorDirection
-	elevStateMap.PrintMap(currentMap)
+
 
 	switch(state){
 		case DOOR_OPEN:
@@ -230,6 +232,9 @@ func eventDoorTimeout(doorLampChan chan bool, mapChangesChan chan config.ElevSta
 				state = IDLE
 				
 			}
+
+			fmt.Printf("*******************************DOOR TIMEOUT***************************")
+			elevStateMap.PrintMap(currentMap)
 			mapChangesChan <- currentMap	
 	}
 }
@@ -257,6 +262,8 @@ func eventNewAckOrder(orderCompleteChan chan config.ButtonEvent, buttonLampChan 
 				currentMap = orderCompleted(currentMap, buttonLampChan, orderCompleteChan)
 				currentMap[config.My_ID].IDLE = false
 				state = DOOR_OPEN
+				fmt.Printf("----------------------------orderInflorr----------------------------")
+				elevStateMap.PrintMap(currentMap)
 			}else{
 				//fmt.Printf("Jeg har lyst til å velge retning \n")
 				motorDir, currentMap[config.My_ID].CurrentDir = chooseDirection(currentMap, motorTimer)
@@ -267,6 +274,8 @@ func eventNewAckOrder(orderCompleteChan chan config.ButtonEvent, buttonLampChan 
 				} else{
 					//motorTimer.Stop()
 				}
+				fmt.Printf("----------------------------choosedir----------------------------")
+				elevStateMap.PrintMap(currentMap)
 
 			}
 		case DOOR_OPEN:
@@ -279,6 +288,7 @@ func eventNewAckOrder(orderCompleteChan chan config.ButtonEvent, buttonLampChan 
 				currentMap[config.My_ID].IDLE = false
 			}
 	}
+
 	mapChangesChan <- currentMap
 }
 

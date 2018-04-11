@@ -203,7 +203,6 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, newOrderChan chan con
 		for f:= 0; f < config.NUM_FLOORS; f++{
 			for b:= config.BT_HallUp; b < config.BT_Cab; b++{
 				if recievedMap[e].Orders[f][b] == config.OT_OrderPlaced && currentMap[e].Orders[f][b] == config.OT_NoOrder{
-					fmt.Printf("legger til ordre fra nettverket\n")
 					currentMap[e].Orders[f][b] = config.OT_OrderPlaced
 					currentMap[config.My_ID].Orders[f][b]  = config.OT_OrderPlaced
 					changedMade = true
