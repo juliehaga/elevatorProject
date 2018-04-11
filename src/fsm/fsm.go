@@ -19,7 +19,7 @@ const(
 	OUT_OF_ORDER    = 4
 )
 
-const DOOR_TIME 	    = 2
+const DOOR_TIME 	    = 5
 const IDLE_TIME 	    = 9
 const MOTOR_DEAD_TIME 	= 10
 
