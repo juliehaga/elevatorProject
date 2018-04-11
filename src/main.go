@@ -130,7 +130,7 @@ func main() {
 				fmt.Printf("made change in local map\n")
 				orderMsgChan <- true
 				network.SendOrders(messageTx, elevMap)
-				elevStateMap.PrintMap(elevMap)
+				//elevStateMap.PrintMap(elevMap)
 			}
 			network.SendElevStatus(messageTx, elevMap)
 			init = false
