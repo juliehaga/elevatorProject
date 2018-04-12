@@ -23,10 +23,10 @@ var _conn net.Conn
 
 
 
-func Elevio(motorChan chan config.MotorDirection, doorLampChan chan bool, newOrderChan chan config.ButtonEvent, floorChan chan int, buttonLampChan chan config.ButtonLamp, ackOrderChan chan config.OrderAck, newLocalOrderChan chan config.ButtonEvent, mapChangesChan chan config.ElevStateMap) {
+func Elevio(motorChan chan config.MotorDirection, doorLampChan chan bool, newOrderChan chan config.ButtonEvent, floorChan chan int, buttonLampChan chan config.ButtonLamp, orderMsgChan chan config.ElevStateMap, newLocalOrderChan chan config.ButtonEvent, mapChangesChan chan config.ElevStateMap) {
 	go PollButtons(newLocalOrderChan)
     go PollFloorSensor(floorChan)
-    go OrderLights(newOrderChan, buttonLampChan, ackOrderChan)
+    go OrderLights(newOrderChan, buttonLampChan, orderMsgChan)
     //update map?
 
 	for {
@@ -117,37 +117,38 @@ func InitOrders(){
 }
 
 
-func OrderLights(newOrderChan chan config.ButtonEvent, buttonLampChan chan config.ButtonLamp, ackOrderChan chan config.OrderAck){
-	numberOfAckElevs := [config.NUM_FLOORS][config.NUM_BUTTONS][config.NUM_ELEVS]bool{}
 
+func OrderLights(newOrderChan chan config.ButtonEvent, buttonLampChan chan config.ButtonLamp, orderMsgChan chan config.ElevStateMap){
 	for {
 		select{
 		//Burde bare gjøre sjekken når man faktisk mottar en ordre. 
-		case elevOrderAck := <- ackOrderChan:
-			buttonEvent := elevOrderAck.Button
-			numberOfAckElevs[buttonEvent.Floor][buttonEvent.Button][elevOrderAck.Id] = elevOrderAck.ActiveOrder
-			fmt.Printf("------------ORDERS-------------\n")
-			fmt.Printf("%v\n", numberOfAckElevs)
+		case currentMap := <- orderMsgChan:
+			//fmt.Printf("OrderMSGChan\n")
+			//elevStateMap.PrintMap(currentMap)
 
 
+			//elevStateMap.PrintMap(currentMap)
 			for f:= 0; f < config.NUM_FLOORS; f++{
 				for b:= config.BT_HallUp; b < config.BT_Cab; b++{
-					newOrder := true
-					for e:=0; e < config.NUM_ELEVS; e++{
-						if numberOfAckElevs[f][b][e] == false && e != config.My_ID{
-							newOrder = false
+					if currentMap[config.My_ID].Orders[f][b] == config.OT_OrderPlaced{
+						newOrder := true
+						for e:= 0; e < config.NUM_ELEVS; e++{
+							if currentMap[e].Orders[f][b] == config.OT_NoOrder && currentMap[e].Connected == true{
+								//Er det lettere å slukke lys her??
+								//buttonLampChan <- config.ButtonLamp{f, b, false}
+								newOrder = false
+							}	
 						}
-					}
-					if newOrder {
-						fmt.Printf("fant ny ordre\n")
+						if newOrder {
+							fmt.Printf("fant ny ordre\n")
 							newOrderChan <- config.ButtonEvent{f, b}
 							buttonLampChan <- config.ButtonLamp{f, b, true}
-
+							//trigg buttonevent og slå på lys
+						}
 					}
-
 				}
 			}
-			time.Sleep(200* time.Millisecond)
+			time.Sleep(20* time.Millisecond)
 		}	
 	}
 
