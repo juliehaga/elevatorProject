@@ -226,6 +226,7 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, buttonLampChan chan c
 						currentMap[config.My_ID].Orders[f][b]  = config.OT_OrderPlaced
 						changedMade = true
 						fmt.Printf("fant mindre enn 3 enere\n")
+						PrintMap(recievedMap)
 					} 
 				}
 			}
@@ -243,6 +244,7 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, buttonLampChan chan c
 							buttonLampChan <- config.ButtonLamp{f, b, false}
 							fmt.Printf("fjerner ordre fra nettverket\n")
 							//clear orders from network 
+							PrintMap(recievedMap)
 							for elev := 0; elev < config.NUM_ELEVS; elev++{
 								currentMap[elev].Orders[f][b] = config.OT_NoOrder
 							}

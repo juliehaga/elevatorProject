@@ -137,7 +137,7 @@ func main() {
 				fmt.Printf("//////////// Sender mine ordre, LOCAL endring/////////////////////////\n")
 				//elevStateMap.PrintMap(elevStateMap.GetLocalMap())
 				network.SendOrders(messageTx, elevMap)
-				//elevStateMap.PrintMap(elevMap)
+				elevStateMap.PrintMap(elevMap)
 			}
 			network.SendElevStatus(messageTx, elevMap)
 			init = false
