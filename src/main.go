@@ -118,6 +118,7 @@ func main() {
 			} 
 
 		case orderMsgFromNetwork := <- orderMsgRx:
+			fmt.Printf("Jeg får en melding over nettverket\n")
 			orderUpdates, currentMap := elevStateMap.UpdateMapFromNetwork(orderMsgFromNetwork.ElevMap, buttonLampChan)
 			if init == true{
 				elevio.InitOrders()

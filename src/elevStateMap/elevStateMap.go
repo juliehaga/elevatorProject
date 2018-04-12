@@ -225,7 +225,7 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, buttonLampChan chan c
 						currentMap[e].Orders[f][b] = config.OT_OrderPlaced
 						currentMap[config.My_ID].Orders[f][b]  = config.OT_OrderPlaced
 						changedMade = true
-						fmt.Printf("fant mindre en enere\n")
+						fmt.Printf("fant mindre tre enere\n")
 						//PrintMap(recievedMap)
 					} 
 				}
