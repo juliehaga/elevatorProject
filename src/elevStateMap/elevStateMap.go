@@ -288,7 +288,7 @@ func FindActiveOrders(orderMsgChan chan config.ElevStateMap, activeOrderTx chan 
 						}
 						if newOrder {
 							
-							fmt.Printf("fant ny ordre\n")
+							fmt.Printf("Sender en aktiv ordre melding\n")
 							activeOrderTx <- config.ActiveOrders{config.ButtonEvent{f, b}, config.My_ID, true}
 
 							

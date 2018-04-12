@@ -152,6 +152,7 @@ func main() {
 			//sjekk om den skal aktiveres eller cleares
 
 			if order.ActiveOrder {
+				fmt.Printf("Jeg sender en aktiv ordreMSG\n")
 				ActiveOrderMatrix[order.Button.Floor][order.Button.Button][config.My_ID] = true
 				network.SendActiveOrder(messageTx, order)
 
@@ -162,8 +163,10 @@ func main() {
 			}
 
 		case order:= <- activeOrderRx:
+
 			
 			ActiveOrderMatrix[order.Button.Floor][order.Button.Button][order.ID] = true
+			fmt.Printf("%v\n", ActiveOrderMatrix)
 			newOrder := true
 			for e := 0; e < config.NUM_ELEVS; e++{
 				if ActiveOrderMatrix[order.Button.Floor][order.Button.Button][e] == false {
