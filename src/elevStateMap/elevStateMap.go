@@ -270,31 +270,19 @@ func FindActiveOrders(orderMsgChan chan config.ElevStateMap, activeOrderTx chan 
 		select{
 		//Burde bare gjøre sjekken når man faktisk mottar en ordre. 
 		case currentMap := <- orderMsgChan:
-			//fmt.Printf("OrderMSGChan\n")
-			//elevStateMap.PrintMap(currentMap)
 
 
-			PrintMap(currentMap)
 			for f:= 0; f < config.NUM_FLOORS; f++{
 				for b:= config.BT_HallUp; b < config.BT_Cab; b++{
 					if currentMap[config.My_ID].Orders[f][b] == config.OT_OrderPlaced{
 						newOrder := true
 						for e:= 0; e < config.NUM_ELEVS; e++{
 							if currentMap[e].Orders[f][b] == config.OT_NoOrder && currentMap[e].Connected == true{
-								//Er det lettere å slukke lys her??
-								//buttonLampChan <- config.ButtonLamp{f, b, false}
 								newOrder = false
 							}	
 						}
 						if newOrder {
 							activeOrderTx <- config.ActiveOrders{config.ButtonEvent{f, b}, config.My_ID, true}
-
-							
-							//send at du har acka bestillingenqq
-							
-
-
-							//trigg buttonevent og slå på lys
 						}
 					}
 				}

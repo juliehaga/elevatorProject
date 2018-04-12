@@ -8,7 +8,6 @@ import (
 	"flag"
 	"./network"
 	"fmt"
-	"./network/bcast"
 	"./network/peers"
 
 )
@@ -56,23 +55,18 @@ func main() {
 
     floorChan  := make(chan int, 100)  
     buttonLampChan  := make(chan config.ButtonLamp, 100)
-    statusChangesChan := make(chan config.ElevStateMap, 100)
     mapChangesChan := make(chan config.ElevStateMap, 100)
     newOrderChan := make(chan config.ButtonEvent, 100)
     newLocalOrderChan := make(chan config.ButtonEvent, 100)
   
     orderMsgChan := make(chan config.ElevStateMap, 100)
 
-    // We make a channel for receiving updates on the id's of the peers that are
-	//  alive on the network
     peerUpdateCh := make(chan peers.PeerUpdate, 100)
-    // This could be used to signal that we are somehow "unavailable".
     peerTxEnable := make(chan bool, 100)
 
  
 	messageTx := make(chan config.Message, 10000)
 	messageRx := make(chan config.Message, 10000)
-
 
 	orderMsgRx := make(chan config.OrderMsg, 10000)
 	statusMsgRx := make(chan config.StatusMsg, 10000)
@@ -97,13 +91,12 @@ func main() {
   
     go elevio.Elevio(motorChan, doorLampChan, newOrderChan, floorChan, buttonLampChan, orderMsgChan, newLocalOrderChan, mapChangesChan)
 
-	go bcast.Transmitter(16666, messageTx)
-	go bcast.Receiver(16666, messageRx)
+    go network.Network(messageRx, messageTx, statusMsgRx, orderMsgRx, activeOrderRx)
 
     go peers.Transmitter(15611, id, peerTxEnable)
 	go peers.Receiver(15611, peerUpdateCh)
 
-	go fsm.Fsm(motorChan, doorLampChan, floorChan, buttonLampChan, mapChangesChan, newOrderChan, statusChangesChan, orderCompleteChan, activeOrderTx)
+	go fsm.Fsm(motorChan, doorLampChan, floorChan, buttonLampChan, mapChangesChan, newOrderChan, orderCompleteChan, activeOrderTx)
 	go elevStateMap.FindActiveOrders(orderMsgChan, activeOrderTx)
 
 	fmt.Printf("go all functions\n")
@@ -125,8 +118,6 @@ func main() {
 			} 
 
 		case orderMsgFromNetwork := <- orderMsgRx:
-			fmt.Printf("Får melding fra %v\n", orderMsgFromNetwork.ID)
-
 			orderUpdates, currentMap := elevStateMap.UpdateMapFromNetwork(orderMsgFromNetwork.ElevMap, buttonLampChan)
 			if init == true{
 				elevio.InitOrders()
@@ -184,22 +175,7 @@ func main() {
 				newOrderChan <- config.ButtonEvent{order.Button.Floor, order.Button.Button}
 				buttonLampChan <- config.ButtonLamp{order.Button.Floor, order.Button.Button, true}
 			}
-		case receivedMsg := <-messageRx:
-
-			if receivedMsg.MsgType == config.ElevStatus{
-				fmt.Printf("mottar statusmelding\n")
-				statusMsgRx <- config.StatusMsg{receivedMsg.ID, receivedMsg.ElevMap[receivedMsg.ID].CurrentFloor, receivedMsg.ElevMap[receivedMsg.ID].CurrentDir, receivedMsg.ElevMap[receivedMsg.ID].Door, receivedMsg.ElevMap[receivedMsg.ID].OutOfOrder,receivedMsg.ElevMap[receivedMsg.ID].IDLE}
-
-			} else if receivedMsg.MsgType == config.Orders {
-				fmt.Printf("mottar ordremelding\n")
-				elevStateMap.PrintMap(receivedMsg.ElevMap)
-				orderMsgRx <- config.OrderMsg{receivedMsg.ID, receivedMsg.ElevMap}
-
-			} else if receivedMsg.MsgType == config.ActiveOrder{
-				fmt.Printf("Mottar en ordremsg fra %v\n", receivedMsg.ID)
-				//activeOrderRx <- config.ActiveOrders{receivedMsg.Button, receivedMsg.ID, true}
-				//kan ikke trigge denne her
-			}
+		
 			
 
 

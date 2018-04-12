@@ -3,6 +3,7 @@ package network
 import (
 	"../elevStateMap"
 	"../config"
+	"./bcast"
 	"fmt"
 	"net"
 	"time"
@@ -12,6 +13,36 @@ import (
 
 const interval = 15 * time.Millisecond
 const timeout = 1500 * time.Millisecond
+
+
+
+
+
+func Network(messageRx chan config.Message, messageTx chan config.Message, statusMsgRx chan config.StatusMsg, orderMsgRx chan config.OrderMsg, activeOrderRx chan config.ActiveOrders){
+
+	go bcast.Transmitter(16666, messageTx)
+	go bcast.Receiver(16666, messageRx)
+
+
+	for {
+		select{
+			case receivedMsg := <-messageRx:
+
+				if receivedMsg.MsgType == config.ElevStatus{
+					statusMsgRx <- config.StatusMsg{receivedMsg.ID, receivedMsg.ElevMap[receivedMsg.ID].CurrentFloor, receivedMsg.ElevMap[receivedMsg.ID].CurrentDir, receivedMsg.ElevMap[receivedMsg.ID].Door, receivedMsg.ElevMap[receivedMsg.ID].OutOfOrder,receivedMsg.ElevMap[receivedMsg.ID].IDLE}
+
+				} else if receivedMsg.MsgType == config.Orders {
+					orderMsgRx <- config.OrderMsg{receivedMsg.ID, receivedMsg.ElevMap}
+
+				} else if receivedMsg.MsgType == config.ActiveOrder{
+					fmt.Printf("Mottar en ordremsg fra %v\n", receivedMsg.ID)
+					activeOrderRx <- config.ActiveOrders{receivedMsg.Button, receivedMsg.ID, true}
+				}
+
+		}
+	}
+	
+}
 
 
 func SendOrders(messageTx chan config.Message, elevMap config.ElevStateMap) {
@@ -37,6 +68,9 @@ func SendActiveOrder(messageTx chan config.Message,  order config.ActiveOrders){
 	elevMapMsg := config.Message{config.My_ID, config.ActiveOrder, elevMap, -1, order.Button}
 	messageTx <- elevMapMsg
 }
+
+
+
 
 
 
