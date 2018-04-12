@@ -110,7 +110,7 @@ func main() {
 			}
 
 		case orderMsgFromNetwork := <- orderMsgRx:
-			fmt.Printf("Får melding fra %v", orderMsgFromNetwork.ID)
+			fmt.Printf("Får melding fra %v\n", orderMsgFromNetwork.ID)
 
 			orderUpdates, currentMap := elevStateMap.UpdateMapFromNetwork(orderMsgFromNetwork.ElevMap, buttonLampChan)
 			if init == true{
