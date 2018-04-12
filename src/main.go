@@ -97,7 +97,7 @@ func main() {
 	go peers.Receiver(15611, peerUpdateCh)
 
 	go fsm.Fsm(motorChan, doorLampChan, floorChan, buttonLampChan, mapChangesChan, newOrderChan, orderCompleteChan, activeOrderTx)
-	go elevStateMap.FindActiveOrders(orderMsgChan, activeOrderTx)
+	go elevStateMap.FindActiveOrders(orderMsgChan, activeOrderTx, activeOrderRx)
 
 	fmt.Printf("go all functions\n")
 
@@ -119,7 +119,7 @@ func main() {
 
 		case orderMsgFromNetwork := <- orderMsgRx:
 			//fmt.Printf("Jeg får en melding over nettverket fra %v\n", orderMsgFromNetwork.ID)
-			orderUpdates, currentMap := elevStateMap.UpdateMapFromNetwork(orderMsgFromNetwork.ElevMap, buttonLampChan)
+			orderUpdates, currentMap := elevStateMap.UpdateMapFromNetwork(orderMsgFromNetwork.ElevMap, buttonLampChan, activeOrderTx)
 			if init == true{
 				elevio.InitOrders()
 			}
@@ -137,12 +137,12 @@ func main() {
 			
 
 		case elevMap:= <-mapChangesChan:
-			localOrderUpdates := elevStateMap.UpdateLocalMap(elevMap)
+			localOrderUpdates, updatedMap := elevStateMap.UpdateLocalMap(elevMap)
 			if localOrderUpdates {
-				orderMsgChan <- elevMap
+				orderMsgChan <- updatedMap
 				//fmt.Printf("//////////// Sender mine ordre, LOCAL endring/////////////////////////\n")
 				//elevStateMap.PrintMap(elevStateMap.GetLocalMap())
-				network.SendOrders(messageTx, elevMap)
+				network.SendOrders(messageTx, updatedMap)
 				//elevStateMap.PrintMap(elevMap)
 			}
 			network.SendElevStatus(messageTx, elevMap)
@@ -178,6 +178,7 @@ func main() {
 				//fmt.Printf("Jeg slår på lys \n")
 				buttonLampChan <- config.ButtonLamp{order.Button.Floor, order.Button.Button, true}
 			}
+
 		
 			
 

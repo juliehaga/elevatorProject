@@ -5,9 +5,7 @@ import (
 	"../config"
 	"./bcast"
 	"fmt"
-	"net"
 	"time"
-	"encoding/json"
 )
 
 
@@ -57,13 +55,6 @@ func SendElevStatus(messageTx chan config.Message,  elevMap config.ElevStateMap)
 	messageTx <- elevMapMsg
 }
 
-func SendAck(messageTx chan config.Message,  elevMap config.ElevStateMap, recieverID int, port int){
-	AckMsg := config.Message{config.My_ID, config.Ack, elevMap, recieverID, config.ButtonEvent{0, config.BT_HallDown}}
-	addr, _ := net.ResolveUDPAddr("udp", fmt.Sprintf("255.255.255.255:%d", port))
-	conn, _ := net.DialUDP("udp", nil, addr)
-	buf, _ := json.Marshal(AckMsg)		
-	conn.Write(buf)
-}
 
 func SendActiveOrder(messageTx chan config.Message,  order config.ActiveOrders){
 	elevMap := elevStateMap.GetLocalMap()

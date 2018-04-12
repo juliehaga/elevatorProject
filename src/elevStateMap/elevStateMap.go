@@ -136,8 +136,7 @@ func SetLocalMap(changedMap config.ElevStateMap){
 }
 
 
-func UpdateLocalMap(changedMap config.ElevStateMap) bool{
-	fmt.Printf("oppdaterer map\n")
+func UpdateLocalMap(changedMap config.ElevStateMap) (bool, config.ElevStateMap){
 	currentMap := GetLocalMap()
 	LocalOrderChangeMade := false
 
@@ -175,16 +174,18 @@ func UpdateLocalMap(changedMap config.ElevStateMap) bool{
 	}
 	SetLocalMap(currentMap)
 	writeToBackup()
-	return LocalOrderChangeMade
+	return LocalOrderChangeMade, currentMap
 }
 
 
-func UpdateMapFromNetwork(recievedMap config.ElevStateMap, buttonLampChan chan config.ButtonLamp) (bool, config.ElevStateMap){
+func UpdateMapFromNetwork(recievedMap config.ElevStateMap, buttonLampChan chan config.ButtonLamp, activeOrderTx chan config.ActiveOrders) (bool, config.ElevStateMap){
 	//buttonEvent := false
 	//fmt.Printf("--------------------FROM NETWORK--------------------")
 	//PrintMap(recievedMap)
 	currentMap := GetLocalMap()
 	changedMade := false
+
+	newMap := GetLocalMap()
 
 	//PrintMap(recievedMap)
 
@@ -213,7 +214,12 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, buttonLampChan chan c
 		}
 	}
 	
+	fmt.Printf("--------------CURRENT MAP---------------\n")
+	PrintMap(currentMap)
 
+
+	fmt.Printf("-----------------RECIEVED MAP ------------\n")
+	PrintMap(recievedMap)
 
 
 
@@ -222,10 +228,11 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, buttonLampChan chan c
 			for b:= config.BT_HallUp; b < config.BT_Cab; b++{
 				if recievedMap[e].Orders[f][b] == config.OT_OrderPlaced && currentMap[e].Orders[f][b] == config.OT_NoOrder{
 					if numberOfAckElevs[f][b] < config.NUM_ELEVS{
-						currentMap[e].Orders[f][b] = config.OT_OrderPlaced
-						currentMap[config.My_ID].Orders[f][b]  = config.OT_OrderPlaced
+						newMap[e].Orders[f][b] = config.OT_OrderPlaced
+						newMap[config.My_ID].Orders[f][b]  = config.OT_OrderPlaced
+						//Må vite hvilken knapp som skal legges til og hvilken heis den kommer fra!!
 						changedMade = true
-						fmt.Printf("fant mindre tre enere\n")
+						fmt.Printf("fant mindre enn tre enere, sender mine ordre\n")
 						//PrintMap(recievedMap)
 					} 
 				}
@@ -242,10 +249,12 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, buttonLampChan chan c
 						fmt.Printf("fjerner ordre fra nettverket\n")
 						changedMade = false
 						//clear orders from network 
-						//PrintMap(recievedMap)
+						
 						for elev := 0; elev < config.NUM_ELEVS; elev++{
-							currentMap[elev].Orders[f][b] = config.OT_NoOrder
+							newMap[elev].Orders[f][b] = config.OT_NoOrder
 						}
+						activeOrderTx <- config.ActiveOrders{config.ButtonEvent{f, b}, config.My_ID, false}
+						PrintMap(recievedMap)
 					}
 				}
 			}
@@ -255,17 +264,17 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, buttonLampChan chan c
 	//fmt.Printf("-------------INNE I UPDATENETWORK ----------------\n")
 	//PrintMap(currentMap)
 	//fmt.Printf("-----------------------------------------------------\n")
-	SetLocalMap(currentMap)
+	SetLocalMap(newMap)
 
 
 
 
 
-	return changedMade, currentMap
+	return changedMade, newMap
 }
 
 
-func FindActiveOrders(orderMsgChan chan config.ElevStateMap, activeOrderTx chan config.ActiveOrders){
+func FindActiveOrders(orderMsgChan chan config.ElevStateMap, activeOrderTx chan config.ActiveOrders, activeOrderRx chan config.ActiveOrders){
 	for {
 		select{
 		//Burde bare gjøre sjekken når man faktisk mottar en ordre. 
@@ -282,7 +291,9 @@ func FindActiveOrders(orderMsgChan chan config.ElevStateMap, activeOrderTx chan 
 							}	
 						}
 						if newOrder {
+							fmt.Printf("jeg har 3 enere, sender ut ordre melding\n")
 							activeOrderTx <- config.ActiveOrders{config.ButtonEvent{f, b}, config.My_ID, true}
+							activeOrderRx <- config.ActiveOrders{config.ButtonEvent{f, b}, config.My_ID, true}
 						}
 					}
 				}
