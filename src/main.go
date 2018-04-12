@@ -154,7 +154,7 @@ func main() {
 				//fmt.Printf("Jeg sender en aktiv ordreMSG\n")
 				ActiveOrderMatrix[order.Button.Floor][order.Button.Button][config.My_ID] = true
 				network.SendActiveOrder(messageTx, order)
-				fmt.Printf("ActiveOrderMatrix %v", ActiveOrderMatrix)
+				//fmt.Printf("ActiveOrderMatrix %v", ActiveOrderMatrix)
 
 			} else {
 				for e:= 0; e < config.NUM_ELEVS; e++{

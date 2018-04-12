@@ -278,7 +278,7 @@ func eventNewAckOrder(orderCompleteChan chan config.ButtonEvent, buttonLampChan 
 					//motorTimer.Stop()
 				}
 				fmt.Printf("----------------------------choosedir----------------------------\n")
-				//elevStateMap.PrintMap(currentMap)
+				elevStateMap.PrintMap(currentMap)
 
 			}
 		case DOOR_OPEN:
