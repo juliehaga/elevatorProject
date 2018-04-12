@@ -205,6 +205,7 @@ func Receiver(port int, orderMsgRx chan config.OrderMsg, statusMsgRx chan config
 				} else if receivedMsg.MsgType == config.Ack{
 					ackChan <- config.AckMsg{receivedMsg.ID, receivedMsg.Reciever_ID}
 				} else if receivedMsg.MsgType == config.ActiveOrder{
+					fmt.Printf("Mottar en ordremsg fra %v\n", receivedMsg.ID)
 					activeOrdersRx <- config.ActiveOrders{receivedMsg.Button, receivedMsg.ID, true}
 				}
 			}
