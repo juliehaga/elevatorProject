@@ -230,9 +230,9 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, buttonLampChan chan c
 				}
 			}
 		}
-	fmt.Printf("-------------INNE I UPDATENETWORK ----------------\n")
-	PrintMap(currentMap)
-	fmt.Printf("-----------------------------------------------------\n")
+	//fmt.Printf("-------------INNE I UPDATENETWORK ----------------\n")
+	//PrintMap(currentMap)
+	//fmt.Printf("-----------------------------------------------------\n")
 	SetLocalMap(currentMap)
 
 	return changedMade, currentMap
