@@ -8,6 +8,9 @@ import (
 	"flag"
 	"./network"
 	"fmt"
+	"./network/bcast"
+	"./network/peers"
+
 )
 
 
@@ -62,12 +65,15 @@ func main() {
 
     // We make a channel for receiving updates on the id's of the peers that are
 	//  alive on the network
-    peerUpdateCh := make(chan config.PeerUpdate, 100)
+    peerUpdateCh := make(chan peers.PeerUpdate, 100)
     // This could be used to signal that we are somehow "unavailable".
     peerTxEnable := make(chan bool, 100)
 
  
 	messageTx := make(chan config.Message, 10000)
+	messageRx := make(chan config.Message, 10000)
+
+
 	orderMsgRx := make(chan config.OrderMsg, 10000)
 	statusMsgRx := make(chan config.StatusMsg, 10000)
 	ackChan := make(chan config.AckMsg, 10000)
@@ -91,10 +97,13 @@ func main() {
 
   
     go elevio.Elevio(motorChan, doorLampChan, newOrderChan, floorChan, buttonLampChan, orderMsgChan, newLocalOrderChan, mapChangesChan)
-	go network.Transmitter(16666, messageTx, ackChan)
-	go network.Receiver(16666, orderMsgRx, statusMsgRx, ackChan, messageTx, activeOrderRx)
-    go network.PeerTransmitter(15611, id, peerTxEnable)
-	go network.PeerReceiver(15611, peerUpdateCh)
+
+	go bcast.Transmitter(16666, messageTx)
+	go bcast.Receiver(16666, messageRx)
+
+    go peers.Transmitter(15611, id, peerTxEnable)
+	go peers.Receiver(15611, peerUpdateCh)
+
 	go fsm.Fsm(motorChan, doorLampChan, floorChan, buttonLampChan, mapChangesChan, newOrderChan, statusChangesChan, orderCompleteChan, activeOrderTx)
 	go elevStateMap.FindActiveOrders(orderMsgChan, activeOrderTx)
 
@@ -150,7 +159,6 @@ func main() {
 
 		case order:= <- activeOrderTx:
 			//sjekk om den skal aktiveres eller cleares
-
 			if order.ActiveOrder {
 				fmt.Printf("Jeg sender en aktiv ordreMSG\n")
 				ActiveOrderMatrix[order.Button.Floor][order.Button.Button][config.My_ID] = true
@@ -163,8 +171,6 @@ func main() {
 			}
 
 		case order:= <- activeOrderRx:
-
-			
 			ActiveOrderMatrix[order.Button.Floor][order.Button.Button][order.ID] = true
 			fmt.Printf("ORDRE MELDING FRA %v\n", order.ID)
 			fmt.Printf("%v\n", ActiveOrderMatrix)
@@ -179,6 +185,24 @@ func main() {
 				fmt.Printf("trigger new order chan\n")
 				newOrderChan <- config.ButtonEvent{order.Button.Floor, order.Button.Button}
 				buttonLampChan <- config.ButtonLamp{order.Button.Floor, order.Button.Button, true}
+			}
+		case receivedMsg := <-messageRx:
+			if receivedMsg.ID != config.My_ID && receivedMsg.Reciever_ID == config.My_ID{
+
+				if receivedMsg.MsgType == config.ElevStatus{
+					statusMsgRx <- config.StatusMsg{receivedMsg.ID, receivedMsg.ElevMap[receivedMsg.ID].CurrentFloor, receivedMsg.ElevMap[receivedMsg.ID].CurrentDir, receivedMsg.ElevMap[receivedMsg.ID].Door, receivedMsg.ElevMap[receivedMsg.ID].OutOfOrder,receivedMsg.ElevMap[receivedMsg.ID].IDLE}
+
+				} else if receivedMsg.MsgType == config.Orders {
+					orderMsgRx <- config.OrderMsg{receivedMsg.ID, receivedMsg.ElevMap}
+		
+				} else if receivedMsg.MsgType == config.Ack{
+					ackChan <- config.AckMsg{receivedMsg.ID, receivedMsg.Reciever_ID}
+
+				} else if receivedMsg.MsgType == config.ActiveOrder{
+					fmt.Printf("Mottar en ordremsg fra %v\n", receivedMsg.ID)
+					//activeOrderRx <- config.ActiveOrders{receivedMsg.Button, receivedMsg.ID, true}
+					//kan ikke trigge denne her
+				}
 			}
 			
 
