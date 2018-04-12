@@ -119,4 +119,10 @@ type PeerUpdate struct {
 	Lost  []string
 }
 
+type OrderAck struct {
+	Button ButtonEvent
+	Id int
+	ActiveOrder bool
+}
+
 type MotorDirection int

@@ -179,7 +179,7 @@ func UpdateLocalMap(changedMap config.ElevStateMap) bool{
 }
 
 
-func UpdateMapFromNetwork(recievedMap config.ElevStateMap, buttonLampChan chan config.ButtonLamp) (bool, config.ElevStateMap){
+func UpdateMapFromNetwork(recievedMap config.ElevStateMap, buttonLampChan chan config.ButtonLamp, id int, orderAck chan config.OrderAck) (bool, config.ElevStateMap){
 	//buttonEvent := false
 	//fmt.Printf("--------------------FROM NETWORK--------------------")
 	//PrintMap(recievedMap)
@@ -224,6 +224,9 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, buttonLampChan chan c
 						currentMap[e].Orders[f][b] = config.OT_OrderPlaced
 						currentMap[config.My_ID].Orders[f][b]  = config.OT_OrderPlaced
 						changedMade = true
+					} else if numberOfAckElevs[f][b] == config.NUM_ELEVS{
+						orderAck <- config.OrderAck{config.ButtonEvent{f, b}, id, true}
+						//this elevator has accepted the order
 					}
 				}
 			}
@@ -241,6 +244,7 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, buttonLampChan chan c
 							buttonLampChan <- config.ButtonLamp{f, b, false}
 							fmt.Printf("fjerner ordre fra nettverket\n")
 							//clear orders from network 
+							orderAck <- config.OrderAck{config.ButtonEvent{f, b}, -1, false}
 							for elev := 0; elev < config.NUM_ELEVS; elev++{
 								currentMap[elev].Orders[f][b] = config.OT_NoOrder
 							}

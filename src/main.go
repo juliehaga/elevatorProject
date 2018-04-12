@@ -71,6 +71,7 @@ func main() {
 	statusMsgRx := make(chan config.StatusMsg, 10000)
 	ackChan := make(chan config.AckMsg, 10000)
 	orderCompleteChan := make(chan config.ButtonEvent, 10000)
+	ackOrders := make(chan config.OrderAck, 10000)
 	
 	config.Init(id, port)
 	elevio.InitDriver("localhost:" + port, config.NUM_FLOORS)
@@ -84,7 +85,7 @@ func main() {
 
 
   
-    go elevio.Elevio(motorChan, doorLampChan, newOrderChan, floorChan, buttonLampChan, orderMsgChan, newLocalOrderChan, mapChangesChan)
+    go elevio.Elevio(motorChan, doorLampChan, newOrderChan, floorChan, buttonLampChan, ackOrders, newLocalOrderChan, mapChangesChan)
 	go network.Transmitter(16502, messageTx, ackChan)
 	go network.Receiver(16502, orderMsgRx, statusMsgRx, ackChan, messageTx)
     go network.PeerTransmitter(15600, id, peerTxEnable)
@@ -107,12 +108,12 @@ func main() {
 			if init != true{
 				fmt.Printf("EN NY PEEER JEG SENDER MINE ORDRE\n")
 				network.SendOrders(messageTx, elevStateMap.GetLocalMap())	
-			}
+			} 
 
 		case orderMsgFromNetwork := <- orderMsgRx:
 			fmt.Printf("Får melding fra %v\n", orderMsgFromNetwork.ID)
 
-			orderUpdates, currentMap := elevStateMap.UpdateMapFromNetwork(orderMsgFromNetwork.ElevMap, buttonLampChan)
+			orderUpdates, currentMap := elevStateMap.UpdateMapFromNetwork(orderMsgFromNetwork.ElevMap, buttonLampChan, orderMsgFromNetwork.ID, ackOrders)
 			if init == true{
 				elevio.InitOrders()
 			}
