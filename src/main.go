@@ -120,7 +120,7 @@ func main() {
 			if orderUpdates {
 				orderMsgChan <- currentMap
 				fmt.Printf("//////////// Sender mine ordre, NETWORK /////////////////////////\n")
-				elevStateMap.PrintMap(currentMap)
+				//elevStateMap.PrintMap(currentMap)
 				network.SendOrders(messageTx, currentMap)
 			}
 
