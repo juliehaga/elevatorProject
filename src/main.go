@@ -41,10 +41,11 @@ func main() {
 
 //init fuctions 
 
+
 	
 	
-	
-//channels for communication between modules
+//channels for communication between module
+
 
 	//hardware channels
 	motorChan := make(chan config.MotorDirection, 100)
@@ -71,6 +72,9 @@ func main() {
 	statusMsgRx := make(chan config.StatusMsg, 10000)
 	ackChan := make(chan config.AckMsg, 10000)
 	orderCompleteChan := make(chan config.ButtonEvent, 10000)
+
+	activeOrderRx := make(chan config.ActiveOrders, 10000)
+	activeOrderTx := make(chan config.ActiveOrders, 10000)
 	
 	
 	config.Init(id, port)
@@ -81,16 +85,18 @@ func main() {
 	fmt.Printf("Init success\n")
 	
 	init := true
+	ActiveOrderMatrix := [config.NUM_FLOORS][config.NUM_BUTTONS][config.NUM_ELEVS] bool{}
 
 
 
   
     go elevio.Elevio(motorChan, doorLampChan, newOrderChan, floorChan, buttonLampChan, orderMsgChan, newLocalOrderChan, mapChangesChan)
 	go network.Transmitter(16666, messageTx, ackChan)
-	go network.Receiver(16666, orderMsgRx, statusMsgRx, ackChan, messageTx)
+	go network.Receiver(16666, orderMsgRx, statusMsgRx, ackChan, messageTx, activeOrderRx)
     go network.PeerTransmitter(15611, id, peerTxEnable)
 	go network.PeerReceiver(15611, peerUpdateCh)
-	go fsm.Fsm(motorChan, doorLampChan, floorChan, buttonLampChan, mapChangesChan, newOrderChan, statusChangesChan, orderCompleteChan)
+	go fsm.Fsm(motorChan, doorLampChan, floorChan, buttonLampChan, mapChangesChan, newOrderChan, statusChangesChan, orderCompleteChan, activeOrderTx)
+	go elevStateMap.FindActiveOrders(orderMsgChan, activeOrderTx)
 
 	fmt.Printf("go all functions\n")
 
@@ -141,6 +147,36 @@ func main() {
 			}
 			network.SendElevStatus(messageTx, elevMap)
 			init = false
+
+		case order:= <- activeOrderTx:
+			//sjekk om den skal aktiveres eller cleares
+
+			if order.ActiveOrder {
+				ActiveOrderMatrix[order.Button.Floor][order.Button.Button][config.My_ID] = true
+				network.SendActiveOrder(messageTx, order)
+
+			} else {
+				for e:= 0; e < config.NUM_ELEVS; e++{
+					ActiveOrderMatrix[order.Button.Floor][order.Button.Button][e] = false
+				}
+			}
+
+		case order:= <- activeOrderRx:
+			
+			ActiveOrderMatrix[order.Button.Floor][order.Button.Button][order.ID] = true
+			newOrder := true
+			for e := 0; e < config.NUM_ELEVS; e++{
+				if ActiveOrderMatrix[order.Button.Floor][order.Button.Button][e] == false {
+					newOrder = false
+				}
+			}
+
+			if newOrder{
+				newOrderChan <- config.ButtonEvent{order.Button.Floor, order.Button.Button}
+				buttonLampChan <- config.ButtonLamp{order.Button.Floor, order.Button.Button, true}
+			}
+			
+
 
 
 

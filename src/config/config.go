@@ -100,6 +100,11 @@ type AckMsg struct{
 	Reciever_ID int
 }
 
+type ActiveOrderMsg struct{
+	ID int
+	Order ButtonEvent
+}
+
 type OrderCompleteMsg struct{
 	button ButtonType
 }
@@ -109,7 +114,7 @@ const (
 	ElevStatus     = 0
 	Orders         = 1
 	Ack 	       = 2
-	OrderComplete  = 3
+	ActiveOrder    = 3
 )
 
 
@@ -119,9 +124,9 @@ type PeerUpdate struct {
 	Lost  []string
 }
 
-type OrderAck struct {
+type ActiveOrders struct {
 	Button ButtonEvent
-	Id int
+	ID int
 	ActiveOrder bool
 }
 

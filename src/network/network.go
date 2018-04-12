@@ -37,11 +37,12 @@ func SendAck(messageTx chan config.Message,  elevMap config.ElevStateMap, reciev
 	conn.Write(buf)
 }
 
-func SendOrderComplete(messageTx chan config.Message,  order config.ButtonEvent){
+func SendActiveOrder(messageTx chan config.Message,  order config.ActiveOrders){
 	elevMap := elevStateMap.GetLocalMap()
-	elevMapMsg := config.Message{config.My_ID, config.OrderComplete, elevMap, -1, order}
+	elevMapMsg := config.Message{config.My_ID, config.ActiveOrder, elevMap, -1, order.Button}
 	messageTx <- elevMapMsg
 }
+
 
 func PeerTransmitter(port int, id string, transmitEnable <-chan bool) {
 
@@ -177,7 +178,7 @@ func Transmitter(port int, messageTx chan config.Message, ackChan chan config.Ac
 
 // Matches type-tagged JSON received on `port` to element types of `chans`, then
 // sends the decoded value on the corresponding channel
-func Receiver(port int, orderMsgRx chan config.OrderMsg, statusMsgRx chan config.StatusMsg, ackChan chan config.AckMsg, messageTx chan config.Message) {
+func Receiver(port int, orderMsgRx chan config.OrderMsg, statusMsgRx chan config.StatusMsg, ackChan chan config.AckMsg, messageTx chan config.Message, activeOrdersRx chan config.ActiveOrders) {
 	//var receivedMap elevStateMap.ElevStateMap
 	var receivedMsg config.Message
 	addr, _ := net.ResolveUDPAddr("udp", fmt.Sprintf("255.255.255.255:%d", port))
@@ -203,6 +204,8 @@ func Receiver(port int, orderMsgRx chan config.OrderMsg, statusMsgRx chan config
 					SendAck(messageTx, receivedMsg.ElevMap, receivedMsg.ID, port)
 				} else if receivedMsg.MsgType == config.Ack{
 					ackChan <- config.AckMsg{receivedMsg.ID, receivedMsg.Reciever_ID}
+				} else if receivedMsg.MsgType == config.ActiveOrder{
+					activeOrdersRx <- config.ActiveOrders{receivedMsg.Button, receivedMsg.ID, true}
 				}
 			}
 		
@@ -213,6 +216,8 @@ func Receiver(port int, orderMsgRx chan config.OrderMsg, statusMsgRx chan config
 	}
 	
 }
+
+
 
 func checkArgs(chans ...interface{}) {
 	n := 0
