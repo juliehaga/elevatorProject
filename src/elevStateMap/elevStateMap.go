@@ -178,7 +178,7 @@ func UpdateLocalMap(changedMap config.ElevStateMap) (bool, config.ElevStateMap){
 }
 
 
-func UpdateMapFromNetwork(recievedMap config.ElevStateMap, buttonLampChan chan config.ButtonLamp, activeOrderTx chan config.ActiveOrders) (bool, config.ElevStateMap){
+func UpdateMapFromNetwork(recievedMap config.ElevStateMap, buttonLampChan chan config.ButtonLamp, activeOrderTx chan config.ActiveOrders, id int) (bool, config.ElevStateMap){
 	//buttonEvent := false
 	//fmt.Printf("--------------------FROM NETWORK--------------------")
 	//PrintMap(recievedMap)
@@ -214,15 +214,6 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, buttonLampChan chan c
 		}
 	}
 	
-	fmt.Printf("--------------CURRENT MAP---------------\n")
-	PrintMap(currentMap)
-
-
-	fmt.Printf("-----------------RECIEVED MAP ------------\n")
-	PrintMap(recievedMap)
-
-
-
 	for e:= 0; e < config.NUM_ELEVS; e++{
 		for f:= 0; f < config.NUM_FLOORS; f++{
 			for b:= config.BT_HallUp; b < config.BT_Cab; b++{
@@ -232,7 +223,7 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, buttonLampChan chan c
 						newMap[config.My_ID].Orders[f][b]  = config.OT_OrderPlaced
 						//Må vite hvilken knapp som skal legges til og hvilken heis den kommer fra!!
 						changedMade = true
-						fmt.Printf("fant mindre enn tre enere, sender mine ordre\n")
+						fmt.Printf("fant minst en 1-er\n")
 						//PrintMap(recievedMap)
 					} 
 				}
@@ -254,7 +245,6 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, buttonLampChan chan c
 							newMap[elev].Orders[f][b] = config.OT_NoOrder
 						}
 						activeOrderTx <- config.ActiveOrders{config.ButtonEvent{f, b}, config.My_ID, false}
-						PrintMap(recievedMap)
 					}
 				}
 			}
@@ -291,7 +281,7 @@ func FindActiveOrders(orderMsgChan chan config.ElevStateMap, activeOrderTx chan 
 							}	
 						}
 						if newOrder {
-							fmt.Printf("jeg har 3 enere, sender ut ordre melding\n")
+							fmt.Printf("jeg har 3 enere, sender ut ordre melding %v \n", config.ButtonEvent{f, b})
 							activeOrderTx <- config.ActiveOrders{config.ButtonEvent{f, b}, config.My_ID, true}
 							activeOrderRx <- config.ActiveOrders{config.ButtonEvent{f, b}, config.My_ID, true}
 						}
