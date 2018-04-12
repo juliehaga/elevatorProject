@@ -118,7 +118,7 @@ func main() {
 			} 
 
 		case orderMsgFromNetwork := <- orderMsgRx:
-			fmt.Printf("Jeg får en melding over nettverket fra %v\n", orderMsgFromNetwork.ID)
+			//fmt.Printf("Jeg får en melding over nettverket fra %v\n", orderMsgFromNetwork.ID)
 			orderUpdates, currentMap := elevStateMap.UpdateMapFromNetwork(orderMsgFromNetwork.ElevMap, buttonLampChan)
 			if init == true{
 				elevio.InitOrders()
@@ -127,7 +127,7 @@ func main() {
 
 			if orderUpdates {
 				orderMsgChan <- currentMap
-				fmt.Printf("//////////// Sender mine ordre, NETWORK /////////////////////////\n")
+				//fmt.Printf("//////////// Sender mine ordre, NETWORK /////////////////////////\n")
 				//elevStateMap.PrintMap(currentMap)
 				network.SendOrders(messageTx, currentMap)
 			}
@@ -140,7 +140,7 @@ func main() {
 			localOrderUpdates := elevStateMap.UpdateLocalMap(elevMap)
 			if localOrderUpdates {
 				orderMsgChan <- elevMap
-				fmt.Printf("//////////// Sender mine ordre, LOCAL endring/////////////////////////\n")
+				//fmt.Printf("//////////// Sender mine ordre, LOCAL endring/////////////////////////\n")
 				//elevStateMap.PrintMap(elevStateMap.GetLocalMap())
 				network.SendOrders(messageTx, elevMap)
 				//elevStateMap.PrintMap(elevMap)
@@ -151,9 +151,10 @@ func main() {
 		case order:= <- activeOrderTx:
 			//sjekk om den skal aktiveres eller cleares
 			if order.ActiveOrder {
-				fmt.Printf("Jeg sender en aktiv ordreMSG\n")
+				//fmt.Printf("Jeg sender en aktiv ordreMSG\n")
 				ActiveOrderMatrix[order.Button.Floor][order.Button.Button][config.My_ID] = true
 				network.SendActiveOrder(messageTx, order)
+				fmt.Printf("ActiveOrderMatrix %v", ActiveOrderMatrix)
 
 			} else {
 				for e:= 0; e < config.NUM_ELEVS; e++{
@@ -163,7 +164,7 @@ func main() {
 
 		case order:= <- activeOrderRx:
 			ActiveOrderMatrix[order.Button.Floor][order.Button.Button][order.ID] = true
-			fmt.Printf("ORDRE MELDING FRA %v\n", order.ID)
+			//fmt.Printf("ORDRE MELDING FRA %v\n", order.ID)
 			newOrder := true
 			for e := 0; e < config.NUM_ELEVS; e++{
 				if ActiveOrderMatrix[order.Button.Floor][order.Button.Button][e] == false {
@@ -172,9 +173,9 @@ func main() {
 			}
 
 			if newOrder{
-				fmt.Printf("trigger new order chan\n")
+				//fmt.Printf("trigger new order chan\n")
 				newOrderChan <- config.ButtonEvent{order.Button.Floor, order.Button.Button}
-				fmt.Printf("Jeg slår på lys \n")
+				//fmt.Printf("Jeg slår på lys \n")
 				buttonLampChan <- config.ButtonLamp{order.Button.Floor, order.Button.Button, true}
 			}
 		
