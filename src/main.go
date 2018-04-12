@@ -92,6 +92,7 @@ func main() {
 	go fsm.Fsm(motorChan, doorLampChan, floorChan, buttonLampChan, mapChangesChan, newOrderChan, statusChangesChan, orderCompleteChan)
 
 	fmt.Printf("go all functions\n")
+
     
 	
 	for {

@@ -199,13 +199,32 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, buttonLampChan chan c
 		}
 	}
 
+
+	numberOfAckElevs := [config.NUM_FLOORS][config.NUM_BUTTONS]int{}
+
+
+	for f:= 0; f < config.NUM_FLOORS; f++{
+		for b:= config.BT_HallUp; b < config.BT_Cab; b++{
+			for e:= 0; e < config.NUM_ELEVS; e++{
+				if recievedMap[e].Orders[f][b] == config.OT_OrderPlaced{
+					numberOfAckElevs[f][b] ++
+				}
+			}
+		}
+	}
+
+
+
+
 	for e:= 0; e < config.NUM_ELEVS; e++{
 		for f:= 0; f < config.NUM_FLOORS; f++{
 			for b:= config.BT_HallUp; b < config.BT_Cab; b++{
 				if recievedMap[e].Orders[f][b] == config.OT_OrderPlaced && currentMap[e].Orders[f][b] == config.OT_NoOrder{
-					currentMap[e].Orders[f][b] = config.OT_OrderPlaced
-					currentMap[config.My_ID].Orders[f][b]  = config.OT_OrderPlaced
-					changedMade = true
+					if numberOfAckElevs[f][b] < config.NUM_ELEVS{
+						currentMap[e].Orders[f][b] = config.OT_OrderPlaced
+						currentMap[config.My_ID].Orders[f][b]  = config.OT_OrderPlaced
+						changedMade = true
+					}
 				}
 			}
 		}
@@ -234,6 +253,10 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, buttonLampChan chan c
 	//PrintMap(currentMap)
 	//fmt.Printf("-----------------------------------------------------\n")
 	SetLocalMap(currentMap)
+
+
+
+
 
 	return changedMade, currentMap
 }
