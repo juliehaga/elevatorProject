@@ -86,10 +86,10 @@ func main() {
 
   
     go elevio.Elevio(motorChan, doorLampChan, newOrderChan, floorChan, buttonLampChan, ackOrders, newLocalOrderChan, mapChangesChan)
-	go network.Transmitter(16502, messageTx, ackChan)
-	go network.Receiver(16502, orderMsgRx, statusMsgRx, ackChan, messageTx)
-    go network.PeerTransmitter(15600, id, peerTxEnable)
-	go network.PeerReceiver(15600, peerUpdateCh)
+	go network.Transmitter(16666, messageTx, ackChan)
+	go network.Receiver(16666, orderMsgRx, statusMsgRx, ackChan, messageTx)
+    go network.PeerTransmitter(15611, id, peerTxEnable)
+	go network.PeerReceiver(15611, peerUpdateCh)
 	go fsm.Fsm(motorChan, doorLampChan, floorChan, buttonLampChan, mapChangesChan, newOrderChan, statusChangesChan, orderCompleteChan)
 
 	fmt.Printf("go all functions\n")

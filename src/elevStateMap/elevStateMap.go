@@ -212,6 +212,8 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, buttonLampChan chan c
 			}
 		}
 	}
+	fmt.Printf("NUMBER OF ACK ELEVS \n")
+	fmt.Printf("%v\n", numberOfAckElevs)
 
 
 
@@ -224,10 +226,12 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, buttonLampChan chan c
 						currentMap[e].Orders[f][b] = config.OT_OrderPlaced
 						currentMap[config.My_ID].Orders[f][b]  = config.OT_OrderPlaced
 						changedMade = true
-					} else if numberOfAckElevs[f][b] == config.NUM_ELEVS{
+						fmt.Printf("fant mindre enn 3 enere\n")
+					} 
+				}else if numberOfAckElevs[f][b] == config.NUM_ELEVS{
+						fmt.Printf("fant 3 enere\n")
 						orderAck <- config.OrderAck{config.ButtonEvent{f, b}, id, true}
 						//this elevator has accepted the order
-					}
 				}
 			}
 		}

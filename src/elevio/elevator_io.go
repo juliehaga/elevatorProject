@@ -126,6 +126,8 @@ func OrderLights(newOrderChan chan config.ButtonEvent, buttonLampChan chan confi
 		case elevOrderAck := <- ackOrderChan:
 			buttonEvent := elevOrderAck.Button
 			numberOfAckElevs[buttonEvent.Floor][buttonEvent.Button][elevOrderAck.Id] = elevOrderAck.ActiveOrder
+			fmt.Printf("------------ORDERS-------------\n")
+			fmt.Printf("%v\n", numberOfAckElevs)
 
 
 			for f:= 0; f < config.NUM_FLOORS; f++{
