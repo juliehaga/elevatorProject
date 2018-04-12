@@ -173,6 +173,7 @@ func main() {
 			if newOrder{
 				fmt.Printf("trigger new order chan\n")
 				newOrderChan <- config.ButtonEvent{order.Button.Floor, order.Button.Button}
+				fmt.Printf("Jeg slår på lys \n")
 				buttonLampChan <- config.ButtonLamp{order.Button.Floor, order.Button.Button, true}
 			}
 		
