@@ -27,16 +27,18 @@ func Network(messageRx chan config.Message, messageTx chan config.Message, statu
 	for {
 		select{
 			case receivedMsg := <-messageRx:
+				if receivedMsg.ID != config.My_ID{
 
-				if receivedMsg.MsgType == config.ElevStatus{
-					statusMsgRx <- config.StatusMsg{receivedMsg.ID, receivedMsg.ElevMap[receivedMsg.ID].CurrentFloor, receivedMsg.ElevMap[receivedMsg.ID].CurrentDir, receivedMsg.ElevMap[receivedMsg.ID].Door, receivedMsg.ElevMap[receivedMsg.ID].OutOfOrder,receivedMsg.ElevMap[receivedMsg.ID].IDLE}
+					if receivedMsg.MsgType == config.ElevStatus{
+						statusMsgRx <- config.StatusMsg{receivedMsg.ID, receivedMsg.ElevMap[receivedMsg.ID].CurrentFloor, receivedMsg.ElevMap[receivedMsg.ID].CurrentDir, receivedMsg.ElevMap[receivedMsg.ID].Door, receivedMsg.ElevMap[receivedMsg.ID].OutOfOrder,receivedMsg.ElevMap[receivedMsg.ID].IDLE}
 
-				} else if receivedMsg.MsgType == config.Orders {
-					orderMsgRx <- config.OrderMsg{receivedMsg.ID, receivedMsg.ElevMap}
+					} else if receivedMsg.MsgType == config.Orders {
+						orderMsgRx <- config.OrderMsg{receivedMsg.ID, receivedMsg.ElevMap}
 
-				} else if receivedMsg.MsgType == config.ActiveOrder{
-					fmt.Printf("Mottar en ordremsg fra %v , om knapp: %v \n", receivedMsg.ID, receivedMsg.Button)
-					activeOrderRx <- config.ActiveOrders{receivedMsg.Button, receivedMsg.ID, true}
+					} else if receivedMsg.MsgType == config.ActiveOrder{
+						fmt.Printf("Mottar en ordremsg fra %v , om knapp: %v \n", receivedMsg.ID, receivedMsg.Button)
+						activeOrderRx <- config.ActiveOrders{receivedMsg.Button, receivedMsg.ID, true}
+					}
 				}
 
 		}
