@@ -48,6 +48,7 @@ func Elevio(motorChan chan config.MotorDirection, doorLampChan chan bool, newOrd
 			} else{
 				for e:= 0; e < config.NUM_ELEVS; e++{
 					if currentMap[e].Connected && e != config.My_ID{
+						fmt.Printf("skal oppdatere ordre\n")
 						accept = true
 					}
 				}

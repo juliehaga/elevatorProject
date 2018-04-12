@@ -6,7 +6,11 @@ import (
 	"net"
 	"sort"
 	"time"
+	"strconv"
+	"../../elevStateMap"
 )
+
+
 
 type PeerUpdate struct {
 	Peers []string
@@ -33,7 +37,6 @@ func Transmitter(port int, id string, transmitEnable <-chan bool) {
 		}
 	}
 }
-
 func Receiver(port int, peerUpdateCh chan<- PeerUpdate) {
 
 	var buf [1024]byte
@@ -55,18 +58,27 @@ func Receiver(port int, peerUpdateCh chan<- PeerUpdate) {
 		if id != "" {
 			if _, idExists := lastSeen[id]; !idExists {
 				p.New = id
+
+				newID, _ := strconv.Atoi(p.New)
+				//fmt.Printf("Setter heis %v til connected ", newID)
+				elevStateMap.SetConnectedElevator(newID, true)
+
+
 				updated = true
 			}
 
 			lastSeen[id] = time.Now()
 		}
-
 		// Removing dead connection
 		p.Lost = make([]string, 0)
 		for k, v := range lastSeen {
 			if time.Now().Sub(v) > timeout {
 				updated = true
 				p.Lost = append(p.Lost, k)
+
+				lostID, _ := strconv.Atoi(k)
+				elevStateMap.SetConnectedElevator(lostID, false)
+				//fmt.Printf("Setter heis %v til disconnected \n", lostID)
 				delete(lastSeen, k)
 			}
 		}
@@ -81,6 +93,10 @@ func Receiver(port int, peerUpdateCh chan<- PeerUpdate) {
 
 			sort.Strings(p.Peers)
 			sort.Strings(p.Lost)
+
+			
+			
+			
 			peerUpdateCh <- p
 		}
 	}

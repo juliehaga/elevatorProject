@@ -76,7 +76,6 @@ func main() {
 
 	orderMsgRx := make(chan config.OrderMsg, 10000)
 	statusMsgRx := make(chan config.StatusMsg, 10000)
-	ackChan := make(chan config.AckMsg, 10000)
 	orderCompleteChan := make(chan config.ButtonEvent, 10000)
 
 	activeOrderRx := make(chan config.ActiveOrders, 10000)
@@ -173,7 +172,6 @@ func main() {
 		case order:= <- activeOrderRx:
 			ActiveOrderMatrix[order.Button.Floor][order.Button.Button][order.ID] = true
 			fmt.Printf("ORDRE MELDING FRA %v\n", order.ID)
-			fmt.Printf("%v\n", ActiveOrderMatrix)
 			newOrder := true
 			for e := 0; e < config.NUM_ELEVS; e++{
 				if ActiveOrderMatrix[order.Button.Floor][order.Button.Button][e] == false {
@@ -187,23 +185,17 @@ func main() {
 				buttonLampChan <- config.ButtonLamp{order.Button.Floor, order.Button.Button, true}
 			}
 		case receivedMsg := <-messageRx:
-			fmt.Printf("jeg mottar en melding %v \n", receivedMsg)
 
 			if receivedMsg.MsgType == config.ElevStatus{
-				fmt.Printf("statusmelding\n")
+				fmt.Printf("mottar statusmelding\n")
 				statusMsgRx <- config.StatusMsg{receivedMsg.ID, receivedMsg.ElevMap[receivedMsg.ID].CurrentFloor, receivedMsg.ElevMap[receivedMsg.ID].CurrentDir, receivedMsg.ElevMap[receivedMsg.ID].Door, receivedMsg.ElevMap[receivedMsg.ID].OutOfOrder,receivedMsg.ElevMap[receivedMsg.ID].IDLE}
 
 			} else if receivedMsg.MsgType == config.Orders {
-				fmt.Printf("ordremelding\n")
+				fmt.Printf("mottar ordremelding\n")
 				elevStateMap.PrintMap(receivedMsg.ElevMap)
 				orderMsgRx <- config.OrderMsg{receivedMsg.ID, receivedMsg.ElevMap}
-	
-			} else if receivedMsg.MsgType == config.Ack{
-				fmt.Printf("ack melding\n")
-				ackChan <- config.AckMsg{receivedMsg.ID, receivedMsg.Reciever_ID}
 
 			} else if receivedMsg.MsgType == config.ActiveOrder{
-				fmt.Printf("active ordre melding\n")
 				fmt.Printf("Mottar en ordremsg fra %v\n", receivedMsg.ID)
 				//activeOrderRx <- config.ActiveOrders{receivedMsg.Button, receivedMsg.ID, true}
 				//kan ikke trigge denne her

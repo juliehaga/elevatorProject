@@ -137,6 +137,7 @@ func SetLocalMap(changedMap config.ElevStateMap){
 
 
 func UpdateLocalMap(changedMap config.ElevStateMap) bool{
+	fmt.Printf("oppdaterer map\n")
 	currentMap := GetLocalMap()
 	LocalOrderChangeMade := false
 
@@ -147,7 +148,6 @@ func UpdateLocalMap(changedMap config.ElevStateMap) bool{
 	currentMap[config.My_ID].Door = changedMap[config.My_ID].Door
 	currentMap[config.My_ID].IDLE = changedMap[config.My_ID].IDLE
 	currentMap[config.My_ID].OutOfOrder = changedMap[config.My_ID].OutOfOrder
-
 
 
 	for f:= 0; f < config.NUM_FLOORS; f++{
