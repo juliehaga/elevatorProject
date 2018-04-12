@@ -147,7 +147,7 @@ func Transmitter(port int, messageTx chan config.Message, ackChan chan config.Ac
 
 					if e != config.My_ID{
 						message.Reciever_ID = e
-						buf, _ := json.Marshal(message)
+						//buf, _ := json.Marshal(message)
 						//fmt.Printf("heis %v er connected %v\n", e, message.ElevMap[e].Connected)
 						if message.ElevMap[e].Connected == true{
 							//fmt.Printf("Ny melding\n")
