@@ -119,7 +119,7 @@ func main() {
 
 			if orderUpdates {
 				orderMsgChan <- currentMap
-				fmt.Printf("//////////// LEGGER PÅ ORDERMSGCHAN FRA NETTVERK/////////////////////////\n")
+				fmt.Printf("//////////// Sender mine ordre, NETWORK /////////////////////////\n")
 				elevStateMap.PrintMap(currentMap)
 				network.SendOrders(messageTx, currentMap)
 			}
@@ -132,7 +132,7 @@ func main() {
 			localOrderUpdates := elevStateMap.UpdateLocalMap(elevMap)
 			if localOrderUpdates {
 				orderMsgChan <- elevMap
-				//fmt.Printf("//////////// LEGGER PÅ ORDERMSGCHAN LOKALT/////////////////////////\n")
+				fmt.Printf("//////////// Sender mine ordre, LOCAL endring/////////////////////////\n")
 				//elevStateMap.PrintMap(elevStateMap.GetLocalMap())
 				network.SendOrders(messageTx, elevMap)
 				//elevStateMap.PrintMap(elevMap)
