@@ -265,7 +265,7 @@ func eventNewAckOrder(orderCompleteChan chan config.ButtonEvent, buttonLampChan 
 				currentMap = orderCompleted(currentMap, buttonLampChan, orderCompleteChan)
 				currentMap[config.My_ID].IDLE = false
 				state = DOOR_OPEN
-				fmt.Printf("----------------------------orderInflorr----------------------------\n")
+				fmt.Printf("----------------------------orderInfloor----------------------------\n")
 				//elevStateMap.PrintMap(currentMap)
 			}else{
 				//fmt.Printf("Jeg har lyst til å velge retning \n")
