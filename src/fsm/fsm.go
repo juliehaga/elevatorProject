@@ -236,7 +236,7 @@ func eventDoorTimeout(doorLampChan chan bool, mapChangesChan chan config.ElevSta
 				
 			}
 
-			fmt.Printf("*******************************DOOR TIMEOUT***************************")
+			fmt.Printf("*******************************DOOR TIMEOUT***************************\n")
 			//elevStateMap.PrintMap(currentMap)
 			mapChangesChan <- currentMap	
 	}
@@ -265,7 +265,7 @@ func eventNewAckOrder(orderCompleteChan chan config.ButtonEvent, buttonLampChan 
 				currentMap = orderCompleted(currentMap, buttonLampChan, orderCompleteChan)
 				currentMap[config.My_ID].IDLE = false
 				state = DOOR_OPEN
-				fmt.Printf("----------------------------orderInflorr----------------------------")
+				fmt.Printf("----------------------------orderInflorr----------------------------\n")
 				//elevStateMap.PrintMap(currentMap)
 			}else{
 				//fmt.Printf("Jeg har lyst til å velge retning \n")
@@ -277,7 +277,7 @@ func eventNewAckOrder(orderCompleteChan chan config.ButtonEvent, buttonLampChan 
 				} else{
 					//motorTimer.Stop()
 				}
-				fmt.Printf("----------------------------choosedir----------------------------")
+				fmt.Printf("----------------------------choosedir----------------------------\n")
 				//elevStateMap.PrintMap(currentMap)
 
 			}
