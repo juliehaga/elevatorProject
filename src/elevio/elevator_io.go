@@ -147,7 +147,7 @@ func OrderLights(newOrderChan chan config.ButtonEvent, buttonLampChan chan confi
 					}
 				}
 			}
-			time.Sleep(2000* time.Millisecond)
+			//time.Sleep(2000* time.Millisecond)
 		}	
 	}
 
