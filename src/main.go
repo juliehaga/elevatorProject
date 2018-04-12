@@ -166,6 +166,7 @@ func main() {
 
 			
 			ActiveOrderMatrix[order.Button.Floor][order.Button.Button][order.ID] = true
+			fmt.Printf("ORDRE MELDING FRA %v\n", order.ID)
 			fmt.Printf("%v\n", ActiveOrderMatrix)
 			newOrder := true
 			for e := 0; e < config.NUM_ELEVS; e++{
@@ -175,6 +176,7 @@ func main() {
 			}
 
 			if newOrder{
+				fmt.Printf("trigger new order chan\n")
 				newOrderChan <- config.ButtonEvent{order.Button.Floor, order.Button.Button}
 				buttonLampChan <- config.ButtonLamp{order.Button.Floor, order.Button.Button, true}
 			}
