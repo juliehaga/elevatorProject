@@ -58,8 +58,15 @@ func main() {
     mapChangesChan := make(chan config.ElevStateMap, 100)
     newOrderChan := make(chan config.ButtonEvent, 100)
     newLocalOrderChan := make(chan config.ButtonEvent, 100)
+
+
+
   
     orderMsgChan := make(chan config.ElevStateMap, 100)
+
+
+
+
 
     peerUpdateCh := make(chan peers.PeerUpdate, 100)
     peerTxEnable := make(chan bool, 100)
@@ -126,6 +133,8 @@ func main() {
 			init = false
 
 			if orderUpdates {
+
+				//legg inn knappen
 				orderMsgChan <- currentMap
 				//fmt.Printf("//////////// Sender mine ordre, NETWORK /////////////////////////\n")
 				//elevStateMap.PrintMap(currentMap)
@@ -139,6 +148,9 @@ func main() {
 		case elevMap:= <-mapChangesChan:
 			localOrderUpdates, updatedMap := elevStateMap.UpdateLocalMap(elevMap)
 			if localOrderUpdates {
+
+
+				//legg inn knappen 
 				orderMsgChan <- updatedMap
 				//fmt.Printf("//////////// Sender mine ordre, LOCAL endring/////////////////////////\n")
 				//elevStateMap.PrintMap(elevStateMap.GetLocalMap())
@@ -163,6 +175,8 @@ func main() {
 			}
 
 		case order:= <- activeOrderRx:
+
+
 			ActiveOrderMatrix[order.Button.Floor][order.Button.Button][order.ID] = true
 			//fmt.Printf("ORDRE MELDING FRA %v\n", order.ID)
 			newOrder := true

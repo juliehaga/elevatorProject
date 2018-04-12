@@ -54,6 +54,12 @@ func Elevio(motorChan chan config.MotorDirection, doorLampChan chan bool, newOrd
 				if accept == true{
 					currentMap[config.My_ID].Orders[orderButton.Floor][orderButton.Button] = config.OT_OrderPlaced
 					fmt.Printf("skal oppdatere ordre\n")
+
+
+					//kan vi sende denne knappen på nettverket her????
+
+
+
 				}
 				mapChangesChan <- currentMap
 

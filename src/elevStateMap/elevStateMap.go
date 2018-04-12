@@ -265,10 +265,15 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, buttonLampChan chan c
 
 
 func FindActiveOrders(orderMsgChan chan config.ElevStateMap, activeOrderTx chan config.ActiveOrders, activeOrderRx chan config.ActiveOrders){
+	
+	//NewORders := [order.Button.Floor][order.Button.Button] bool{}
+
 	for {
 		select{
 		//Burde bare gjøre sjekken når man faktisk mottar en ordre. 
 		case currentMap := <- orderMsgChan:
+
+
 
 
 			for f:= 0; f < config.NUM_FLOORS; f++{
