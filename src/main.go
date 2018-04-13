@@ -88,7 +88,6 @@ func main() {
 	config.Init(id, port)
 	elevio.InitDriver("localhost:" + port, config.NUM_FLOORS)
 	elevStateMap.InitElevStateMap()
-	elevio.InitOrders()
 
 	fmt.Printf("Init success\n")
 	
@@ -129,7 +128,7 @@ func main() {
 			//fmt.Printf("Jeg får en melding over nettverket fra %v\n", orderMsgFromNetwork.ID)
 			orderUpdates, currentMap := elevStateMap.UpdateMapFromNetwork(orderMsgFromNetwork.ElevMap, buttonLampChan, activeOrderTx, orderMsgFromNetwork.ID, orderMsgChan)
 			if init == true{
-				elevio.InitOrders()
+				elevio.InitOrdersFromNetwork(orderMsgFromNetwork.ElevMap)
 			}
 			init = false
 

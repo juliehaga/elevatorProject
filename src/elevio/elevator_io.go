@@ -92,7 +92,7 @@ func InitDriver(addr string, numFloors int) {
 	currentMap[config.My_ID].CurrentFloor = getFloor()
 	elevStateMap.SetLocalMap(currentMap)
 	//ClearAllButtonLamps()
-	InitOrders()
+	InitLights()
 
 
 
@@ -101,18 +101,34 @@ func InitDriver(addr string, numFloors int) {
 
 
 
-func InitOrders(){
+func InitLights(){
 	//fmt.Printf("INITIALISERER ORDRE FRA NETTET NÅR DU LOOGER PÅ\n")
+	for f := 0; f < config.NUM_FLOORS; f++{
+		for b:= config.BT_HallUp; b <= config.BT_Cab; b++{
+			SetButtonLamp(config.ButtonLamp{f, b, false})
+		}
+	}
+}
+
+func InitOrdersFromNetwork(networkMap config.ElevStateMap){
+	//fmt.Printf("INITIALISERER ORDRE FRA NETTET NÅR DU LOOGER PÅ\n")
+	ackElevs := 0
 	currentMap := elevStateMap.GetLocalMap()
 	for f := 0; f < config.NUM_FLOORS; f++{
 		for b:= config.BT_HallUp; b <= config.BT_Cab; b++{
-			if currentMap[config.My_ID].Orders[f][b] == config.OT_OrderPlaced{
-				//fmt.Printf("ordre i nettverket\n")
-				lamp := config.ButtonLamp{f, b, true}	
-				SetButtonLamp(lamp)
-			} else {
-				lamp := config.ButtonLamp{f, b, false}	
-				SetButtonLamp(lamp)
+			for e := 0; e < config.NUM_ELEVS; e++{
+				currentMap[e].Orders[f][b] = networkMap[e].Orders[f][b]
+				if currentMap[e].Orders[f][b] == config.OT_OrderPlaced{
+					ackElevs ++;
+
+				}
+			}
+
+			if ackElevs == config.NUM_ELEVS{
+				SetButtonLamp(config.ButtonLamp{f, b, true})
+			}else{
+				ackElevs = 0
+				SetButtonLamp(config.ButtonLamp{f, b, false})
 			}
 		}
 	}

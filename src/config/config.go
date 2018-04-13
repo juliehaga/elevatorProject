@@ -4,7 +4,7 @@ import "strconv"
 
 const(
 	NUM_ELEVS		= 3
-	NUM_FLOORS   	= 4
+	NUM_FLOORS   	= 9
 	NUM_BUTTONS		= 3
 	
 )

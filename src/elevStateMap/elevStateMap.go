@@ -112,7 +112,7 @@ func InitElevStateMap(){
 		}
 
 		LocalMap[e].Orders[0][config.BT_HallDown] = -1
-		LocalMap[e].Orders[3][config.BT_HallUp] = -1
+		LocalMap[e].Orders[config.NUM_FLOORS-1][config.BT_HallUp] = -1
 	}
 	//LocalMap[config.My_ID].CurrentFloor = elevio.GetFloor()
 	LocalMap[config.My_ID].Connected = true
