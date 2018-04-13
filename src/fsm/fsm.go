@@ -487,35 +487,65 @@ func nearestElevator(elevMap config.ElevStateMap, floor int) bool{
 			 			} else if  elevMap[e].CurrentFloor == floor{
 			 				return false
 			 			}
-			 		} else if myDist == distElev && (elevMap[e].CurrentDir == config.ED_Up){
-			 			if e > config.My_ID{
-			 				return false
+			 		} else if myDist == distElev {
+			 			if elevMap[e].CurrentFloor < floor {
+			 				if elevMap[config.My_ID].CurrentDir == elevMap[e].CurrentDir {
+			 					if e > config.My_ID{
+			 						return false
+			 					}
+			 				} else if elevMap[e].CurrentDir == config.ED_Up{
+			 					return false
+
+			 				}
+			 			} else if elevMap[e].CurrentFloor > floor{
+			 				if elevMap[config.My_ID].CurrentDir != elevMap[e].CurrentDir{
+			 					if e > config.My_ID{
+			 						return false
+			 					}
+			 				} else if elevMap[e].CurrentDir == config.ED_Down{
+			 					return false
+
+			 				}
 			 			}
-			 		}
+			 		} 
 			 	}
 			} 	
 		 }
  	} else if elevMap[config.My_ID].CurrentFloor > floor {
-		 	for e := 0; e<config.NUM_ELEVS; e++ {
-		 		if elevMap[e].Connected == true{ //&& elevMap[e].OutOfOrder == false{	
-				 	if e != config.My_ID{	
-				 		distElev := int(math.Abs(float64(elevMap[e].CurrentFloor - floor)))
-				 		if distElev < myDist{
-				 			if elevMap[e].CurrentFloor >= floor && (elevMap[e].CurrentDir ==config.ED_Down){
-				 				return false
-				 			} else if elevMap[e].CurrentFloor <= floor && (elevMap[e].CurrentDir == config.ED_Up) {
-			 					return false
-			 				} else if  elevMap[e].CurrentFloor == floor{
-			 					return false
-				 			} 
-
-				 		}else if myDist == distElev && (elevMap[e].CurrentDir == config.ED_Down){
-			 			if e > config.My_ID{
+	 	for e := 0; e<config.NUM_ELEVS; e++ {
+	 		if elevMap[e].Connected == true{ //&& elevMap[e].OutOfOrder == false{	
+			 	if e != config.My_ID{	
+			 		distElev := int(math.Abs(float64(elevMap[e].CurrentFloor - floor)))
+			 		if distElev < myDist{
+			 			if elevMap[e].CurrentFloor >= floor && (elevMap[e].CurrentDir ==config.ED_Down){
 			 				return false
-			 			}
-			 		}
-			 	}
-			}
+			 			} else if elevMap[e].CurrentFloor <= floor && (elevMap[e].CurrentDir == config.ED_Up) {
+		 					return false
+		 				} else if  elevMap[e].CurrentFloor == floor{
+		 					return false
+			 			} 
+
+			 		}else if myDist == distElev{
+		 				if elevMap[e].CurrentFloor > floor {
+		 					if elevMap[config.My_ID].CurrentDir == elevMap[e].CurrentDir {
+		 						if e > config.My_ID{
+		 							return false
+		 						}
+		 					} else if elevMap[e].CurrentDir == config.ED_Down{
+		 						return false
+		 					}
+		 				} else if elevMap[e].CurrentFloor < floor{
+		 					if elevMap[config.My_ID].CurrentDir != elevMap[e].CurrentDir{
+		 						if e > config.My_ID{
+		 							return false
+		 						}
+		 					} else if elevMap[e].CurrentDir == config.ED_Up{
+		 						return false
+		 					}
+		 				}
+		 			}
+		 		}
+		 	}
 		}	
 	}
 	//fmt.Printf("Jeg er nærmest\n")
