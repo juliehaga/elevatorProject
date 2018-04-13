@@ -233,8 +233,6 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, buttonLampChan chan c
 		for f:= 0; f < config.NUM_FLOORS; f++{
 			for b:= config.BT_HallUp; b < config.BT_Cab; b++{
 
-
-
 				if (recievedMap[e].Orders[f][b] == config.OT_OrderPlaced && currentMap[e].Orders[f][b] == config.OT_NoOrder){ //&& recievedMap[e].Connected == true{
 					fmt.Printf("orders[f][b] %v, connectedElevs %v \n", orders[f][b], connectedElevs)
 
@@ -257,7 +255,27 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, buttonLampChan chan c
 							}
 						}
 						//fmt.Printf("fant nytt knappe trykk %v %v, lagt til i egen matrise\n", f, b)
+					}else if connectedElevs < config.NUM_ELEVS {
+						//vi har en disconnected heis
+						newButtons[f][b] = true
+						newButton = config.ButtonEvent{f, b}
+
+						//kopierer ordren og legger den til i min ordrematrise
+						newMap[e].Orders[f][b] = config.OT_OrderPlaced
+						newMap[config.My_ID].Orders[f][b]  = config.OT_OrderPlaced
+
+						//Vi har funnet en ordre. Sjekker om noen heiser er disconnected. Da må vi legge inn bestillingen der. 
+						for elev:= 0; elev < config.NUM_ELEVS; elev++{ 
+							if recievedMap[elev].Connected == false{
+								newMap[elev].Orders[f][b]  = config.OT_OrderPlaced
+							}
+						}
+						orderMsgChan <- config.NewButtons{newButtons, newMap}
+
+
+
 					}
+
 				}
 
 			}

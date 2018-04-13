@@ -113,7 +113,6 @@ func InitLights(){
 func InitOrdersFromNetwork(networkMap config.ElevStateMap){
 	//fmt.Printf("INITIALISERER ORDRE FRA NETTET NÅR DU LOOGER PÅ\n")
 	ackElevs := 0
-	elevStateMap.PrintMap(networkMap)
 	currentMap := elevStateMap.GetLocalMap()
 
 	for f := 0; f < config.NUM_FLOORS; f++{
@@ -127,7 +126,6 @@ func InitOrdersFromNetwork(networkMap config.ElevStateMap){
 			}
 
 			if ackElevs == config.NUM_ELEVS{
-				fmt.Printf("ack order in %v %v\n", f, b)
 				SetButtonLamp(config.ButtonLamp{f, b, true})
 				ackElevs = 0
 			}else{
@@ -136,6 +134,8 @@ func InitOrdersFromNetwork(networkMap config.ElevStateMap){
 			}
 		}
 	}
+
+	elevStateMap.SetLocalMap(currentMap)
 }
 
 

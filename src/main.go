@@ -126,15 +126,20 @@ func main() {
 
 		case orderMsgFromNetwork := <- orderMsgRx:
 			//fmt.Printf("Jeg får en melding over nettverket fra %v\n", orderMsgFromNetwork.ID)
-			orderUpdates, currentMap := elevStateMap.UpdateMapFromNetwork(orderMsgFromNetwork.ElevMap, buttonLampChan, activeOrderTx, orderMsgFromNetwork.ID, orderMsgChan)
+			
 			if init == true{
+				fmt.Printf("INIT oppdaterer fra nettet\n")
 				elevio.InitOrdersFromNetwork(orderMsgFromNetwork.ElevMap)
+				init = false
+			}else{
+				orderUpdates, currentMap := elevStateMap.UpdateMapFromNetwork(orderMsgFromNetwork.ElevMap, buttonLampChan, activeOrderTx, orderMsgFromNetwork.ID, orderMsgChan)
+				if orderUpdates {
+					network.SendOrders(messageTx, currentMap)
+				}
 			}
-			init = false
+			
 
-			if orderUpdates {
-				network.SendOrders(messageTx, currentMap)
-			}
+			
 
 		case statusMsgFromNetwork := <- statusMsgRx:
 			elevStateMap.UpdateElevStatusFromNetwork(statusMsgFromNetwork)
