@@ -126,7 +126,7 @@ func main() {
 
 		case orderMsgFromNetwork := <- orderMsgRx:
 			//er denne heisen connected? Kan vi bare droppe å lese meldinger fra en disconnected heis? 
-			
+
 
 			if init == true{
 				fmt.Printf("INIT oppdaterer fra nettet\n")
@@ -135,6 +135,7 @@ func main() {
 			}else{
 				orderUpdates, currentMap := elevStateMap.UpdateMapFromNetwork(orderMsgFromNetwork.ElevMap, buttonLampChan, activeOrderTx, orderMsgFromNetwork.ID, orderMsgChan)
 				if orderUpdates {
+					fmt.Printf("Sender ordre melding\n")
 					network.SendOrders(messageTx, currentMap)
 				}
 			}
@@ -147,9 +148,11 @@ func main() {
 		case elevMap:= <-mapChangesChan:
 			localOrderUpdates, updatedMap := elevStateMap.UpdateLocalMap(elevMap)
 			if localOrderUpdates {
+				fmt.Printf("Sender ordre melding\n")
 				network.SendOrders(messageTx, updatedMap)
 
 			}
+			fmt.Printf("Sender statusmelding\n")
 			network.SendElevStatus(messageTx, elevMap)
 			init = false
 
