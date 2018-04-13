@@ -234,7 +234,7 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, buttonLampChan chan c
 						newMap[e].Orders[f][b] = config.OT_OrderPlaced
 						newMap[config.My_ID].Orders[f][b]  = config.OT_OrderPlaced
 
-						fmt.Printf("fant nytt knappe trykk %v %v, lagt til i egen matrise\n", f, b)
+						//fmt.Printf("fant nytt knappe trykk %v %v, lagt til i egen matrise\n", f, b)
 
 					}
 				}
@@ -252,10 +252,7 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, buttonLampChan chan c
 			}
 		}
 
-		fmt.Printf("------------NUMBER OF ACK ELEVS-------------\n")
-		fmt.Printf("%v\n", numberOfAckElevs)
 		if numberOfAckElevs[newButton.Floor][newButton.Button] == config.NUM_ELEVS{
-			fmt.Printf("\n\n\n\n\n\n\n\n\n\n\njeg fant 3-enere på %v %v\n",newButton.Floor, newButton.Button)
 			//dersom vi finner 3 1-ere uten at det er funnet en ny 1-er vil newButtons være 00000
 			orderMsgChan <- newButtons
 			//changedMade = false

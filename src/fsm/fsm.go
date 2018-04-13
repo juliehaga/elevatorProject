@@ -258,8 +258,6 @@ func eventNewAckOrder(orderCompleteChan chan config.ButtonEvent, buttonLampChan 
 	switch(state){
 		case IDLE:
 			if orderInThisFloor(currentMap[config.My_ID].CurrentFloor, currentMap){// && currentMap[config.My_ID].OutOfOrder == false{
-				//endret status og ordre
-				//fmt.Printf("order, in this floor\n")
 				doorLampChan <- true	
 				doorTimer.Reset(time.Second * DOOR_TIME)
 				currentMap[config.My_ID].Door = true
@@ -269,7 +267,6 @@ func eventNewAckOrder(orderCompleteChan chan config.ButtonEvent, buttonLampChan 
 				fmt.Printf("----------------------------orderInfloor----------------------------\n")
 				//elevStateMap.PrintMap(currentMap)
 			}else{
-				//fmt.Printf("Jeg har lyst til å velge retning \n")
 				motorDir, currentMap[config.My_ID].CurrentDir = chooseDirection(currentMap, motorTimer)
 				motorChan <- motorDir
 				if motorDir != config.MD_Stop {
@@ -278,7 +275,7 @@ func eventNewAckOrder(orderCompleteChan chan config.ButtonEvent, buttonLampChan 
 				} else{
 					//motorTimer.Stop()
 				}
-				//fmt.Printf("----------------------------choosedir----------------------------\n")
+				fmt.Printf("----------------------------choosedir----------------------------\n")
 				//elevStateMap.PrintMap(currentMap)
 
 			}
@@ -394,7 +391,6 @@ func orderCompleted(elevMap config.ElevStateMap, buttonLampChan chan config.Butt
 
 
 func orderInThisFloor( floor int, elevMap config.ElevStateMap) bool{
-	//elevStateMap.PrintMap(elevMap)
 	ackElevs := 0 
 
 
@@ -402,6 +398,7 @@ func orderInThisFloor( floor int, elevMap config.ElevStateMap) bool{
 		for b := config.BT_HallUp; b <= config.BT_Cab; b++ {
 
 			if b == config.BT_Cab && elevMap[config.My_ID].Orders[floor][b] == config.OT_OrderPlaced{
+				fmt.Printf("CAB order in this floor\n")
 				return true
 			} else{
 
