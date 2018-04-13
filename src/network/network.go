@@ -21,7 +21,6 @@ func Network(messageRx chan config.Message, messageTx chan config.Message, statu
 	go bcast.Transmitter(16666, messageTx)
 	go bcast.Receiver(16666, messageRx)
 
-
 	for {
 		select{
 			case receivedMsg := <-messageRx:

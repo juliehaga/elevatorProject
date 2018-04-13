@@ -87,7 +87,7 @@ func main() {
 	
 	config.Init(id, port)
 	elevio.InitDriver("localhost:" + port, config.NUM_FLOORS)
-	elevStateMap.InitElevStateMap()
+	elevStateMap.InitElevStateMap(buttonLampChan)
 
 	fmt.Printf("Init success\n")
 	
@@ -175,9 +175,8 @@ func main() {
 
 			//vi må sjekke at alle connected heiser har gitt ordrebekreftelse. 
 
-			elevStateMap.PrintMap(order.ElevMap)
-			fmt.Printf("------ACTIVE ORDER MATRIX----------\n")
-			fmt.Printf("%v\n", ActiveOrderMatrix)
+			
+		
 
 			for e := 0; e < config.NUM_ELEVS; e++{
 				if ActiveOrderMatrix[order.Button.Floor][order.Button.Button][e] == false && order.ElevMap[e].Connected == true {
