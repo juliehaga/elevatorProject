@@ -86,8 +86,7 @@ type StatusMsg struct {
 	CurrentFloor int
 	CurrentDir ElevDir
 	Door bool
-	OutOfOrder bool
-	IDLE bool
+	Connected bool
 }
 
 type OrderMsg struct{

@@ -125,8 +125,9 @@ func main() {
 			} 
 
 		case orderMsgFromNetwork := <- orderMsgRx:
-			//fmt.Printf("Jeg får en melding over nettverket fra %v\n", orderMsgFromNetwork.ID)
+			//er denne heisen connected? Kan vi bare droppe å lese meldinger fra en disconnected heis? 
 			
+
 			if init == true{
 				fmt.Printf("INIT oppdaterer fra nettet\n")
 				elevio.InitOrdersFromNetwork(orderMsgFromNetwork.ElevMap)
@@ -139,8 +140,6 @@ func main() {
 			}
 			
 
-			
-
 		case statusMsgFromNetwork := <- statusMsgRx:
 			elevStateMap.UpdateElevStatusFromNetwork(statusMsgFromNetwork)
 			
@@ -148,8 +147,6 @@ func main() {
 		case elevMap:= <-mapChangesChan:
 			localOrderUpdates, updatedMap := elevStateMap.UpdateLocalMap(elevMap)
 			if localOrderUpdates {
-				//orderMsgChan <- updatedMap
-				//tror ikke vi trenger å trigge orderMSGChan når vi får lokale bestillinger
 				network.SendOrders(messageTx, updatedMap)
 
 			}

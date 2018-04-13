@@ -49,25 +49,34 @@ func Fsm(motorChan chan config.MotorDirection, doorLampChan chan bool, floorChan
 
 		case <- idleTimer.C:
 			fmt.Printf("**************IDLE TIMEOUT****************\n")
-			eventIdleTimeout(idleTimer, motorChan)
+			eventIdleTimeout(idleTimer, motorChan, mapChangesChan)
 			idleTimer.Reset(time.Second * IDLE_TIME)
 		}
 	}
 }
 
-func eventIdleTimeout(idleTimer *time.Timer, motorChan chan config.MotorDirection){
+func eventIdleTimeout(idleTimer *time.Timer, motorChan chan config.MotorDirection, mapChangesChan chan config.ElevStateMap){
 	var motorDir config.MotorDirection
 	currentMap := elevStateMap.GetLocalMap()
-	motorDir, currentMap[config.My_ID].CurrentDir = forceChooseDirection(currentMap)
-
-	if motorDir == config.MD_Stop{
-		state = IDLE
-	} else{
-		motorChan <- motorDir
-		state = MOVING
-	}
+	
 	if state != IDLE {
 		fmt.Printf("***********************************************IDLE TIMEOUT I EN ANNEN STATE*****************************************\n")
+		currentMap[config.My_ID].Connected = false
+		if currentMap[config.My_ID].CurrentFloor < config.NUM_FLOORS-1{
+			motorDir = config.MD_Down
+		} else {
+			motorDir = config.MD_Up
+		}
+		//prøv å kjør i hvilken som helst retning
+	}else{
+		//velg retning basert på bestillinger
+		motorDir, currentMap[config.My_ID].CurrentDir = forceChooseDirection(currentMap)
+		if motorDir == config.MD_Stop{
+			state = IDLE
+		} else{
+			motorChan <- motorDir
+			state = MOVING
+		}
 	}
 }
 
@@ -75,6 +84,7 @@ func eventIdleTimeout(idleTimer *time.Timer, motorChan chan config.MotorDirectio
 func eventNewFloor(orderCompleteChan chan config.ButtonEvent, motorChan chan config.MotorDirection, doorLampChan chan bool, doorTimer *time.Timer, mapChangesChan chan config.ElevStateMap, buttonLampChan chan config.ButtonLamp, floor int, idleTimer *time.Timer, activeOrderTx chan config.ActiveOrders){
 	currentMap := elevStateMap.GetLocalMap()
 	//var det en grunn til at vi skulle oppdatere currentfloor her? 
+	currentMap[config.My_ID].Connected = true
 	currentMap[config.My_ID].CurrentFloor = floor 
 	var motorDir config.MotorDirection
 
@@ -156,6 +166,8 @@ func eventNewAckOrder(orderCompleteChan chan config.ButtonEvent, buttonLampChan 
 	switch(state){
 		case IDLE:
 			if orderInThisFloor(currentMap[config.My_ID].CurrentFloor, currentMap){// && currentMap[config.My_ID].OutOfOrder == false{
+
+
 				doorLampChan <- true	
 				currentMap[config.My_ID].Door = true
 				currentMap = orderCompleted(currentMap, buttonLampChan, orderCompleteChan, activeOrderTx)
@@ -417,15 +429,6 @@ func nearestElevator(elevMap config.ElevStateMap, floor int) bool{
 
 //Trenger ikke denne funksjonen om vi ikke skal ha motorTimeout
 func forceChooseDirection(elevMap config.ElevStateMap) (config.MotorDirection, config.ElevDir){
-	elevsInIdle := 0
-	for e := 0; e < config.NUM_ELEVS; e++{
-		if e != config.My_ID{
-			if elevMap[e].IDLE == true{
-				elevsInIdle ++
-			}
-		}
-	}
-
 
 
 	if orderInThisFloor(elevMap[config.My_ID].CurrentFloor, elevMap){

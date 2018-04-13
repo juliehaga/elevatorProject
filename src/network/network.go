@@ -27,7 +27,7 @@ func Network(messageRx chan config.Message, messageTx chan config.Message, statu
 				if receivedMsg.ID != config.My_ID{
 
 					if receivedMsg.MsgType == config.ElevStatus{
-						statusMsgRx <- config.StatusMsg{receivedMsg.ID, receivedMsg.ElevMap[receivedMsg.ID].CurrentFloor, receivedMsg.ElevMap[receivedMsg.ID].CurrentDir, receivedMsg.ElevMap[receivedMsg.ID].Door, receivedMsg.ElevMap[receivedMsg.ID].OutOfOrder,receivedMsg.ElevMap[receivedMsg.ID].IDLE}
+						statusMsgRx <- config.StatusMsg{receivedMsg.ID, receivedMsg.ElevMap[receivedMsg.ID].CurrentFloor, receivedMsg.ElevMap[receivedMsg.ID].CurrentDir, receivedMsg.ElevMap[receivedMsg.ID].Door, receivedMsg.ElevMap[receivedMsg.ID].Connected}
 
 					} else if receivedMsg.MsgType == config.Orders {
 						orderMsgRx <- config.OrderMsg{receivedMsg.ID, receivedMsg.ElevMap}

@@ -144,15 +144,10 @@ func SetLocalMap(changedMap config.ElevStateMap){
 func UpdateLocalMap(changedMap config.ElevStateMap) (bool, config.ElevStateMap){
 	currentMap := GetLocalMap()
 	LocalOrderChangeMade := false
-
-
-//Hvilke av disse trenger vi faktisk???
 	currentMap[config.My_ID].CurrentFloor = changedMap[config.My_ID].CurrentFloor
 	currentMap[config.My_ID].CurrentDir = changedMap[config.My_ID].CurrentDir
 	currentMap[config.My_ID].Door = changedMap[config.My_ID].Door
-	currentMap[config.My_ID].IDLE = changedMap[config.My_ID].IDLE
-	currentMap[config.My_ID].OutOfOrder = changedMap[config.My_ID].OutOfOrder
-
+	currentMap[config.My_ID].Connected= changedMap[config.My_ID].Connected
 
 	for f:= 0; f < config.NUM_FLOORS; f++{
 		//CAB-orders kan skrives rett over fordi de sendes ikke
@@ -337,7 +332,6 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, buttonLampChan chan c
 
 
 func FindActiveOrders(orderMsgChan chan config.NewButtons, activeOrderTx chan config.ActiveOrders, activeOrderRx chan config.ActiveOrders){
-
 	for {
 		select{
 		//Burde bare gjøre sjekken når man faktisk mottar en ordre. 
@@ -361,28 +355,12 @@ func FindActiveOrders(orderMsgChan chan config.NewButtons, activeOrderTx chan co
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 func UpdateElevStatusFromNetwork(newStatus config.StatusMsg){
 	currentMap := GetLocalMap()
 	currentMap[newStatus.ID].CurrentFloor = newStatus.CurrentFloor
 	currentMap[newStatus.ID].CurrentDir = newStatus.CurrentDir
 	currentMap[newStatus.ID].Door = newStatus.Door
-	currentMap[newStatus.ID].OutOfOrder = newStatus.OutOfOrder
-	currentMap[newStatus.ID].IDLE = newStatus.IDLE
+	currentMap[newStatus.ID].Connected = newStatus.Connected
 	SetLocalMap(currentMap)
 }
 
