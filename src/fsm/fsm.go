@@ -67,7 +67,7 @@ func eventIdleTimeout(idleTimer *time.Timer, motorChan chan config.MotorDirectio
 		state = MOVING
 	}
 	if state != IDLE {
-		fmt.Printf("**************************************************IDLE TIMEOUT I EN ANNEN STATE*'''''******************************\n")
+		fmt.Printf("***********************************************IDLE TIMEOUT I EN ANNEN STATE*****************************************\n")
 	}
 }
 
