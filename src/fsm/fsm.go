@@ -480,14 +480,14 @@ func nearestElevator(elevMap config.ElevStateMap, floor int) bool{
 			 	if e != config.My_ID{	
 			 		distElev := int(math.Abs(float64(elevMap[e].CurrentFloor - floor)))
 			 		if distElev < myDist{
-			 			if elevMap[e].CurrentFloor < floor && (elevMap[e].CurrentDir == config.ED_Up || elevMap[e].IDLE ){
+			 			if elevMap[e].CurrentFloor < floor && (elevMap[e].CurrentDir == config.ED_Up){
 			 				return false
-			 			} else if elevMap[e].CurrentFloor > floor && (elevMap[e].CurrentDir == config.ED_Down || elevMap[e].IDLE ) {
+			 			} else if elevMap[e].CurrentFloor > floor && (elevMap[e].CurrentDir == config.ED_Down) {
 			 				return false
-			 			} else if  elevMap[e].CurrentFloor == floor && elevMap[e].IDLE {
+			 			} else if  elevMap[e].CurrentFloor == floor{
 			 				return false
 			 			}
-			 		} else if myDist == distElev && (elevMap[e].CurrentDir == config.ED_Up || elevMap[e].IDLE){
+			 		} else if myDist == distElev && (elevMap[e].CurrentDir == config.ED_Up){
 			 			if e > config.My_ID{
 			 				return false
 			 			}
@@ -501,15 +501,15 @@ func nearestElevator(elevMap config.ElevStateMap, floor int) bool{
 				 	if e != config.My_ID{	
 				 		distElev := int(math.Abs(float64(elevMap[e].CurrentFloor - floor)))
 				 		if distElev < myDist{
-				 			if elevMap[e].CurrentFloor >= floor && (elevMap[e].CurrentDir ==config.ED_Down || elevMap[e].IDLE ){
+				 			if elevMap[e].CurrentFloor >= floor && (elevMap[e].CurrentDir ==config.ED_Down){
 				 				return false
-				 			} else if elevMap[e].CurrentFloor <= floor && (elevMap[e].CurrentDir == config.ED_Up || elevMap[e].IDLE ) {
+				 			} else if elevMap[e].CurrentFloor <= floor && (elevMap[e].CurrentDir == config.ED_Up) {
 			 					return false
-			 				} else if  elevMap[e].CurrentFloor == floor && elevMap[e].IDLE {
+			 				} else if  elevMap[e].CurrentFloor == floor{
 			 					return false
 				 			} 
 
-				 		}else if myDist == distElev && (elevMap[e].CurrentDir == config.ED_Down || elevMap[e].IDLE){
+				 		}else if myDist == distElev && (elevMap[e].CurrentDir == config.ED_Down){
 			 			if e > config.My_ID{
 			 				return false
 			 			}
