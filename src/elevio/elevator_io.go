@@ -23,7 +23,7 @@ var _conn net.Conn
 
 
 
-func Elevio(motorChan chan config.MotorDirection, doorLampChan chan bool, newOrderChan chan config.ButtonEvent, floorChan chan int, buttonLampChan chan config.ButtonLamp, orderMsgChan chan config.ElevStateMap, newLocalOrderChan chan config.ButtonEvent, mapChangesChan chan config.ElevStateMap) {
+func Elevio(motorChan chan config.MotorDirection, doorLampChan chan bool, newOrderChan chan config.ButtonEvent, floorChan chan int, buttonLampChan chan config.ButtonLamp, newLocalOrderChan chan config.ButtonEvent, mapChangesChan chan config.ElevStateMap) {
 	go PollButtons(newLocalOrderChan)
     go PollFloorSensor(floorChan)
 
@@ -54,11 +54,6 @@ func Elevio(motorChan chan config.MotorDirection, doorLampChan chan bool, newOrd
 				if accept == true{
 					currentMap[config.My_ID].Orders[orderButton.Floor][orderButton.Button] = config.OT_OrderPlaced
 					fmt.Printf("skal oppdatere ordre\n")
-
-
-					//kan vi sende denne knappen på nettverket her????
-
-
 
 				}
 				mapChangesChan <- currentMap
