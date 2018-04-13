@@ -64,7 +64,7 @@ func main() {
 
 
   
-    orderMsgChan := make(chan [config.NUM_FLOORS][config.NUM_BUTTONS]bool, 100)
+    orderMsgChan := make(chan config.NewButtons, 100)
 
 
 
@@ -153,6 +153,7 @@ func main() {
 
 		case order:= <- activeOrderTx:
 			if order.ActiveOrder {
+				fmt.Printf("setter min aktive ordre\n")
 				ActiveOrderMatrix[order.Button.Floor][order.Button.Button][config.My_ID] = true
 				network.SendActiveOrder(messageTx, order)
 
@@ -166,11 +167,20 @@ func main() {
 			ActiveOrderMatrix[order.Button.Floor][order.Button.Button][order.ID] = true
 			//fmt.Printf("ORDRE MELDING FRA %v\n", order.ID)
 			newOrder := true
+
+			//vi må sjekke at alle connected heiser har gitt ordrebekreftelse. 
+
+			elevStateMap.PrintMap(order.ElevMap)
+			fmt.Printf("------ACTIVE ORDER MATRIX----------\n")
+			fmt.Printf("%v\n", ActiveOrderMatrix)
+
 			for e := 0; e < config.NUM_ELEVS; e++{
-				if ActiveOrderMatrix[order.Button.Floor][order.Button.Button][e] == false {
+				if ActiveOrderMatrix[order.Button.Floor][order.Button.Button][e] == false && order.ElevMap[e].Connected == true {
 					newOrder = false
 				}
 			}
+
+
 			if newOrder{
 				//fmt.Printf("trigger new order chan\n")
 				newOrderChan <- config.ButtonEvent{order.Button.Floor, order.Button.Button}

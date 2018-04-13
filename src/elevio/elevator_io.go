@@ -53,7 +53,7 @@ func Elevio(motorChan chan config.MotorDirection, doorLampChan chan bool, newOrd
 				}
 				if accept == true{
 					currentMap[config.My_ID].Orders[orderButton.Floor][orderButton.Button] = config.OT_OrderPlaced
-					fmt.Printf("skal oppdatere ordre\n")
+					fmt.Printf("accepted ordre\n")
 
 				}
 				mapChangesChan <- currentMap
@@ -113,9 +113,11 @@ func InitLights(){
 func InitOrdersFromNetwork(networkMap config.ElevStateMap){
 	//fmt.Printf("INITIALISERER ORDRE FRA NETTET NÅR DU LOOGER PÅ\n")
 	ackElevs := 0
+	elevStateMap.PrintMap(networkMap)
 	currentMap := elevStateMap.GetLocalMap()
+
 	for f := 0; f < config.NUM_FLOORS; f++{
-		for b:= config.BT_HallUp; b <= config.BT_Cab; b++{
+		for b:= config.BT_HallUp; b < config.BT_Cab; b++{
 			for e := 0; e < config.NUM_ELEVS; e++{
 				currentMap[e].Orders[f][b] = networkMap[e].Orders[f][b]
 				if currentMap[e].Orders[f][b] == config.OT_OrderPlaced{
@@ -125,7 +127,9 @@ func InitOrdersFromNetwork(networkMap config.ElevStateMap){
 			}
 
 			if ackElevs == config.NUM_ELEVS{
+				fmt.Printf("ack order in %v %v\n", f, b)
 				SetButtonLamp(config.ButtonLamp{f, b, true})
+				ackElevs = 0
 			}else{
 				ackElevs = 0
 				SetButtonLamp(config.ButtonLamp{f, b, false})

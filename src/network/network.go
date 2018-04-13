@@ -35,7 +35,8 @@ func Network(messageRx chan config.Message, messageTx chan config.Message, statu
 
 					} else if receivedMsg.MsgType == config.ActiveOrder{
 						fmt.Printf("Mottar en ordremsg fra %v , om knapp: %v \n", receivedMsg.ID, receivedMsg.Button)
-						activeOrderRx <- config.ActiveOrders{receivedMsg.Button, receivedMsg.ID, true}
+
+						activeOrderRx <- config.ActiveOrders{receivedMsg.Button, receivedMsg.ID, true, receivedMsg.ElevMap}
 					}
 				}
 

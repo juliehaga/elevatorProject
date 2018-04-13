@@ -392,7 +392,7 @@ func orderCompleted(elevMap config.ElevStateMap, buttonLampChan chan config.Butt
 
 func orderInThisFloor( floor int, elevMap config.ElevStateMap) bool{
 	ackElevs := 0 
-	elevStateMap.PrintMap(elevMap)
+	//elevStateMap.PrintMap(elevMap)
 
 	if (floor != -1){
 		for b := config.BT_HallUp; b <= config.BT_Cab; b++ {
@@ -597,7 +597,7 @@ func ClearOrder(elevMap config.ElevStateMap, button config.ButtonEvent, buttonLa
 	}	
 				//fmt.Printf("completed HALLUP %v\n", elevMap[config.My_ID].CurrentFloor)
 	buttonLampChan <-  config.ButtonLamp{button.Floor, button.Button, false}
-	activeOrderTx <- config.ActiveOrders{button, config.My_ID, false}
+	activeOrderTx <- config.ActiveOrders{button, config.My_ID, false, elevMap}
 	fmt.Printf("clearer ordre ettter utført bestilling %v\n", button)
 	return elevMap
 }

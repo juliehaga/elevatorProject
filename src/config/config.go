@@ -95,11 +95,6 @@ type OrderMsg struct{
 	ElevMap ElevStateMap
 }
 
-type AckMsg struct{
-	Transmitter_ID int
-	Reciever_ID int
-}
-
 type ActiveOrderMsg struct{
 	ID int
 	Order ButtonEvent
@@ -109,14 +104,12 @@ type OrderCompleteMsg struct{
 	button ButtonType
 }
 
-
 const (
 	ElevStatus     = 0
 	Orders         = 1
 	Ack 	       = 2
 	ActiveOrder    = 3
 )
-
 
 type PeerUpdate struct {
 	Peers []string
@@ -128,6 +121,12 @@ type ActiveOrders struct {
 	Button ButtonEvent
 	ID int
 	ActiveOrder bool
+	ElevMap ElevStateMap
+}
+
+type NewButtons struct {
+	PushesMatrix [NUM_FLOORS][NUM_BUTTONS]bool
+	ElevMap ElevStateMap
 }
 
 type MotorDirection int
