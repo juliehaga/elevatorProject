@@ -30,9 +30,6 @@ func Fsm(motorChan chan config.MotorDirection, doorLampChan chan bool, floorChan
 	doorTimer.Stop()
 	idleTimer := time.NewTimer(time.Second * IDLE_TIME)
 
-
-
-
 	for{
 		select{
 		case  floor := <- floorChan:
@@ -54,9 +51,7 @@ func Fsm(motorChan chan config.MotorDirection, doorLampChan chan bool, floorChan
 			fmt.Printf("**************IDLE TIMEOUT****************\n")
 			eventIdleTimeout(idleTimer, motorChan)
 			idleTimer.Reset(time.Second * IDLE_TIME)
-
 		}
-
 	}
 }
 
@@ -71,8 +66,9 @@ func eventIdleTimeout(idleTimer *time.Timer, motorChan chan config.MotorDirectio
 		motorChan <- motorDir
 		state = MOVING
 	}
-
-	//idleTimer.Reset(time.Second * DOOR_TIME)
+	if state != IDLE {
+		fmt.Printf("**************************************************IDLE TIMEOUT I EN ANNEN STATE*'''''******************************\n")
+	}
 }
 
 
@@ -91,7 +87,6 @@ func eventNewFloor(orderCompleteChan chan config.ButtonEvent, motorChan chan con
 				} else{
 					motorChan <- motorDir
 					state = MOVING
-					//idleTimer.Reset(time.Second * DOOR_TIME)
 				}
 			} else{
 				motorChan <- config.MD_Stop
@@ -101,7 +96,6 @@ func eventNewFloor(orderCompleteChan chan config.ButtonEvent, motorChan chan con
 				currentMap = orderCompleted(currentMap, buttonLampChan, orderCompleteChan, activeOrderTx)
 				currentMap[config.My_ID].IDLE = false
 				state = DOOR_OPEN
-				//idleTimer.Reset(time.Second * DOOR_TIME)
 			}
 
 			
@@ -116,7 +110,6 @@ func eventNewFloor(orderCompleteChan chan config.ButtonEvent, motorChan chan con
 						currentMap = orderCompleted(currentMap, buttonLampChan, orderCompleteChan, activeOrderTx)
 						currentMap[config.My_ID].IDLE = false
 						state = DOOR_OPEN
-						//idleTimer.Reset(time.Second * DOOR_TIME)
 					} else {
 						currentMap[config.My_ID].IDLE = true
 						state = IDLE
@@ -139,7 +132,6 @@ func eventDoorTimeout(doorLampChan chan bool, mapChangesChan chan config.ElevSta
 			motorChan <- motorDir
 			if motorDir != config.MD_Stop {
 				state = MOVING
-				//idleTimer.Reset(time.Second * DOOR_TIME)
 			} else {
 				state = IDLE
 			}
@@ -168,14 +160,12 @@ func eventNewAckOrder(orderCompleteChan chan config.ButtonEvent, buttonLampChan 
 				currentMap[config.My_ID].Door = true
 				currentMap = orderCompleted(currentMap, buttonLampChan, orderCompleteChan, activeOrderTx)
 				doorTimer.Reset(time.Second * DOOR_TIME)
-				//idleTimer.Reset(time.Second * DOOR_TIME)
 				fmt.Printf("----------------------------orderInfloor----------------------------\n")
 				state = DOOR_OPEN
 			}else{
 				motorDir, currentMap[config.My_ID].CurrentDir = chooseDirection(currentMap)
 				motorChan <- motorDir
 				if motorDir != config.MD_Stop {
-					//idleTimer.Reset(time.Second * DOOR_TIME)
 					state = MOVING
 				} 
 				fmt.Printf("----------------------------choosedir----------------------------\n")
@@ -210,7 +200,6 @@ func shouldStop(elevMap config.ElevStateMap) bool{
 
 	switch elevMap[config.My_ID].CurrentDir{
 		case config.ED_Up:
-			//order on current floor and no orders above
 			if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallUp]==config.OT_OrderPlaced {
 				return true
 			} else if !ordersAbove(elevMap) && elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallDown]==config.OT_OrderPlaced{
@@ -220,7 +209,6 @@ func shouldStop(elevMap config.ElevStateMap) bool{
 			}
 
 		case config.ED_Down:
-			//order on current floor and no orders below
 		 	if elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallDown]==config.OT_OrderPlaced {
 		 		return true
 		 	} else if !ordersBelow(elevMap) && elevMap[config.My_ID].Orders[elevMap[config.My_ID].CurrentFloor][config.BT_HallUp]==config.OT_OrderPlaced {
@@ -286,9 +274,7 @@ func orderInThisFloor( floor int, elevMap config.ElevStateMap) bool{
 	ackElevs := 0 
 	if (floor != -1){
 		for b := config.BT_HallUp; b <= config.BT_Cab; b++ {
-
 			if b == config.BT_Cab && elevMap[config.My_ID].Orders[floor][b] == config.OT_OrderPlaced{
-				fmt.Printf("CAB order in this floor\n")
 				return true
 			}else{
 				for e:= 0; e < config.NUM_ELEVS; e++{
@@ -313,21 +299,17 @@ func orderInThisFloor( floor int, elevMap config.ElevStateMap) bool{
 
 
 func chooseDirection(elevMap config.ElevStateMap) (config.MotorDirection, config.ElevDir){
-	//fmt.Printf("choose dir\n")
-	//fmt.Printf("motor reset %v\n", bool)
 	switch elevMap[config.My_ID].CurrentDir{
 		case config.ED_Up: 
 			if ordersAbove(elevMap){
 				for f:= elevMap[config.My_ID].CurrentFloor + 1; f < config.NUM_FLOORS; f++{
 					if  orderInThisFloor(f, elevMap) && (nearestElevator(elevMap, f) || elevMap[config.My_ID].Orders[f][config.BT_Cab] == config.OT_OrderPlaced){
-						//fmt.Printf("velger opp\n")
 						return config.MD_Up, config.ED_Up
 					}
 				}
 			} else if ordersBelow(elevMap){
 				for f:= elevMap[config.My_ID].CurrentFloor - 1; f >= 0; f--{
 					if orderInThisFloor(f, elevMap) && (nearestElevator(elevMap, f) || elevMap[config.My_ID].Orders[f][config.BT_Cab] == config.OT_OrderPlaced){
-						//fmt.Printf("Velger ned \n")
 						return config.MD_Down, config.ED_Down
 					}
 				}
@@ -336,20 +318,17 @@ func chooseDirection(elevMap config.ElevStateMap) (config.MotorDirection, config
 			if ordersBelow(elevMap){
 				for f:= elevMap[config.My_ID].CurrentFloor - 1; f >= 0; f--{
 					if orderInThisFloor(f, elevMap) && (nearestElevator(elevMap, f) || elevMap[config.My_ID].Orders[f][config.BT_Cab] == config.OT_OrderPlaced){
-						//fmt.Printf("Velger ned \n")
 						return config.MD_Down, config.ED_Down
 					}
 				}
 			} else if ordersAbove(elevMap){
 				for f:= elevMap[config.My_ID].CurrentFloor + 1; f < config.NUM_FLOORS; f++{
 					if orderInThisFloor(f, elevMap) && (nearestElevator(elevMap, f) || elevMap[config.My_ID].Orders[f][config.BT_Cab] == config.OT_OrderPlaced ){
-						//fmt.Printf("velger opp\n")
 						return config.MD_Up, config.ED_Up
 					}
 				}
 			}
 	}
-	//fmt.Printf("STOP\n")
 	return config.MD_Stop, elevMap[config.My_ID].CurrentDir
 }
 
@@ -432,14 +411,12 @@ func nearestElevator(elevMap config.ElevStateMap, floor int) bool{
 		 	}
 		}	
 	}
-	//fmt.Printf("Jeg er nærmest\n")
  	return true
 }
 
 
 //Trenger ikke denne funksjonen om vi ikke skal ha motorTimeout
 func forceChooseDirection(elevMap config.ElevStateMap) (config.MotorDirection, config.ElevDir){
-	//fmt.Printf("motor reset %v\n", bool)
 	elevsInIdle := 0
 	for e := 0; e < config.NUM_ELEVS; e++{
 		if e != config.My_ID{
