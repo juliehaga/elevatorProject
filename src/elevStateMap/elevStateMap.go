@@ -201,21 +201,42 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, buttonLampChan chan c
 
 
 	newButtons := [config.NUM_FLOORS][config.NUM_BUTTONS]bool{}
+	orders := [config.NUM_FLOORS][config.NUM_BUTTONS]int{}
+
+	for e:= 0; e < config.NUM_ELEVS; e++{
+		for f:= 0; f < config.NUM_FLOORS; f++{
+			for b:= config.BT_HallUp; b < config.BT_Cab; b++{
+
+				if recievedMap[e].Orders[f][b] == config.OT_OrderPlaced{
+					orders[f][b]++
+				}
+			}
+		}
+	}
+
+
+
+	var newButton config.ButtonEvent
+
 
 	for e:= 0; e < config.NUM_ELEVS; e++{
 		for f:= 0; f < config.NUM_FLOORS; f++{
 			for b:= config.BT_HallUp; b < config.BT_Cab; b++{
 				if recievedMap[e].Orders[f][b] == config.OT_OrderPlaced && currentMap[e].Orders[f][b] == config.OT_NoOrder{
 
-					//har funnet en ny ordre
-					newButtons[f][b] = true
-					changedMade = true
+					if orders[f][b] < config.NUM_ELEVS{
+						//har funnet en ny ordre
+						newButtons[f][b] = true
+						changedMade = true
+						newButton = config.ButtonEvent{f, b}
 
-					//kopierer ordren og legger den til i min ordrematrise
-					newMap[e].Orders[f][b] = config.OT_OrderPlaced
-					newMap[config.My_ID].Orders[f][b]  = config.OT_OrderPlaced
+						//kopierer ordren og legger den til i min ordrematrise
+						newMap[e].Orders[f][b] = config.OT_OrderPlaced
+						newMap[config.My_ID].Orders[f][b]  = config.OT_OrderPlaced
 
-					fmt.Printf("fant minst en 1-er, lagt til i egen matrise\n")
+						fmt.Printf("fant nytt knappe trykk %v %v, lagt til i egen matrise\n", f, b)
+
+					}
 				}
 			}
 		}
@@ -224,31 +245,35 @@ func UpdateMapFromNetwork(recievedMap config.ElevStateMap, buttonLampChan chan c
 	numberOfAckElevs := [config.NUM_FLOORS][config.NUM_BUTTONS]int{}
 
 	//leiter etter 3 -enere i det oppdaterte mapet
-	fmt.Printf("sjekker 1-ere\n")
+	if changedMade == true {
+		for e:= 0; e < config.NUM_ELEVS; e++{
+			if newMap[e].Orders[newButton.Floor][newButton.Button] == config.OT_OrderPlaced{
+				numberOfAckElevs[newButton.Floor][newButton.Button] ++
+			}
+		}
 
-	for f:= 0; f < config.NUM_FLOORS; f++{
-		for b:= config.BT_HallUp; b < config.BT_Cab; b++{
-			for e:= 0; e < config.NUM_ELEVS; e++{
-				if newMap[e].Orders[f][b] == config.OT_OrderPlaced{
-					numberOfAckElevs[f][b] ++
-				}
-			}
-			if numberOfAckElevs[f][b] == config.NUM_ELEVS{
-				orderMsgChan <- newButtons
-				fmt.Printf("Fant en ordre!!\n")
-			}
+		fmt.Printf("------------NUMBER OF ACK ELEVS-------------\n")
+		fmt.Printf("%v\n", numberOfAckElevs)
+		if numberOfAckElevs[newButton.Floor][newButton.Button] == config.NUM_ELEVS{
+			fmt.Printf("\n\n\n\n\n\n\n\n\n\n\njeg fant 3-enere på %v %v\n",newButton.Floor, newButton.Button)
+			//dersom vi finner 3 1-ere uten at det er funnet en ny 1-er vil newButtons være 00000
+			orderMsgChan <- newButtons
+			//changedMade = false
+			//dersom du har lagt inn 3 enere - ønsker du ikke å sende map-etss
 		}
 	}
 
 
 
+	
+
 	for f:= 0; f < config.NUM_FLOORS; f++{
 		for b:= config.BT_HallUp; b < config.BT_Cab; b++{
-			if recievedMap[config.My_ID].Orders[f][b] ==config.OT_NoOrder && currentMap[config.My_ID].Orders[f][b] == config.OT_OrderPlaced{
+			if recievedMap[id].Orders[f][b] ==config.OT_NoOrder && currentMap[id].Orders[f][b] == config.OT_OrderPlaced{
 				for e := 0; e < config.NUM_ELEVS; e++{
 					if recievedMap[e].CurrentFloor == f && recievedMap[e].Door == true{							
 						buttonLampChan <- config.ButtonLamp{f, b, false}
-						fmt.Printf("fjerner ordre fra nettverket\n")
+						fmt.Printf("fjerner ordre fra nettverket %v %v \n", f, b)
 						changedMade = false
 						//clear orders from network 
 						

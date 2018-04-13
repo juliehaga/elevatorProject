@@ -245,6 +245,7 @@ func eventDoorTimeout(doorLampChan chan bool, mapChangesChan chan config.ElevSta
 
 func eventNewAckOrder(orderCompleteChan chan config.ButtonEvent, buttonLampChan chan config.ButtonLamp, motorChan chan config.MotorDirection, doorLampChan chan bool, doorTimer *time.Timer, mapChangesChan chan config.ElevStateMap, buttonPushed config.ButtonEvent, idleTimer *time.Timer, motorTimer *time.Timer, activeOrderTx chan config.ActiveOrders){
 	currentMap := elevStateMap.GetLocalMap()
+
 	//accept CAB order
 	if buttonPushed.Button == config.BT_Cab{ //&& currentMap[config.My_ID].OutOfOrder == false{
 		currentMap[config.My_ID].Orders[buttonPushed.Floor][buttonPushed.Button] = config.OT_OrderPlaced
@@ -340,24 +341,17 @@ func shouldStop(elevMap config.ElevStateMap) bool{
 
 func ordersAbove(elevMap config.ElevStateMap) bool{
 	for f := elevMap[config.My_ID].CurrentFloor + 1; f<config.NUM_FLOORS; f++{
-		for b := config.BT_HallUp; b <= config.BT_Cab; b++{ 
-			if elevMap[config.My_ID].Orders[f][b] == config.OT_OrderPlaced{
-
-
-				return true
-			}
+		if orderInThisFloor(f, elevMap){
+			return true
 		}
 	}
-
 	return false
 }
 
 func ordersBelow(elevMap config.ElevStateMap) bool{
 	for f := elevMap[config.My_ID].CurrentFloor - 1; f>=0; f--{
-		for b := config.BT_HallUp; b<= config.BT_Cab; b++{ 
-			if elevMap[config.My_ID].Orders[f][b] == config.OT_OrderPlaced{
-				return true
-			}
+		if orderInThisFloor(f, elevMap){
+			return true
 		}
 	}
 	return false
@@ -401,12 +395,32 @@ func orderCompleted(elevMap config.ElevStateMap, buttonLampChan chan config.Butt
 
 func orderInThisFloor( floor int, elevMap config.ElevStateMap) bool{
 	//elevStateMap.PrintMap(elevMap)
+	ackElevs := 0 
+
+
 	if (floor != -1){
 		for b := config.BT_HallUp; b <= config.BT_Cab; b++ {
-			if elevMap[config.My_ID].Orders[floor][b] == config.OT_OrderPlaced{
+
+			if b == config.BT_Cab && elevMap[config.My_ID].Orders[floor][b] == config.OT_OrderPlaced{
 				return true
+			} else{
+
+				for e:= 0; e < config.NUM_ELEVS; e++{
+					if elevMap[e].Orders[floor][b] == config.OT_OrderPlaced{
+						ackElevs ++;
+
+					}
+				}
+
 			}
+
 		}
+		if ackElevs == config.NUM_ELEVS{
+			return true
+		}else{
+			ackElevs = 0
+		}
+	
 	}
 	return false
 }
@@ -558,6 +572,6 @@ func ClearOrder(elevMap config.ElevStateMap, button config.ButtonEvent, buttonLa
 				//fmt.Printf("completed HALLUP %v\n", elevMap[config.My_ID].CurrentFloor)
 	buttonLampChan <-  config.ButtonLamp{button.Floor, button.Button, false}
 	activeOrderTx <- config.ActiveOrders{button, config.My_ID, false}
-	fmt.Printf("clearer ordre ettter utført bestilling\n")
+	fmt.Printf("clearer ordre ettter utført bestilling %v\n", button)
 	return elevMap
 }
