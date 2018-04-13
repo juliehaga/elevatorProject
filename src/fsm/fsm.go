@@ -392,7 +392,7 @@ func orderCompleted(elevMap config.ElevStateMap, buttonLampChan chan config.Butt
 
 func orderInThisFloor( floor int, elevMap config.ElevStateMap) bool{
 	ackElevs := 0 
-
+	elevStateMap.PrintMap(elevMap)
 
 	if (floor != -1){
 		for b := config.BT_HallUp; b <= config.BT_Cab; b++ {
@@ -400,22 +400,21 @@ func orderInThisFloor( floor int, elevMap config.ElevStateMap) bool{
 			if b == config.BT_Cab && elevMap[config.My_ID].Orders[floor][b] == config.OT_OrderPlaced{
 				fmt.Printf("CAB order in this floor\n")
 				return true
-			} else{
-
+			}else{
 				for e:= 0; e < config.NUM_ELEVS; e++{
 					if elevMap[e].Orders[floor][b] == config.OT_OrderPlaced{
 						ackElevs ++;
 
 					}
 				}
+				if ackElevs == config.NUM_ELEVS{
+					return true
+				}else{
+					ackElevs = 0
+				}
 
 			}
 
-		}
-		if ackElevs == config.NUM_ELEVS{
-			return true
-		}else{
-			ackElevs = 0
 		}
 	
 	}
