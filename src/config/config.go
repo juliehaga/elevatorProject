@@ -73,6 +73,7 @@ type ElevInfo struct{
 type ElevStateMap [NUM_ELEVS]ElevInfo
 
 type Message struct {
+	Stamp int64
 	ID int
 	MsgType int
 	ElevMap   ElevStateMap
