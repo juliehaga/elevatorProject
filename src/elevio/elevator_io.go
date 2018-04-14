@@ -49,7 +49,8 @@ func Elevio(motorChan chan config.MotorDirection, doorLampChan chan bool, newOrd
 				newOrderChan <- orderButton
 			} else if orderButton.Button != config.BT_Cab{
 				for e:= 0; e < config.NUM_ELEVS; e++{
-					if currentMap[e].Connected && e != config.My_ID{
+					if (currentMap[e].Connected && e != config.My_ID) && currentMap[config.My_ID].Connected == true{
+						//det finnes minst en annen heis
 						accept = true
 					}
 				}
