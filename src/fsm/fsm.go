@@ -33,22 +33,18 @@ func Fsm(motorChan chan config.MotorDirection, doorLampChan chan bool, floorChan
 	for{
 		select{
 		case  floor := <- floorChan:
-			fmt.Printf("NEW FLOOR\n")
 			eventNewFloor(orderCompleteChan, motorChan, doorLampChan, doorTimer,mapChangesChan, buttonLampChan, floor, idleTimer, activeOrderTx)
 			idleTimer.Reset(time.Second * IDLE_TIME)
 
 		case buttonPushed := <- newOrderChan:
-			fmt.Printf("BUTTON PUSH\n")
 			eventNewAckOrder(orderCompleteChan, buttonLampChan, motorChan, doorLampChan, doorTimer, mapChangesChan, buttonPushed, idleTimer, activeOrderTx)
 			idleTimer.Reset(time.Second * IDLE_TIME)
 
 		case <- doorTimer.C:
-			fmt.Printf("DOOR TIMER\n")
 			eventDoorTimeout(doorLampChan, mapChangesChan, idleTimer, motorChan)
 			idleTimer.Reset(time.Second * IDLE_TIME)
 
 		case <- idleTimer.C:
-			fmt.Printf("**************IDLE TIMEOUT****************\n")
 			eventIdleTimeout(idleTimer, motorChan, mapChangesChan)
 			idleTimer.Reset(time.Second * IDLE_TIME)
 		}
@@ -60,7 +56,7 @@ func eventIdleTimeout(idleTimer *time.Timer, motorChan chan config.MotorDirectio
 	currentMap := elevStateMap.GetLocalMap()
 	
 	if state != IDLE {
-		fmt.Printf("***********************************************IDLE TIMEOUT I EN ANNEN STATE*****************************************\n")
+		fmt.Printf("***********************************************OUT OF ORDER*****************************************\n")
 		currentMap[config.My_ID].Connected = false
 		if currentMap[config.My_ID].CurrentFloor < config.NUM_FLOORS-1{
 			motorDir = config.MD_Down
@@ -146,7 +142,7 @@ func eventDoorTimeout(doorLampChan chan bool, mapChangesChan chan config.ElevSta
 			} else {
 				state = IDLE
 			}
-			fmt.Printf("*******************************DOOR TIMEOUT***************************\n")
+			//fmt.Printf("*******************************DOOR TIMEOUT***************************\n")
 			mapChangesChan <- currentMap	
 	}
 }
@@ -175,7 +171,7 @@ func eventNewAckOrder(orderCompleteChan chan config.ButtonEvent, buttonLampChan 
 				currentMap[config.My_ID].Door = true
 				currentMap = orderCompleted(currentMap, buttonLampChan, orderCompleteChan, activeOrderTx)
 				doorTimer.Reset(time.Second * DOOR_TIME)
-				fmt.Printf("----------------------------orderInfloor----------------------------\n")
+				//fmt.Printf("----------------------------orderInfloor----------------------------\n")
 				state = DOOR_OPEN
 			}else{
 				motorDir, currentMap[config.My_ID].CurrentDir = chooseDirection(currentMap)
@@ -183,7 +179,7 @@ func eventNewAckOrder(orderCompleteChan chan config.ButtonEvent, buttonLampChan 
 				if motorDir != config.MD_Stop {
 					state = MOVING
 				} 
-				fmt.Printf("----------------------------choosedir----------------------------\n")
+				//fmt.Printf("----------------------------choosedir----------------------------\n")
 
 			}
 		case DOOR_OPEN:

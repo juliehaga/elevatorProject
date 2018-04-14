@@ -94,6 +94,11 @@ type OrderMsg struct{
 	ElevMap ElevStateMap
 }
 
+type AckMsg struct{
+	Transmitter_ID int
+	Reciever_ID int
+}
+
 type ActiveOrderMsg struct{
 	ID int
 	Order ButtonEvent

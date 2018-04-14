@@ -65,6 +65,7 @@ func main() {
 
   
     orderMsgChan := make(chan config.NewButtons, 100)
+    ackChan := make(chan config.AckMsg)
 
 
 
@@ -99,7 +100,7 @@ func main() {
   
     go elevio.Elevio(motorChan, doorLampChan, newOrderChan, floorChan, buttonLampChan, newLocalOrderChan, mapChangesChan)
 
-    go network.Network(messageRx, messageTx, statusMsgRx, orderMsgRx, activeOrderRx)
+    go network.Network(messageRx, messageTx, statusMsgRx, orderMsgRx, activeOrderRx, ackChan)
 
     go peers.Transmitter(15611, id, peerTxEnable)
 	go peers.Receiver(15611, peerUpdateCh)
@@ -121,13 +122,10 @@ func main() {
 
 			if init != true{
 				fmt.Printf("EN NY PEEER JEG SENDER MINE ORDRE\n")
-				network.SendOrders(messageTx, elevStateMap.GetLocalMap())	
+				network.SendOrders(messageTx, elevStateMap.GetLocalMap(), ackChan)	
 			} 
 
 		case orderMsgFromNetwork := <- orderMsgRx:
-			//er denne heisen connected? Kan vi bare droppe å lese meldinger fra en disconnected heis? 
-
-
 			if init == true{
 				fmt.Printf("INIT oppdaterer fra nettet\n")
 				elevio.InitOrdersFromNetwork(orderMsgFromNetwork.ElevMap)
@@ -135,11 +133,9 @@ func main() {
 			}else{
 				orderUpdates, currentMap := elevStateMap.UpdateMapFromNetwork(orderMsgFromNetwork.ElevMap, buttonLampChan, activeOrderTx, orderMsgFromNetwork.ID, orderMsgChan)
 				if orderUpdates {
-					fmt.Printf("Sender ordre melding\n")
-					network.SendOrders(messageTx, currentMap)
+					network.SendOrders(messageTx, currentMap, ackChan)
 				}
 			}
-			
 
 		case statusMsgFromNetwork := <- statusMsgRx:
 			elevStateMap.UpdateElevStatusFromNetwork(statusMsgFromNetwork)
@@ -148,19 +144,16 @@ func main() {
 		case elevMap:= <-mapChangesChan:
 			localOrderUpdates, updatedMap := elevStateMap.UpdateLocalMap(elevMap)
 			if localOrderUpdates {
-				fmt.Printf("Sender ordre melding\n")
-				network.SendOrders(messageTx, updatedMap)
+				network.SendOrders(messageTx, updatedMap, ackChan)
 
 			}
-			fmt.Printf("Sender statusmelding\n")
-			network.SendElevStatus(messageTx, elevMap)
+			network.SendElevStatus(messageTx, elevMap, ackChan)
 			init = false
 
 		case order:= <- activeOrderTx:
 			if order.ActiveOrder {
-				fmt.Printf("setter min aktive ordre\n")
 				ActiveOrderMatrix[order.Button.Floor][order.Button.Button][config.My_ID] = true
-				network.SendActiveOrder(messageTx, order)
+				network.SendActiveOrder(messageTx, order, ackChan)
 
 			} else {
 				for e:= 0; e < config.NUM_ELEVS; e++{
@@ -170,13 +163,7 @@ func main() {
 
 		case order:= <- activeOrderRx:
 			ActiveOrderMatrix[order.Button.Floor][order.Button.Button][order.ID] = true
-			//fmt.Printf("ORDRE MELDING FRA %v\n", order.ID)
 			newOrder := true
-
-			//vi må sjekke at alle connected heiser har gitt ordrebekreftelse. 
-
-			
-		
 
 			for e := 0; e < config.NUM_ELEVS; e++{
 				if ActiveOrderMatrix[order.Button.Floor][order.Button.Button][e] == false && order.ElevMap[e].Connected == true {
