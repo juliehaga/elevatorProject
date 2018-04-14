@@ -43,9 +43,11 @@ func Elevio(motorChan chan config.MotorDirection, doorLampChan chan bool, newOrd
 		case orderButton := <- newLocalOrderChan: 
 			accept := false
 			currentMap := elevStateMap.GetLocalMap()
+			elevStateMap.PrintMap(currentMap)
 			if orderButton.Button == config.BT_Cab && currentMap[config.My_ID].Connected == true{
+				fmt.Printf("MOTTAR CAB-bestilling og vi er connected\n")
 				newOrderChan <- orderButton
-			} else{
+			} else if orderButton.Button != config.BT_Cab{
 				for e:= 0; e < config.NUM_ELEVS; e++{
 					if currentMap[e].Connected && e != config.My_ID{
 						accept = true

@@ -78,6 +78,7 @@ func eventIdleTimeout(idleTimer *time.Timer, motorChan chan config.MotorDirectio
 			state = MOVING
 		}
 	}
+	mapChangesChan <- currentMap
 }
 
 
@@ -153,6 +154,8 @@ func eventDoorTimeout(doorLampChan chan bool, mapChangesChan chan config.ElevSta
 
 func eventNewAckOrder(orderCompleteChan chan config.ButtonEvent, buttonLampChan chan config.ButtonLamp, motorChan chan config.MotorDirection, doorLampChan chan bool, doorTimer *time.Timer, mapChangesChan chan config.ElevStateMap, buttonPushed config.ButtonEvent, idleTimer *time.Timer, activeOrderTx chan config.ActiveOrders){
 	currentMap := elevStateMap.GetLocalMap()
+
+	fmt.Printf("eventAckOrder er trigget\n")
 
 	//accept CAB order
 	if buttonPushed.Button == config.BT_Cab{ //&& currentMap[config.My_ID].OutOfOrder == false{
