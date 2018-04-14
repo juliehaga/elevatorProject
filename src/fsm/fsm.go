@@ -160,6 +160,7 @@ func eventNewAckOrder(orderCompleteChan chan config.ButtonEvent, buttonLampChan 
 	}
 		
 
+
 	
 	var motorDir config.MotorDirection
 	switch(state){
