@@ -424,7 +424,7 @@ func nearestElevator(elevMap config.ElevStateMap, floor int) bool{
 		}	
 	} else if elevMap[config.My_ID].CurrentFloor == floor{
 		for e := 0; e<config.NUM_ELEVS; e++ {
-			if elevMap[e].currentfloor == floor{
+			if elevMap[e].CurrentFloor == floor{
 				if e > config.My_ID{
 		 			return false
 				}
