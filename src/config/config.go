@@ -51,6 +51,8 @@ type ElevInfo struct{
 
 type ElevStateMap [NUM_ELEVS]ElevInfo
 
+type ElevState int
+
 type PeerUpdate struct {
 	Peers []string
 	New   string
