@@ -101,7 +101,6 @@ func eventNewFloor(orderCompleteChan chan config.ButtonEvent, motorChan chan con
 				doorTimer.Reset(time.Second * DOOR_TIME)
 				currentMap[config.My_ID].Door = true
 				currentMap = orderCompleted(currentMap, buttonLampChan, orderCompleteChan, activeOrderTx)
-				currentMap[config.My_ID].IDLE = false
 				state = DOOR_OPEN
 			}
 
@@ -115,10 +114,8 @@ func eventNewFloor(orderCompleteChan chan config.ButtonEvent, motorChan chan con
 						doorTimer.Reset(time.Second * DOOR_TIME)
 						currentMap[config.My_ID].Door = true
 						currentMap = orderCompleted(currentMap, buttonLampChan, orderCompleteChan, activeOrderTx)
-						currentMap[config.My_ID].IDLE = false
 						state = DOOR_OPEN
 					} else {
-						currentMap[config.My_ID].IDLE = true
 						state = IDLE
 					}	
 			}

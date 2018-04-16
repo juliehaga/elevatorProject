@@ -20,55 +20,42 @@ var _mtx sync.Mutex
 var _conn net.Conn
 
 
-
-
-
 func Elevio(motorChan chan config.MotorDirection, doorLampChan chan bool, newOrderChan chan config.ButtonEvent, floorChan chan int, buttonLampChan chan config.ButtonLamp, newLocalOrderChan chan config.ButtonEvent, mapChangesChan chan config.ElevStateMap) {
 	go PollButtons(newLocalOrderChan)
     go PollFloorSensor(floorChan)
-
-    //update map?
 
 	for {
 		select {
 		case dir := <- motorChan:
 			SetMotorDirection(dir)
+
 		case light := <-doorLampChan:
 			SetDoorOpenLamp(light)
+
 		case lamp := <- buttonLampChan:
-			//fmt.Printf("LYSBESKJED %v", lamp)
 			SetButtonLamp(lamp)
-			//InitOrders()
 
 		case orderButton := <- newLocalOrderChan: 
-			accept := false
+			acceptOrder := false
 			currentMap := elevStateMap.GetLocalMap()
-			elevStateMap.PrintMap(currentMap)
 			if orderButton.Button == config.BT_Cab && currentMap[config.My_ID].Connected == true{
-				fmt.Printf("MOTTAR CAB-bestilling og vi er connected\n")
 				newOrderChan <- orderButton
 			} else if orderButton.Button != config.BT_Cab{
 				for e:= 0; e < config.NUM_ELEVS; e++{
 					if (currentMap[e].Connected && e != config.My_ID) && currentMap[config.My_ID].Connected == true{
-						//det finnes minst en annen heis
-						accept = true
+						acceptOrder = true
 					}
 				}
-				if accept == true{
+				if acceptOrder == true{
 					currentMap[config.My_ID].Orders[orderButton.Floor][orderButton.Button] = config.OT_OrderPlaced
-					fmt.Printf("accepted ordre\n")
-
-				}
+				} else {
+					fmt.Printf("No way to assure redundancy\n")
+				} 
 				mapChangesChan <- currentMap
-
 			}
 		}	
-	
 	}
-	
 }
-
-
 
 
 func InitDriver(addr string, numFloors int) {
@@ -94,28 +81,12 @@ func InitDriver(addr string, numFloors int) {
 
 	currentMap[config.My_ID].CurrentFloor = getFloor()
 	elevStateMap.SetLocalMap(currentMap)
-	//ClearAllButtonLamps()
-	InitLights()
-
-
-
-
+	clearAllButtonLamps()
 }
 
-
-
-func InitLights(){
-	//fmt.Printf("INITIALISERER ORDRE FRA NETTET NÅR DU LOOGER PÅ\n")
-	for f := 0; f < config.NUM_FLOORS; f++{
-		for b:= config.BT_HallUp; b <= config.BT_Cab; b++{
-			SetButtonLamp(config.ButtonLamp{f, b, false})
-		}
-	}
-}
 
 func InitOrdersFromNetwork(networkMap config.ElevStateMap){
-	//fmt.Printf("INITIALISERER ORDRE FRA NETTET NÅR DU LOOGER PÅ\n")
-	ackElevs := 0
+	numberOfAckElevs := 0
 	currentMap := elevStateMap.GetLocalMap()
 
 	for f := 0; f < config.NUM_FLOORS; f++{
@@ -123,27 +94,23 @@ func InitOrdersFromNetwork(networkMap config.ElevStateMap){
 			for e := 0; e < config.NUM_ELEVS; e++{
 				currentMap[e].Orders[f][b] = networkMap[e].Orders[f][b]
 				if currentMap[e].Orders[f][b] == config.OT_OrderPlaced{
-					ackElevs ++;
-
+					numberOfAckElevs  ++;
 				}
 			}
-
-			if ackElevs == config.NUM_ELEVS{
+			if numberOfAckElevs  == config.NUM_ELEVS{
 				SetButtonLamp(config.ButtonLamp{f, b, true})
-				ackElevs = 0
+				numberOfAckElevs = 0
 			}else{
-				ackElevs = 0
+				numberOfAckElevs = 0
 				SetButtonLamp(config.ButtonLamp{f, b, false})
 			}
 		}
 	}
-
 	elevStateMap.SetLocalMap(currentMap)
 }
 
 
-
-func ClearAllButtonLamps(){
+func clearAllButtonLamps(){
 	for f:= 0; f < _numFloors; f++ {
 		for b:= config.ButtonType(0); b < 3; b++ {
 			SetButtonLamp(config.ButtonLamp{f, b, false})	
@@ -158,11 +125,13 @@ func SetMotorDirection(dir config.MotorDirection) {
 	_conn.Write([]byte{1, byte(dir), 0, 0})
 }
 
+
 func SetButtonLamp(lamp config.ButtonLamp) {
 	_mtx.Lock()
 	defer _mtx.Unlock()
 	_conn.Write([]byte{2, byte(lamp.Button), byte(lamp.Floor), toByte(lamp.Set)})
 }
+
 
 func SetFloorIndicator(floor int) {
 	_mtx.Lock()
@@ -170,11 +139,13 @@ func SetFloorIndicator(floor int) {
 	_conn.Write([]byte{3, byte(floor), 0, 0})
 }
 
+
 func SetDoorOpenLamp(value bool) {
 	_mtx.Lock()
 	defer _mtx.Unlock()
 	_conn.Write([]byte{4, toByte(value), 0, 0})
 }
+
 
 func SetStopLamp(value bool) {
 	_mtx.Lock()
@@ -183,9 +154,7 @@ func SetStopLamp(value bool) {
 }
 
 
-
 func PollButtons(receiver chan<- config.ButtonEvent) {
-
 	prev := make([][3]bool, _numFloors)
 	for {
 		time.Sleep(_pollRate)
@@ -194,13 +163,13 @@ func PollButtons(receiver chan<- config.ButtonEvent) {
 				v := getButton(b, f)
 				if v != prev[f][b] && v != false {
 					receiver <- config.ButtonEvent{f, config.ButtonType(b)}
-					fmt.Printf("KNAPPETRYKK %v\n", config.ButtonEvent{f, config.ButtonType(b)})
 				}
 				prev[f][b] = v
 			}
 		}
 	}
 }
+
 
 func PollFloorSensor(receiver chan<- int) {	
 	prev := -1
@@ -209,42 +178,13 @@ func PollFloorSensor(receiver chan<- int) {
 		v := getFloor()
 		if v < _numFloors && v >= 0 {
 			SetFloorIndicator(v)
-
 		}
-
-
 		if v != prev && v != -1 {
 			receiver <- v
 		}
 		prev = v
 	}
 }
-
-
-func PollStopButton(receiver chan<- bool) {
-	prev := false
-	for {
-		time.Sleep(_pollRate)
-		v := getStop()
-		if v != prev {
-			receiver <- v
-		}
-		prev = v
-	}
-}
-
-func PollObstructionSwitch(receiver chan<- bool) {
-	prev := false
-	for {
-		time.Sleep(_pollRate)
-		v := getObstruction()
-		if v != prev {
-			receiver <- v
-		}
-		prev = v
-	}
-}
-
 
 
 func getButton(button config.ButtonType, floor int) bool {
@@ -271,24 +211,6 @@ func getFloor() int {
 }
 
 
-func getStop() bool {
-	_mtx.Lock()
-	defer _mtx.Unlock()
-	_conn.Write([]byte{8, 0, 0, 0})
-	var buf [4]byte
-	_conn.Read(buf[:])
-	return toBool(buf[1])
-}
-
-func getObstruction() bool {
-	_mtx.Lock()
-	defer _mtx.Unlock()
-	_conn.Write([]byte{9, 0, 0, 0})
-	var buf [4]byte
-	_conn.Read(buf[:])
-	return toBool(buf[1])
-}
-
 func toByte(a bool) byte {
 	var b byte = 0
 	if a {
@@ -296,6 +218,7 @@ func toByte(a bool) byte {
 	}
 	return b
 }
+
 
 func toBool(a byte) bool {
 	var b bool = false

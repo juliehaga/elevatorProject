@@ -64,8 +64,7 @@ func main() {
 
 
   
-    orderMsgChan := make(chan config.NewButtons, 100)
-    ackChan := make(chan config.AckMsg)
+    orderMsgChan := make(chan config.NewPushes, 100)
 
 
 
@@ -86,7 +85,7 @@ func main() {
 	activeOrderTx := make(chan config.ActiveOrders, 10000)
 	
 	
-	config.Init(id, port)
+	config.InitGlobalSettings(id, port)
 	elevio.InitDriver("localhost:" + port, config.NUM_FLOORS)
 	elevStateMap.InitElevStateMap(buttonLampChan)
 
@@ -100,7 +99,7 @@ func main() {
   
     go elevio.Elevio(motorChan, doorLampChan, newOrderChan, floorChan, buttonLampChan, newLocalOrderChan, mapChangesChan)
 
-    go network.Network(messageRx, messageTx, statusMsgRx, orderMsgRx, activeOrderRx, ackChan)
+    go network.Network(messageRx, messageTx, statusMsgRx, orderMsgRx, activeOrderRx)
 
     go peers.Transmitter(15611, id, peerTxEnable)
 	go peers.Receiver(15611, peerUpdateCh)
@@ -122,7 +121,7 @@ func main() {
 
 			if init != true{
 				fmt.Printf("EN NY PEEER JEG SENDER MINE ORDRE\n")
-				network.SendOrders(messageTx, elevStateMap.GetLocalMap(), ackChan)	
+				network.SendOrders(messageTx, elevStateMap.GetLocalMap())	
 			} 
 
 		case orderMsgFromNetwork := <- orderMsgRx:
@@ -133,7 +132,7 @@ func main() {
 			}else{
 				orderUpdates, currentMap := elevStateMap.UpdateMapFromNetwork(orderMsgFromNetwork.ElevMap, buttonLampChan, activeOrderTx, orderMsgFromNetwork.ID, orderMsgChan)
 				if orderUpdates {
-					network.SendOrders(messageTx, currentMap, ackChan)
+					network.SendOrders(messageTx, currentMap)
 				}
 			}
 
@@ -144,16 +143,16 @@ func main() {
 		case elevMap:= <-mapChangesChan:
 			localOrderUpdates, updatedMap := elevStateMap.UpdateLocalMap(elevMap)
 			if localOrderUpdates {
-				network.SendOrders(messageTx, updatedMap, ackChan)
+				network.SendOrders(messageTx, updatedMap)
 
 			}
-			network.SendElevStatus(messageTx, elevMap, ackChan)
+			network.SendElevStatus(messageTx, elevMap)
 			init = false
 
 		case order:= <- activeOrderTx:
 			if order.ActiveOrder {
 				ActiveOrderMatrix[order.Button.Floor][order.Button.Button][config.My_ID] = true
-				network.SendActiveOrder(messageTx, order, ackChan)
+				network.SendActiveOrder(messageTx, order)
 
 			} else {
 				for e:= 0; e < config.NUM_ELEVS; e++{
