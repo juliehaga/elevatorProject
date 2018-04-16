@@ -165,7 +165,7 @@ func eventNewAckOrder(orderCompleteChan chan config.ButtonEvent, buttonLampChan 
 	var motorDir config.MotorDirection
 	switch(state){
 		case IDLE:
-			if orderInThisFloor(currentMap[config.My_ID].CurrentFloor, currentMap){// && currentMap[config.My_ID].OutOfOrder == false{
+			if orderInThisFloor(currentMap[config.My_ID].CurrentFloor, currentMap) && nearestElevator(currentMap, currentMap[config.My_ID].CurrentFloor){// && currentMap[config.My_ID].OutOfOrder == false{
 
 
 				doorLampChan <- true	
@@ -184,7 +184,7 @@ func eventNewAckOrder(orderCompleteChan chan config.ButtonEvent, buttonLampChan 
 
 			}
 		case DOOR_OPEN:
-			if orderInThisFloor(currentMap[config.My_ID].CurrentFloor, currentMap){
+			if orderInThisFloor(currentMap[config.My_ID].CurrentFloor, currentMap) && nearestElevator(currentMap, currentMap[config.My_ID].CurrentFloor){
 				doorLampChan <- true	
 				doorTimer.Reset(time.Second * DOOR_TIME)
 				currentMap[config.My_ID].Door = true
