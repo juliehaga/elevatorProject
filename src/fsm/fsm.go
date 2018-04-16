@@ -22,7 +22,7 @@ const(
 const DOOR_TIME 	    = 2
 const IDLE_TIME 	    = 10
 
-
+//start code clean up
 func Fsm(motorChan chan config.MotorDirection, doorLampChan chan bool, floorChan chan int, buttonLampChan chan config.ButtonLamp, mapChangesChan chan config.ElevStateMap, newOrderChan chan config.ButtonEvent, orderCompleteChan chan config.ButtonEvent, activeOrderTx chan config.ActiveOrders){
 	state = INIT
 	
