@@ -14,8 +14,7 @@ var My_PORT int
 func InitGlobalSettings(id string, port string){
 	My_ID, _ = strconv.Atoi(id)
 	My_PORT, _ = strconv.Atoi(port)
-}We used the 
-
+}
 
 type ButtonEvent struct {
 	Floor  int
