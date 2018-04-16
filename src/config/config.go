@@ -14,7 +14,7 @@ var My_PORT int
 func InitGlobalSettings(id string, port string){
 	My_ID, _ = strconv.Atoi(id)
 	My_PORT, _ = strconv.Atoi(port)
-}
+}We used the 
 
 
 type ButtonEvent struct {
@@ -48,7 +48,6 @@ type ElevInfo struct{
 	Orders [NUM_FLOORS][NUM_BUTTONS] OrderType
 }
 
-
 type ElevStateMap [NUM_ELEVS]ElevInfo
 
 type ElevState int
@@ -67,7 +66,6 @@ type Message struct {
 	Receiver_ID int 
 	Button ButtonEvent
 }
-
 
 type StatusMsg struct {
 	ID int
@@ -105,7 +103,6 @@ const (
 	BT_HallDown            = 1
 	BT_Cab                 = 2
 )
-
 
 const (
 	MD_Up   MotorDirection = 1

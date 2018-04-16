@@ -88,7 +88,6 @@ func UpdateLocalMap(changedMap config.ElevStateMap) (bool, config.ElevStateMap){
 						currentMap[e].Orders[f][b] = changedMap[config.My_ID].Orders[f][b]
 					}
 				} 
-
 			} else if changedMap[config.My_ID].Orders[f][b] == config.OT_NoOrder && currentMap[config.My_ID].Orders[f][b] == config.OT_OrderPlaced {
 				LocalOrderChangeMade = true
 				currentMap[config.My_ID].Orders[f][b] = changedMap[config.My_ID].Orders[f][b]
@@ -111,7 +110,7 @@ func UpdateMapFromNetwork(receivedMap config.ElevStateMap, buttonLampChan chan c
 	changedMade := false
 	var newButton config.ButtonEvent
 
-	//update status
+	//Update status
 	for e:= 0; e < config.NUM_ELEVS; e++{
 		if e != config.My_ID {
 			currentMap[e].CurrentFloor = receivedMap[e].CurrentFloor
@@ -138,7 +137,7 @@ func UpdateMapFromNetwork(receivedMap config.ElevStateMap, buttonLampChan chan c
 		}	
 	}
 
-	//Find new placed orders
+	//Find new placed orders in other elevators
 	for e:= 0; e < config.NUM_ELEVS; e++{
 		for f:= 0; f < config.NUM_FLOORS; f++{
 			for b:= config.BT_HallUp; b < config.BT_Cab; b++{
@@ -175,9 +174,8 @@ func UpdateMapFromNetwork(receivedMap config.ElevStateMap, buttonLampChan chan c
 		}
 	}
 
-	//If a new order is found, check if the order should be acknowledged
+	//If a new order is found, check if the order is placed in all elevators before acknowledging
 	numberOfAckElevs := [config.NUM_FLOORS][config.NUM_BUTTONS]int{}
-
 	if changedMade == true {
 		for e:= 0; e < config.NUM_ELEVS; e++{
 			if updatedMap[e].Orders[newButton.Floor][newButton.Button] == config.OT_OrderPlaced && receivedMap[e].Connected == true{
@@ -189,7 +187,7 @@ func UpdateMapFromNetwork(receivedMap config.ElevStateMap, buttonLampChan chan c
 		}
 	}
 
-	//Find executed orders
+	//Find executed orders by other elevators
 	for f:= 0; f < config.NUM_FLOORS; f++{
 		for b:= config.BT_HallUp; b < config.BT_Cab; b++{
 			if receivedMap[id].Orders[f][b] == config.OT_NoOrder && currentMap[id].Orders[f][b] == config.OT_OrderPlaced{
@@ -206,7 +204,6 @@ func UpdateMapFromNetwork(receivedMap config.ElevStateMap, buttonLampChan chan c
 			}
 		}
 	}
-
 	SetLocalMap(updatedMap)
 	return changedMade, updatedMap
 }
@@ -264,7 +261,6 @@ func readFromBackup(buttonLampChan chan config.ButtonLamp){
 	if err != nil { return }
 	defer file.Close()
 	currentMap := GetLocalMap()
-
 	var buf = make([]byte, 1024)
 	for {
 		_, err = file.Read(buf)
@@ -281,9 +277,7 @@ func readFromBackup(buttonLampChan chan config.ButtonLamp){
 		fmt.Printf("floor 2: %v\n", string(buf[1]))
 		fmt.Printf("floor 3: %v\n", string(buf[2]))
 		fmt.Printf("floor 4: %v\n", string(buf[3]))
-
 	}
-	
 	for floor := 0; floor<config.NUM_FLOORS; floor++{
 		order, _ :=strconv.Atoi(string(buf[floor]))
 		currentMap[config.My_ID].Orders[floor][config.BT_Cab] = config.OrderType(order)
@@ -302,7 +296,6 @@ func PrintMap(elevMap config.ElevStateMap){
 		fmt.Printf("Current dir: %v \n", elevMap[e].CurrentDir)
 		fmt.Printf("Connected: %v \n", elevMap[e].Connected)
 		fmt.Printf("Door: %v \n", elevMap[e].Door)
-		
 		for f:= 0; f < config.NUM_FLOORS; f++{
 			for b:= 0; b < config.NUM_BUTTONS; b++{
 				fmt.Printf("%v", elevMap[e].Orders[f][b])
