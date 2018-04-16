@@ -94,10 +94,3 @@ func sendNetworkMsg(message config.Message, messageTx chan config.Message){
 
 
 
-
-
-
-
-
-
-
